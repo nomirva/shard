@@ -1,0 +1,10 @@
+{
+  "name": "anvil",
+  "version": "1.0.0",
+  "module": "anvil.ts",
+  "type": "module",
+  "dependencies": {
+    "@types/node": "^25.9.1",
+    "commander": "^13.1.0"
+  }
+}
