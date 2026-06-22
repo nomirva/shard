@@ -28,12 +28,12 @@ function detectShape(pkgPath: string): PackageShape {
 function parseDependency(dep: string): { prefix: string; value: string; linkType?: LinkType; version?: string } {
   let linkType: LinkType | undefined;
 
-  if (dep.endsWith(":static")) {
+  if (dep.endsWith("+static")) {
     linkType = LinkType.Static;
     dep = dep.slice(0, -7);
-  } else if (dep.endsWith(":shared") || dep.endsWith(":dynamic")) {
+  } else if (dep.endsWith("+shared") || dep.endsWith("+dynamic")) {
     linkType = LinkType.Shared;
-    dep = dep.endsWith(":shared") ? dep.slice(0, -7) : dep.slice(0, -8);
+    dep = dep.endsWith("+shared") ? dep.slice(0, -7) : dep.slice(0, -8);
   }
 
   const colonIdx = dep.indexOf(":");

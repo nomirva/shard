@@ -17,7 +17,7 @@ export class Dependency {
 
   get isSystem(): boolean { return this.prefix === "sys" || this.prefix === "framework"; }
   get isRemote(): boolean { return this.prefix === "git"; }
-  get isLocal(): boolean { return this.prefix === "path"; }
+  get isLocal(): boolean { return this.prefix === "local"; }
 
   get libFlag(): string | null {
     if (this.prefix === "sys") return `-l${this.value}`;
