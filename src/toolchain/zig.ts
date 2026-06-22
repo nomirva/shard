@@ -63,6 +63,7 @@ export class ZigToolchain extends Toolchain {
         ...this.subsystemFlags(subsystem),
         ...libPaths, ...libFlags,
       ];
+      if (this.currentTarget.platform === "darwin") args.push("-Wl,-rpath,@executable_path");
       if (extra) args.push(...extra);
       args.push("-o", task.output);
       this.cc(args);

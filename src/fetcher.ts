@@ -14,6 +14,11 @@ export class Fetcher {
     const targetDir = join(rootDir, "modules", name);
     const installed = Manifest.readVersion(targetDir);
 
+    if (installed && !Version.parse(installed))
+      throw new Error(`Invalid SemVer in module.json for "${name}": "${installed}"`);
+    if (version && !Version.parse(version))
+      throw new Error(`Invalid SemVer for dependency "${name}" (${url}): "${version}"`);
+
     if (installed) {
       if (version && !Version.compatible(installed, version)) {
         throw new Error(`Version conflict for "${name}": installed ${installed}, requested ${version}`);
