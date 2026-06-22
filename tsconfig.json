@@ -9,5 +9,5 @@
     "outDir": "dist",
     "rootDir": "."
   },
-  "include": ["anvil.ts", "src/**/*.ts"]
+  "include": ["shard.ts", "src/**/*.ts"]
 }

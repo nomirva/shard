@@ -9,13 +9,13 @@ import { Module } from "./src/module";
 const program = new Command();
 
 program
-  .name("anvil")
-  .description("C build manager for anvil modules")
+  .name("shard")
+  .description("C build manager for shard modules")
   .version("1.0.0");
 
 program
   .command("build")
-  .description("Build an anvil module")
+  .description("Build a shard module")
   .argument("[path]", "Path to the module (default: current directory)", ".")
   .option("--ignore-cache <mode>", "0=cache on (default), 1=ignore root cache, 2=ignore all cache")
   .option("--run", "Build and run the executable")

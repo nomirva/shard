@@ -1,7 +1,7 @@
 {
-  "name": "anvil",
+  "name": "shard",
   "version": "1.0.0",
-  "module": "anvil.ts",
+  "module": "shard.ts",
   "type": "module",
   "dependencies": {
     "@types/node": "^25.9.1",
