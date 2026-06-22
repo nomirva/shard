@@ -1,0 +1,6 @@
+{
+    "depend": [
+        "local:../lib-greet+shared",
+        "local:../lib-math"
+    ]
+}

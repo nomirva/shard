@@ -1,7 +1,6 @@
 import { basename, join, resolve } from "path";
-import { existsSync, mkdirSync, rmSync, cpSync, symlinkSync } from "fs";
+import { existsSync, mkdirSync, rmSync, cpSync } from "fs";
 import { spawnSync } from "child_process";
-import { HOST_TARGET } from "./toolchain/types";
 import { Manifest, Version } from "./manifest";
 
 function repoNameFromUrl(url: string): string {
@@ -61,17 +60,19 @@ export class Fetcher {
     const resolved = resolve(srcPath);
     const name = basename(resolved);
     const targetDir = join(rootDir, "modules", name);
-    if (existsSync(targetDir)) return targetDir;
 
-    try {
-      if (HOST_TARGET.platform === "win32") {
-        symlinkSync(resolved, targetDir, "junction");
-      } else {
-        symlinkSync(resolved, targetDir);
-      }
-    } catch {
-      cpSync(resolved, targetDir, { recursive: true, filter: (src) => !src.includes(".git") });
+    if (existsSync(targetDir)) {
+      rmSync(targetDir, { recursive: true, force: true });
     }
+
+    mkdirSync(targetDir, { recursive: true });
+    cpSync(resolved, targetDir, {
+      recursive: true,
+      filter: (src) =>
+        !src.includes(".git") &&
+        !src.includes(".cache") &&
+        src !== join(resolved, "modules"),
+    });
     return targetDir;
   }
 }

@@ -100,7 +100,7 @@ program
   });
 
 program
-  .command("cleanup")
+  .command("clean")
   .description("Remove all build cache and installed dependencies")
   .argument("[path]", "Path to the root module (default: current directory)", ".")
   .action((pkgPath: string) => {
