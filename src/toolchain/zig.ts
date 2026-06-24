@@ -1,4 +1,4 @@
-import { existsSync, rmSync, readdirSync } from "fs";
+import { existsSync, rmSync, readdirSync, readFileSync } from "fs";
 import { join } from "path";
 import { spawnSync } from "child_process";
 import type { CompileOptions, WarningSet, Subsystem, CompileTask, LinkTask, ArchiveTask } from "./types";
@@ -48,9 +48,28 @@ export class ZigToolchain extends Toolchain {
     return args;
   }
 
+  depFilePath(task: CompileTask): string {
+    return task.object.replace(/\.\w+$/, ".d");
+  }
+
+  dependencyGenFlags(depFilePath: string): string[] {
+    return ["-MMD", "-MF", depFilePath];
+  }
+
+  parseDepFile(depFilePath: string): string[] {
+    const raw = readFileSync(depFilePath, "utf-8");
+    const joined = raw.replace(/\\\n\s*/g, " ");
+    const colon = joined.indexOf(":");
+    if (colon === -1) return [];
+    const deps = joined.slice(colon + 1).trim();
+    return deps.split(/\s+/).filter(p => p && !p.startsWith("/usr/") && !p.startsWith("/Library/"));
+  }
+
   async compile(task: CompileTask, cwd?: string): Promise<void> {
+    const args = ZigToolchain.compileArgs(task.source, task.object, task.opts);
+    args.push(...this.dependencyGenFlags(this.depFilePath(task)));
     const cacheDir = task.object + ".zig-cache";
-    await this.runAsync("zig", ["cc", ...ZigToolchain.compileArgs(task.source, task.object, task.opts)], { ZIG_GLOBAL_CACHE_DIR: cacheDir }, cwd);
+    await this.runAsync("zig", ["cc", ...args], { ZIG_GLOBAL_CACHE_DIR: cacheDir }, cwd);
     rmSync(cacheDir, { recursive: true, force: true });
   }
 

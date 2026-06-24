@@ -76,8 +76,10 @@ export interface ManifestInfo {
 }
 
 export class Manifest {
+  static readonly FILE_NAME = "shard.json";
+
   static parse(pkgPath: string, tc?: Toolchain): PackageJson {
-    const manifestPath = join(pkgPath, "module.json");
+    const manifestPath = join(pkgPath, Manifest.FILE_NAME);
     const raw = existsSync(manifestPath)
       ? JSON.parse(readFileSync(manifestPath, "utf-8"))
       : {};
@@ -86,7 +88,7 @@ export class Manifest {
   }
 
   static readVersion(pkgPath: string): string | null {
-    const p = join(pkgPath, "module.json");
+    const p = join(pkgPath, Manifest.FILE_NAME);
     if (!existsSync(p)) return null;
     try {
       const raw = JSON.parse(readFileSync(p, "utf-8"));
@@ -97,7 +99,7 @@ export class Manifest {
   }
 
   static writeVersion(pkgPath: string, version: string): void {
-    const p = join(pkgPath, "module.json");
+    const p = join(pkgPath, Manifest.FILE_NAME);
     const raw = existsSync(p) ? JSON.parse(readFileSync(p, "utf-8")) : {};
     raw.version = version;
     writeFileSync(p, JSON.stringify(raw, null, 2) + "\n");

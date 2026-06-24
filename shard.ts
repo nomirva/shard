@@ -106,17 +106,27 @@ program
   .action((pkgPath: string) => {
     try {
       const absPath = resolve(pkgPath);
-      const cacheDir = join(absPath, ".cache");
+      const shardDir = join(absPath, ".shard");
       const modulesDir = join(absPath, "modules");
+      const libDir = join(absPath, "lib");
+      const binDir = join(absPath, "bin");
+      const srcDir = join(absPath, "src");
 
-      if (existsSync(cacheDir)) {
-        rmSync(cacheDir, { recursive: true, force: true });
-        console.log(`  removed: ${cacheDir}`);
+      for (const d of [shardDir, modulesDir]) {
+        if (existsSync(d)) {
+          rmSync(d, { recursive: true, force: true });
+          console.log(`  removed: ${d}`);
+        }
       }
 
-      if (existsSync(modulesDir)) {
-        rmSync(modulesDir, { recursive: true, force: true });
-        console.log(`  removed: ${modulesDir}`);
+      if (existsSync(binDir)) {
+        rmSync(binDir, { recursive: true, force: true });
+        console.log(`  removed: ${binDir}`);
+      }
+
+      if (existsSync(libDir) && existsSync(srcDir)) {
+        rmSync(libDir, { recursive: true, force: true });
+        console.log(`  removed: ${libDir}`);
       }
     } catch (e: unknown) {
       const message = e instanceof Error ? e.message : String(e);

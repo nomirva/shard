@@ -1,3 +1,4 @@
+import { readFileSync } from "fs";
 import { spawnSync } from "child_process";
 import type { WarningSet, Subsystem, CompileTask, LinkTask, ArchiveTask, CompileOptions } from "./types";
 import { Toolchain } from "./types";
@@ -46,8 +47,27 @@ export class ClangToolchain extends Toolchain {
     this.run("clang", args);
   }
 
+  depFilePath(task: CompileTask): string {
+    return task.object.replace(/\.\w+$/, ".d");
+  }
+
+  dependencyGenFlags(depFilePath: string): string[] {
+    return ["-MMD", "-MF", depFilePath];
+  }
+
+  parseDepFile(depFilePath: string): string[] {
+    const raw = readFileSync(depFilePath, "utf-8");
+    const joined = raw.replace(/\\\n\s*/g, " ");
+    const colon = joined.indexOf(":");
+    if (colon === -1) return [];
+    const deps = joined.slice(colon + 1).trim();
+    return deps.split(/\s+/).filter(p => p && !p.startsWith("/usr/") && !p.startsWith("/Library/"));
+  }
+
   async compile(task: CompileTask, cwd?: string): Promise<void> {
-    await this.runAsync("clang", extractArgs(task.source, task.object, task.opts), undefined, cwd);
+    const args = extractArgs(task.source, task.object, task.opts);
+    args.push(...this.dependencyGenFlags(this.depFilePath(task)));
+    await this.runAsync("clang", args, undefined, cwd);
   }
 
   link(task: LinkTask): void {

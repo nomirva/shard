@@ -196,11 +196,11 @@ export class Module {
     const opts = this.compileOptions(includePaths);
     const allTasks = this.createCompileTasks(opts);
 
-    const cacheDir = join(this.path, ".cache");
-    if (!existsSync(cacheDir)) mkdirSync(cacheDir, { recursive: true });
+    const shardDir = join(this.path, ".shard");
+    if (!existsSync(shardDir)) mkdirSync(shardDir, { recursive: true });
 
     if (!this.tc.cacheDir) {
-      this.tc.cacheDir = join(this.root.path, ".cache");
+      this.tc.cacheDir = join(this.root.path, ".shard");
       this.tc.loadCache();
     }
 
@@ -233,7 +233,7 @@ export class Module {
   private createCompileTasks(opts: CompileOptions): CompileTask[] {
     return this.sources.map(src => {
       const rel = relative(this.path, src).replace(/\.c$/, ".o");
-      const obj = join(this.path, ".cache", rel);
+      const obj = join(this.path, ".shard", rel);
       return { source: src, object: obj, relPath: rel, opts };
     });
   }

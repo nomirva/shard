@@ -100,11 +100,22 @@ export abstract class Toolchain {
   abstract link(task: LinkTask): void;
   abstract archive(task: ArchiveTask): void;
 
-  private computeHash(filePath: string, opts: Partial<CompileOptions>): string {
-    const content = readFileSync(filePath);
+  abstract depFilePath(task: CompileTask): string;
+  abstract dependencyGenFlags(depFilePath: string): string[];
+  abstract parseDepFile(depFilePath: string): string[];
+
+  private computeHash(task: CompileTask): string {
     const hash = createHash("sha256");
-    hash.update(content);
-    hash.update(cacheContext(opts));
+    hash.update(readFileSync(task.source));
+    hash.update(cacheContext(task.opts));
+
+    const depFile = this.depFilePath(task);
+    if (existsSync(depFile)) {
+      for (const dep of this.parseDepFile(depFile)) {
+        if (existsSync(dep)) hash.update(readFileSync(dep));
+      }
+    }
+
     return hash.digest("hex");
   }
 
@@ -113,12 +124,12 @@ export abstract class Toolchain {
   }
 
   private isFresh(moduleName: string, task: CompileTask): boolean {
-    const hash = this.computeHash(task.source, task.opts);
+    const hash = this.computeHash(task);
     return this.cache[this.key(moduleName, task.relPath)] === hash;
   }
 
   private recordCache(moduleName: string, task: CompileTask): void {
-    const hash = this.computeHash(task.source, task.opts);
+    const hash = this.computeHash(task);
     this.cache[this.key(moduleName, task.relPath)] = hash;
   }
 

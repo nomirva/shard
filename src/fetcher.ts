@@ -14,7 +14,7 @@ export class Fetcher {
     const installed = Manifest.readVersion(targetDir);
 
     if (installed && !Version.parse(installed))
-      throw new Error(`Invalid SemVer in module.json for "${name}": "${installed}"`);
+      throw new Error(`Invalid SemVer in ${Manifest.FILE_NAME} for "${name}": "${installed}"`);
     if (version && !Version.parse(version))
       throw new Error(`Invalid SemVer for dependency "${name}" (${url}): "${version}"`);
 
@@ -70,7 +70,7 @@ export class Fetcher {
       recursive: true,
       filter: (src) =>
         !src.includes(".git") &&
-        !src.includes(".cache") &&
+        !src.includes(".shard") &&
         src !== join(resolved, "modules"),
     });
     return targetDir;
