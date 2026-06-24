@@ -76,6 +76,7 @@ export interface ManifestInfo {
 }
 
 export class Manifest {
+  
   static readonly FILE_NAME = "shard.json";
 
   static parse(pkgPath: string, tc?: Toolchain): PackageJson {
