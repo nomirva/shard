@@ -1,6 +1,7 @@
 import { existsSync, mkdirSync, copyFileSync, readdirSync } from "fs";
 import { basename, dirname, join, relative, resolve } from "path";
-import type { Toolchain, CompileOptions, LinkOptions, CompileTask, LinkTask, ArchiveTask } from "./toolchain/types";
+import type { CompileOptions, LinkOptions, CompileTask, LinkTask, ArchiveTask } from "./toolchain/types";
+import { Toolchain } from "./toolchain/types";
 import type { BuildResult, PackageJson } from "./types";
 import { PackageShape, LinkType, BuildResultType } from "./types";
 import { Manifest } from "./manifest";
@@ -70,6 +71,7 @@ function collectCFiles(dir: string, base?: string): string[] {
 
 export class Module {
   static ignoreCache = 0;
+  static extraDefines: string[] = [];
 
   readonly path: string;
   readonly name: string;
@@ -82,6 +84,10 @@ export class Module {
   sources: string[];
   includePaths: string[];
   result: BuildResult | null = null;
+
+  get outBase(): string {
+    return this.isRoot ? this.path : join(this.root.path, ".shard", this.name);
+  }
 
   private tc: Toolchain | undefined;
   constructor(path: string, tc?: Toolchain, parent?: Module) {
@@ -99,7 +105,7 @@ export class Module {
   }
 
   load(): void {
-    const pkg = Manifest.parse(this.path, this.tc);
+    const pkg = Manifest.parse(this.path, this.tc, Module.extraDefines);
     this.type = detectShape(this.path);
     this.manifest = pkg;
 
@@ -196,9 +202,6 @@ export class Module {
     const opts = this.compileOptions(includePaths);
     const allTasks = this.createCompileTasks(opts);
 
-    const shardDir = join(this.path, ".shard");
-    if (!existsSync(shardDir)) mkdirSync(shardDir, { recursive: true });
-
     if (!this.tc.cacheDir) {
       this.tc.cacheDir = join(this.root.path, ".shard");
       this.tc.loadCache();
@@ -206,7 +209,8 @@ export class Module {
 
     const mode = Module.ignoreCache;
     const useCache = mode === 0 || (mode === 1 && !this.isRoot);
-    await this.tc.compileTasks(allTasks, this.name, useCache, this.path);
+    const cacheName = this.isRoot ? Toolchain.ROOT_CACHE_ALIAS : this.name;
+    await this.tc.compileTasks(allTasks, cacheName, useCache, this.path, this.name);
 
     this.result = this.link(allTasks.map(t => t.object), libPaths, libFlags, sharedLibs, requestedLinkType);
     return this.result;
@@ -220,7 +224,7 @@ export class Module {
       debug: o?.debug,
       standard: o?.standard ? (`-std=${o.standard}` as const) : undefined,
       warnings: o?.warnings,
-      defines: o?.defines,
+      defines: [...(o?.defines ?? []), ...Module.extraDefines],
       extra: o?.compileExtra,
     };
   }
@@ -233,7 +237,8 @@ export class Module {
   private createCompileTasks(opts: CompileOptions): CompileTask[] {
     return this.sources.map(src => {
       const rel = relative(this.path, src).replace(/\.c$/, ".o");
-      const obj = join(this.path, ".shard", rel);
+      const prefix = this.isRoot ? Toolchain.ROOT_CACHE_ALIAS : this.name;
+      const obj = join(this.root.path, ".shard", prefix, rel);
       return { source: src, object: obj, relPath: rel, opts };
     });
   }
@@ -257,8 +262,8 @@ export class Module {
     const pkgName = this.name;
 
     if (this.type === PackageShape.Executable) {
-      const output = join(this.path, "bin", `${pkgName}${this.tc!.exeExt}`);
-      if (!existsSync(join(this.path, "bin"))) mkdirSync(join(this.path, "bin"), { recursive: true });
+      const output = join(this.outBase, "bin", `${pkgName}${this.tc!.exeExt}`);
+      if (!existsSync(join(this.outBase, "bin"))) mkdirSync(join(this.outBase, "bin"), { recursive: true });
       this.tc!.link({ target: "executable", objects, output, opts: linkOpts });
 
       for (const dep of this.deps) {
@@ -288,8 +293,8 @@ export class Module {
 
   private buildLibrary(objects: string[], libPaths: string[], libFlags: string[], sharedLibs: string[], linkType: LinkType, pkgName: string, linkOpts: LinkOptions): BuildResult {
     if (linkType === LinkType.Static) {
-      const output = join(this.path, "lib", `${pkgName}${this.tc!.staticLibExt}`);
-      if (!existsSync(join(this.path, "lib"))) mkdirSync(join(this.path, "lib"), { recursive: true });
+      const output = join(this.outBase, "lib", `${pkgName}${this.tc!.staticLibExt}`);
+      if (!existsSync(join(this.outBase, "lib"))) mkdirSync(join(this.outBase, "lib"), { recursive: true });
       this.tc!.archive({ objects, output });
       return {
         type: BuildResultType.StaticLib, includePaths: [...this.includePaths], libPaths: [output, ...libPaths],
@@ -300,14 +305,14 @@ export class Module {
 
     const sExt = this.tc!.sharedLibExt;
     if (!sExt) throw new Error(`Shared libraries not supported on target "${this.tc!.currentTarget.platform}"`);
-    const output = join(this.path, "lib", `${pkgName}${sExt}`);
-    if (!existsSync(join(this.path, "lib"))) mkdirSync(join(this.path, "lib"), { recursive: true });
+    const output = join(this.outBase, "lib", `${pkgName}${sExt}`);
+    if (!existsSync(join(this.outBase, "lib"))) mkdirSync(join(this.outBase, "lib"), { recursive: true });
     this.tc!.link({ target: "shared", objects, output, opts: linkOpts });
     const resultSharedLibs = [...sharedLibs];
     if (!resultSharedLibs.includes(output)) resultSharedLibs.unshift(output);
     return {
       type: BuildResultType.SharedLib, includePaths: [...this.includePaths],
-      libPaths: this.tc!.importLibExt ? [join(this.path, "lib", `${pkgName}${this.tc!.importLibExt}`)] : [output],
+      libPaths: this.tc!.importLibExt ? [join(this.outBase, "lib", `${pkgName}${this.tc!.importLibExt}`)] : [output],
       executablePath: null, linkType: LinkType.Shared,
       sharedLibs: resultSharedLibs, sysLibs: [],
     };

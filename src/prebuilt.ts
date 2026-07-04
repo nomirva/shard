@@ -1,7 +1,8 @@
 import { existsSync, readdirSync } from "fs";
-import { join } from "path";
-import { LinkType } from "./types";
+import { join, basename } from "path";
 import type { Toolchain } from "./toolchain/types";
+import { LinkType } from "./types";
+import chalk from "chalk";
 
 export interface PrebuiltInfo {
   libPath: string;
@@ -69,7 +70,7 @@ export class Prebuilt {
   static selectBuildType(requested: LinkType | undefined, available: LinkType, pkgName: string): LinkType {
     if (!requested || requested === available) return available;
     process.stderr.write(
-      `Warning: "${pkgName}" requested as ${requested} but only ${available} is available, linking ${available}\n`
+      chalk.yellow(`Warning: "${pkgName}" requested as ${requested} but only ${available} is available, linking ${available}`) + "\n"
     );
     return available;
   }

@@ -2,6 +2,7 @@ import { spawn, spawnSync } from "child_process";
 import { readFileSync, writeFileSync, mkdirSync, existsSync, rmSync, readdirSync } from "fs";
 import { dirname, join } from "path";
 import { createHash } from "crypto";
+import chalk from "chalk";
 
 export type OptLevel = `-O${string}`;
 export type CStd = `-std=${string}`;
@@ -80,6 +81,8 @@ function cacheContext(opts: Partial<CompileOptions>): string {
 }
 
 export abstract class Toolchain {
+  static readonly ROOT_CACHE_ALIAS = "_";
+
   abstract readonly name: string;
 
   cacheDir = "";
@@ -146,10 +149,11 @@ export abstract class Toolchain {
     writeFileSync(join(this.cacheDir, "cache.json"), JSON.stringify(this.cache, null, 2));
   }
 
-  async compileTasks(tasks: CompileTask[], moduleName: string, useCache: boolean, cwd?: string): Promise<void> {
+  async compileTasks(tasks: CompileTask[], moduleName: string, useCache: boolean, cwd?: string, displayName?: string): Promise<void> {
+    const dName = displayName ?? moduleName;
     const toCompile = useCache
       ? tasks.filter(t => {
-          if (this.isFresh(moduleName, t)) { process.stderr.write(`  ≡ ${t.relPath}\n`); return false; }
+          if (this.isFresh(moduleName, t)) { process.stderr.write(`  ${chalk.dim(`≡ ${dName}/${t.relPath}`)}\n`); return false; }
           return true;
         })
       : tasks;
@@ -160,9 +164,9 @@ export abstract class Toolchain {
       mkdirSync(dirname(t.object), { recursive: true });
       try {
         await this.compile(t, cwd);
-        process.stderr.write(`  v ${t.relPath}\n`);
+        process.stderr.write(`  ${chalk.green(`v ${dName}/${t.relPath}`)}\n`);
       } catch (err) {
-        process.stderr.write(`  x ${t.relPath}\n`);
+        process.stderr.write(`  ${chalk.red(`x ${dName}/${t.relPath}`)}\n`);
         throw err;
       }
     }

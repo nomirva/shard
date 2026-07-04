@@ -4,6 +4,7 @@ import type { Toolchain } from "./toolchain/types";
 import { PackageShape, type PackageJson } from "./types";
 import { ConditionalParser } from "./conditional";
 import { Dependency } from "./dependency";
+import chalk from "chalk";
 
 export interface VersionInfo {
   major: number;
@@ -79,12 +80,12 @@ export class Manifest {
   
   static readonly FILE_NAME = "shard.json";
 
-  static parse(pkgPath: string, tc?: Toolchain): PackageJson {
+  static parse(pkgPath: string, tc?: Toolchain, extraDefines?: string[]): PackageJson {
     const manifestPath = join(pkgPath, Manifest.FILE_NAME);
     const raw = existsSync(manifestPath)
       ? JSON.parse(readFileSync(manifestPath, "utf-8"))
       : {};
-    const rawDefines: string[] = raw.options?.defines ?? [];
+    const rawDefines: string[] = [...(raw.options?.defines ?? []), ...(extraDefines ?? [])];
     return ConditionalParser.compute(tc, rawDefines, raw) as PackageJson;
   }
 
@@ -107,17 +108,17 @@ export class Manifest {
   }
 
   static info(mod: ManifestInfo): void {
-    console.log(`\n  Name: ${mod.name}`);
-    console.log(`  Type: ${mod.type}`);
-    console.log(`  Include: ${mod.includePaths[0] ?? "(none)"}`);
+    console.log(`\n  ${chalk.dim("Name:")} ${chalk.bold(mod.name)}`);
+    console.log(`  ${chalk.dim("Type:")} ${mod.type}`);
+    console.log(`  ${chalk.dim("Include:")} ${mod.includePaths[0] ?? "(none)"}`);
 
     if (mod.deps.length) {
-      console.log(`  Dependencies (${mod.deps.length}):`);
+      console.log(`  ${chalk.dim(`Dependencies (${mod.deps.length}):`)}`);
       for (const d of mod.deps) {
-        console.log(`    - ${d.prefix}:${d.value} [${d.label}]`);
+        console.log(`    ${chalk.dim("-")} ${chalk.dim(d.prefix + ":")}${d.value} ${chalk.dim(`[${d.label}]`)}`);
       }
     } else {
-      console.log(`  Dependencies: none`);
+      console.log(`  ${chalk.dim("Dependencies: none")}`);
     }
   }
 }

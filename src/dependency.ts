@@ -3,6 +3,7 @@ import { join, resolve } from "path";
 import { LinkType } from "./types";
 import { Fetcher } from "./fetcher";
 import type { Module } from "./module";
+import chalk from "chalk";
 
 export class Dependency {
   module: Module | null = null;
@@ -44,7 +45,7 @@ export class Dependency {
       const fullPath = join(modulesDir, entry.name);
       if (!activePaths.has(fullPath)) {
         rmSync(fullPath, { recursive: true, force: true });
-        process.stderr.write(`  removed: ${entry.name}\n`);
+        process.stderr.write(chalk.yellow(`  ${chalk.dim("removed:")} ${entry.name}`) + "\n");
       }
     }
   }

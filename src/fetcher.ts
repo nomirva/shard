@@ -1,5 +1,5 @@
 import { basename, join, resolve } from "path";
-import { existsSync, mkdirSync, rmSync, cpSync } from "fs";
+import { existsSync, mkdirSync, rmSync } from "fs";
 import { spawnSync } from "child_process";
 import { Manifest, Version } from "./manifest";
 
@@ -56,23 +56,7 @@ export class Fetcher {
     return targetDir;
   }
 
-  static local(srcPath: string, rootDir: string): string {
-    const resolved = resolve(srcPath);
-    const name = basename(resolved);
-    const targetDir = join(rootDir, "modules", name);
-
-    if (existsSync(targetDir)) {
-      rmSync(targetDir, { recursive: true, force: true });
-    }
-
-    mkdirSync(targetDir, { recursive: true });
-    cpSync(resolved, targetDir, {
-      recursive: true,
-      filter: (src) =>
-        !src.includes(".git") &&
-        !src.includes(".shard") &&
-        src !== join(resolved, "modules"),
-    });
-    return targetDir;
+  static local(srcPath: string, _rootDir: string): string {
+    return resolve(srcPath);
   }
 }
