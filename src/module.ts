@@ -1,4 +1,4 @@
-import { existsSync, mkdirSync, copyFileSync, readdirSync } from "fs";
+import { existsSync, mkdirSync, copyFileSync, readdirSync, statSync } from "fs";
 import { basename, dirname, join, relative, resolve } from "path";
 import type { CompileOptions, LinkOptions, CompileTask, LinkTask, ArchiveTask } from "./toolchain/types";
 import { Toolchain } from "./toolchain/types";
@@ -118,7 +118,14 @@ export class Module {
     this.sources.length = 0;
     if (this.type !== PackageShape.Prebuilt) {
       if (pkg.sources?.length) {
-        for (const f of pkg.sources) this.sources.push(join(this.path, f));
+        for (const f of pkg.sources) {
+          const abs = join(this.path, f);
+          if (statSync(abs).isDirectory()) {
+            this.sources.push(...collectCFiles(abs));
+          } else {
+            this.sources.push(abs);
+          }
+        }
       } else {
         const srcDir = join(this.path, "src");
         if (existsSync(srcDir)) this.sources.push(...collectCFiles(srcDir));
