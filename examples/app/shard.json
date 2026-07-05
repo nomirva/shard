@@ -1,6 +1,4 @@
 {
-    "depend": [
-        "local:../lib-greet+shared",
-        "local:../lib-math"
-    ]
+    "$define:GREET": { "depend": ["local:../lib-greet+shared"], "target": "greet" },
+    "$define:MATH":  { "depend": ["local:../lib-math"],          "target": "math" }
 }
