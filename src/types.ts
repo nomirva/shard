@@ -16,6 +16,7 @@ export interface PackageJson {
   options?: UserBuildOptions;
   sources?: string[];
   includes?: string[];
+  target?: string;
 }
 
 export enum BuildResultType {

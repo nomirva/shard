@@ -11,11 +11,20 @@ export interface PrebuiltInfo {
 }
 
 export class Prebuilt {
-  static detect(pkgPath: string, pkgName: string, tc: Toolchain, requested?: LinkType): PrebuiltInfo {
-    const libDir = join(pkgPath, "lib");
-    if (!existsSync(libDir)) {
-      throw new Error(`Prebuilt package "${pkgName}" has no lib/ directory`);
+  static detect(pkgPath: string, pkgName: string, tc: Toolchain, requested?: LinkType, variant?: string): PrebuiltInfo {
+    const candidates: string[] = [];
+    if (variant) candidates.push(join(pkgPath, "target", tc.targetDir, variant));
+    candidates.push(join(pkgPath, "target", tc.targetDir));
+    candidates.push(join(pkgPath, "target"));
+
+    let chosenDir = candidates.find(d => existsSync(d));
+    if (!chosenDir) {
+      throw new Error(
+        `Prebuilt package "${pkgName}" has no target/ directory for target "${tc.targetDir}"`
+      );
     }
+
+    const libDir = chosenDir;
 
     const ext = tc.staticLibExt;
     const sExt = tc.sharedLibExt;
@@ -45,7 +54,7 @@ export class Prebuilt {
 
     if (!staticAvail && !dynAvail) {
       throw new Error(
-        `Prebuilt package "${pkgName}" has no supported library file in lib/`
+        `Prebuilt package "${pkgName}" has no supported library file in target/`
       );
     }
 

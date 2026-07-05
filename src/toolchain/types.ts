@@ -90,6 +90,10 @@ export abstract class Toolchain {
 
   currentTarget: TargetPlatform = HOST_TARGET;
 
+  get targetDir(): string {
+    return `${this.currentTarget.arch}/${this.currentTarget.platform}`;
+  }
+
   get objExt(): string { return ".o"; }
   get staticLibExt(): string { return ".a"; }
   get sharedLibExt(): string | null {

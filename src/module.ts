@@ -14,15 +14,15 @@ function detectShape(pkgPath: string): PackageShape {
   const hasMain = existsSync(join(pkgPath, "src", "main.c"));
   const hasSrc = existsSync(join(pkgPath, "src"));
   const hasInclude = existsSync(join(pkgPath, "include"));
-  const hasLib = existsSync(join(pkgPath, "lib"));
+  const hasTarget = existsSync(join(pkgPath, "target"));
 
   if (hasMain) return PackageShape.Executable;
   if (hasInclude && hasSrc && !hasMain) return PackageShape.Library;
-  if (hasInclude && hasLib && !hasSrc) return PackageShape.Prebuilt;
+  if (hasInclude && hasTarget && !hasSrc) return PackageShape.Prebuilt;
 
   throw new Error(
     `Cannot determine package type for "${pkgPath}". ` +
-      `Valid: src/main.c (executable), include/ + src/ (library), include/ + lib/ (prebuilt).`
+      `Valid: src/main.c (executable), include/ + src/ (library), include/ + target/ (prebuilt).`
   );
 }
 
@@ -87,6 +87,12 @@ export class Module {
 
   get outBase(): string {
     return this.isRoot ? this.path : join(this.root.path, ".shard", this.name);
+  }
+
+  get targetSubdir(): string {
+    const td = this.tc!.targetDir;
+    const variant = this.manifest.target;
+    return variant ? join(td, variant) : td;
   }
 
   private tc: Toolchain | undefined;
@@ -251,7 +257,7 @@ export class Module {
   }
 
   private buildPrebuilt(libFlags: string[], requested?: LinkType): BuildResult {
-    const { libPath, available, runtimePath } = Prebuilt.detect(this.path, this.name, this.tc!, requested);
+    const { libPath, available, runtimePath } = Prebuilt.detect(this.path, this.name, this.tc!, requested, this.manifest.target);
     const linkType = Prebuilt.selectBuildType(requested, available, this.name);
     return {
       type: linkType === LinkType.Shared ? BuildResultType.SharedLib : BuildResultType.StaticLib,
@@ -269,8 +275,8 @@ export class Module {
     const pkgName = this.name;
 
     if (this.type === PackageShape.Executable) {
-      const output = join(this.outBase, "bin", `${pkgName}${this.tc!.exeExt}`);
-      if (!existsSync(join(this.outBase, "bin"))) mkdirSync(join(this.outBase, "bin"), { recursive: true });
+      const output = join(this.outBase, "target", this.targetSubdir, `${pkgName}${this.tc!.exeExt}`);
+      if (!existsSync(join(this.outBase, "target", this.targetSubdir))) mkdirSync(join(this.outBase, "target", this.targetSubdir), { recursive: true });
       this.tc!.link({ target: "executable", objects, output, opts: linkOpts });
 
       for (const dep of this.deps) {
@@ -300,8 +306,8 @@ export class Module {
 
   private buildLibrary(objects: string[], libPaths: string[], libFlags: string[], sharedLibs: string[], linkType: LinkType, pkgName: string, linkOpts: LinkOptions): BuildResult {
     if (linkType === LinkType.Static) {
-      const output = join(this.outBase, "lib", `${pkgName}${this.tc!.staticLibExt}`);
-      if (!existsSync(join(this.outBase, "lib"))) mkdirSync(join(this.outBase, "lib"), { recursive: true });
+      const output = join(this.outBase, "target", this.targetSubdir, `${pkgName}${this.tc!.staticLibExt}`);
+      if (!existsSync(join(this.outBase, "target", this.targetSubdir))) mkdirSync(join(this.outBase, "target", this.targetSubdir), { recursive: true });
       this.tc!.archive({ objects, output });
       return {
         type: BuildResultType.StaticLib, includePaths: [...this.includePaths], libPaths: [output, ...libPaths],
@@ -312,14 +318,14 @@ export class Module {
 
     const sExt = this.tc!.sharedLibExt;
     if (!sExt) throw new Error(`Shared libraries not supported on target "${this.tc!.currentTarget.platform}"`);
-    const output = join(this.outBase, "lib", `${pkgName}${sExt}`);
-    if (!existsSync(join(this.outBase, "lib"))) mkdirSync(join(this.outBase, "lib"), { recursive: true });
+    const output = join(this.outBase, "target", this.targetSubdir, `${pkgName}${sExt}`);
+    if (!existsSync(join(this.outBase, "target", this.targetSubdir))) mkdirSync(join(this.outBase, "target", this.targetSubdir), { recursive: true });
     this.tc!.link({ target: "shared", objects, output, opts: linkOpts });
     const resultSharedLibs = [...sharedLibs];
     if (!resultSharedLibs.includes(output)) resultSharedLibs.unshift(output);
     return {
       type: BuildResultType.SharedLib, includePaths: [...this.includePaths],
-      libPaths: this.tc!.importLibExt ? [join(this.outBase, "lib", `${pkgName}${this.tc!.importLibExt}`)] : [output],
+      libPaths: this.tc!.importLibExt ? [join(this.outBase, "target", this.targetSubdir, `${pkgName}${this.tc!.importLibExt}`)] : [output],
       executablePath: null, linkType: LinkType.Shared,
       sharedLibs: resultSharedLibs, sysLibs: [],
     };

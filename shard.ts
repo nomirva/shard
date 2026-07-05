@@ -1,11 +1,12 @@
 #!/usr/bin/env bun
 import { Command } from "commander";
 import { resolve, basename, join } from "path";
-import { existsSync, rmSync } from "fs";
+import { existsSync, rmSync, readdirSync } from "fs";
 import { spawnSync } from "child_process";
 import chalk from "chalk";
 import { setupToolchain } from "./src/toolchain/detect";
 import { Module } from "./src/module";
+import { PackageShape } from "./src/types";
 
 const program = new Command();
 
@@ -111,8 +112,7 @@ program
       const absPath = resolve(pkgPath);
       const shardDir = join(absPath, ".shard");
       const modulesDir = join(absPath, "modules");
-      const libDir = join(absPath, "lib");
-      const binDir = join(absPath, "bin");
+      const targetDir = join(absPath, "target");
       const srcDir = join(absPath, "src");
 
       for (const d of [shardDir, modulesDir]) {
@@ -122,15 +122,63 @@ program
         }
       }
 
-      if (existsSync(binDir)) {
-        rmSync(binDir, { recursive: true, force: true });
-        console.log(chalk.dim("  removed:") + " " + binDir);
+      if (existsSync(targetDir) && existsSync(srcDir)) {
+        rmSync(targetDir, { recursive: true, force: true });
+        console.log(chalk.dim("  removed:") + " " + targetDir);
+      }
+    } catch (e: unknown) {
+      const message = e instanceof Error ? e.message : String(e);
+      console.error(chalk.red(`Error: ${message}`));
+      process.exit(1);
+    }
+  });
+
+program
+  .command("run")
+  .description("Run a built executable")
+  .argument("[path]", "Path to the module (default: current directory)", ".")
+  .option("--variant <name>", "Select a build variant")
+  .action((pkgPath: string, opts?: { variant?: string }) => {
+    try {
+      const absPath = resolve(pkgPath);
+      const mod = new Module(absPath);
+      mod.load();
+
+      if (mod.type !== PackageShape.Executable) {
+        throw new Error(`"${mod.name}" is not an executable module`);
       }
 
-      if (existsSync(libDir) && existsSync(srcDir)) {
-        rmSync(libDir, { recursive: true, force: true });
-        console.log(chalk.dim("  removed:") + " " + libDir);
+      const tc = setupToolchain();
+      const baseDir = join(absPath, "target", tc.targetDir);
+      const variant = opts?.variant;
+      const subdir = variant ? join(baseDir, variant) : baseDir;
+      const exePath = join(subdir, `${mod.name}${tc.exeExt}`);
+
+      if (existsSync(exePath)) {
+        const proc = spawnSync(exePath, [], { stdio: "inherit" });
+        if (proc.error) throw proc.error;
+        process.exit(proc.status ?? 0);
       }
+
+      if (variant) {
+        throw new Error(`Variant "${variant}" not found or not built`);
+      }
+
+      if (existsSync(baseDir)) {
+        const entries = readdirSync(baseDir, { withFileTypes: true });
+        const variants = entries
+          .filter(e => e.isDirectory() && existsSync(join(baseDir, e.name, `${mod.name}${tc.exeExt}`)))
+          .map(e => e.name);
+
+        if (variants.length > 0) {
+          console.log(chalk.yellow("Available variants:"));
+          for (const v of variants) console.log(`  ${v}`);
+          console.log(chalk.dim("\nUse --variant <name> to select one."));
+          process.exit(1);
+        }
+      }
+
+      throw new Error(`Executable not found: ${exePath}\nBuild it first: shard build`);
     } catch (e: unknown) {
       const message = e instanceof Error ? e.message : String(e);
       console.error(chalk.red(`Error: ${message}`));
