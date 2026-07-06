@@ -77,8 +77,8 @@ export class ClangToolchain extends Toolchain {
 
   parseDepFile(depFilePath: string): string[] {
     const raw = readFileSync(depFilePath, "utf-8");
-    const joined = raw.replace(/\\\n\s*/g, " ");
-    const colon = joined.indexOf(":");
+    const joined = raw.replace(/\\\r?\n\s*/g, " ");
+    const colon = joined.search(/:(?=\s|$)/);
     if (colon === -1) return [];
     const deps = joined.slice(colon + 1).trim();
     return deps.split(/\s+/).filter(p => p && !p.startsWith("/usr/") && !p.startsWith("/Library/"));
