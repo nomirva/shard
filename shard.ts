@@ -186,4 +186,65 @@ program
     }
   });
 
+program
+  .command("doctor")
+  .description("Check availability of required toolchain tools")
+  .action(() => {
+    interface DoctorCheck {
+      tool: string;
+      ok: boolean;
+      version: string;
+      target?: string;
+      error?: string;
+    }
+
+    const results: DoctorCheck[] = [];
+
+    {
+      const r = spawnSync("clang", ["--version"], { stdio: "pipe" });
+      if (r.status !== 0) {
+        results.push({ tool: "clang", ok: false, version: "not found", error: "not found" });
+      } else {
+        const out = (r.stdout?.toString() ?? "") + (r.stderr?.toString() ?? "");
+        const lines = out.trim().split("\n");
+        const version = lines[0]?.trim() ?? "unknown";
+        const targetLine = lines.find(l => l.trim().startsWith("Target:"));
+        const target = targetLine?.trim().replace(/^Target:\s*/, "");
+
+        if (target && process.platform === "win32" && !target.includes("-windows-gnu")) {
+          results.push({ tool: "clang", ok: false, version, target, error: "MinGW variant required, found MSVC" });
+        } else {
+          results.push({ tool: "clang", ok: true, version, target });
+        }
+      }
+    }
+
+    {
+      const r = spawnSync("git", ["--version"], { stdio: "pipe" });
+      if (r.status !== 0) {
+        results.push({ tool: "git", ok: false, version: "not found", error: "not found" });
+      } else {
+        results.push({ tool: "git", ok: true, version: (r.stdout?.toString() ?? "").trim() });
+      }
+    }
+
+    for (const r of results) {
+      const name = r.tool.padEnd(6);
+      const status = r.ok ? "" : `  ${chalk.red("✗")} ${r.error}`;
+      console.log(`  ${name}${r.version}${status}`);
+      if (r.target) {
+        console.log(`  ${"".padEnd(6)}Target: ${r.target}`);
+      }
+    }
+
+    const allOk = results.every(r => r.ok);
+    if (allOk) {
+      console.log(chalk.dim(`\n  All OK`));
+    } else {
+      const issues = results.filter(r => !r.ok).map(r => `${r.tool}: ${r.error}`);
+      console.log(`\n${chalk.red("  Issues:")} ${issues.join(", ")}`);
+      process.exit(1);
+    }
+  });
+
 program.parse();
