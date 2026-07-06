@@ -8,8 +8,6 @@ import { Manifest } from "./manifest";
 import { Prebuilt } from "./prebuilt";
 import { Dependency } from "./dependency";
 
-const addFlags = <T>(a: T[], v: T) => { if (v != null && !a.includes(v)) a.push(v); };
-
 function detectShape(pkgPath: string): PackageShape {
   const hasMain = existsSync(join(pkgPath, "src", "main.c"));
   const hasSrc = existsSync(join(pkgPath, "src"));
@@ -147,29 +145,21 @@ export class Module {
   }
 
   async update(): Promise<void> {
-    this.install();
     const visited = new Set<string>();
-    this.resolve(visited);
+    this.install(visited);
     Dependency.clean(this.path, visited);
   }
 
-  private install(): void {
+  private install(visited?: Set<string>): void {
+    if (visited?.has(this.path)) return;
+    visited?.add(this.path);
     for (const dep of this.deps) {
       if (dep.isSystem) continue;
       const depPath = dep.install(this.root.path, this.path);
       const child = new Module(depPath, this.tc, this);
       child.load();
       dep.module = child;
-    }
-  }
-
-  private resolve(visited: Set<string>): void {
-    if (visited.has(this.path)) return;
-    visited.add(this.path);
-    for (const dep of this.deps) {
-      if (dep.isSystem || !dep.module) continue;
-      dep.module.install();
-      dep.module.resolve(visited);
+      child.install(visited);
     }
   }
 
@@ -184,6 +174,8 @@ export class Module {
       throw new Error("Toolchain not available");
     }
 
+    const collect = (a: string[], v: string | null): void => { if (v != null && !a.includes(v)) a.push(v); };
+
     const includePaths: string[] = [];
     const libPaths: string[] = [];
     const libFlags: string[] = [];
@@ -192,20 +184,20 @@ export class Module {
     for (const dep of this.deps) {
       if (dep.isSystem) {
         const flag = dep.libFlag;
-        if (flag) addFlags(libFlags, flag);
+        if (flag) collect(libFlags, flag);
         continue;
       }
       await dep.module!.build(dep.linkType);
       const r = dep.module!.result!;
-      for (const ip of r.includePaths) addFlags(includePaths, ip);
-      for (const lp of r.libPaths) addFlags(libPaths, lp);
-      for (const f of r.sysLibs) addFlags(libFlags, f);
-      for (const s of r.sharedLibs) addFlags(sharedLibs, s);
+      for (const ip of r.includePaths) collect(includePaths, ip);
+      for (const lp of r.libPaths) collect(libPaths, lp);
+      for (const f of r.sysLibs) collect(libFlags, f);
+      for (const s of r.sharedLibs) collect(sharedLibs, s);
     }
 
-    for (const p of this.includePaths) addFlags(includePaths, p);
+    for (const p of this.includePaths) collect(includePaths, p);
     const srcDir = join(this.path, "src");
-    if (existsSync(srcDir)) addFlags(includePaths, srcDir);
+    if (existsSync(srcDir)) collect(includePaths, srcDir);
 
     if (this.type === PackageShape.Prebuilt) {
       this.result = this.buildPrebuilt(libFlags, requestedLinkType);
