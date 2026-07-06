@@ -45,7 +45,7 @@ export class Dependency {
       const fullPath = join(modulesDir, entry.name);
       if (!activePaths.has(fullPath)) {
         rmSync(fullPath, { recursive: true, force: true });
-        process.stderr.write(chalk.yellow(`  ${chalk.dim("removed:")} ${entry.name}`) + "\n");
+        process.stderr.write(chalk.yellow(` ${chalk.dim("removed:")} ${entry.name}`) + "\n");
       }
     }
   }

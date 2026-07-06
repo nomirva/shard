@@ -36,11 +36,31 @@ function extractArgs(src: string, obj: string, opts: CompileOptions): string[] {
   return args;
 }
 
+const KNOWN_ABIS = ["gnu", "musl", "msvc"] as const;
+
+function extractAbi(triple: string): string {
+  const last = triple.split("-").pop() ?? "";
+  return (KNOWN_ABIS as readonly string[]).includes(last) ? last : "none";
+}
+
 export class ClangToolchain extends Toolchain {
   name = "clang";
 
-  isAvailable(): boolean {
-    return spawnSync("clang", ["--version"], { stdio: "pipe" }).status === 0;
+  detect(): boolean {
+    const r = spawnSync("clang", ["--version"], { stdio: "pipe" });
+    if (r.status !== 0) return false;
+
+    const out = (r.stdout?.toString() ?? "") + (r.stderr?.toString() ?? "");
+    const lines = out.trim().split("\n");
+    this.version = lines[0]?.trim() ?? "unknown";
+
+    const targetLine = lines.find(l => l.trim().startsWith("Target:"));
+    const target = targetLine?.trim().replace(/^Target:\s*/, "") ?? "";
+    this.currentTarget.abi = extractAbi(target);
+
+    if (process.platform === "win32" && this.currentTarget.abi !== "gnu") return false;
+
+    return true;
   }
 
   private cc(args: string[]): void {

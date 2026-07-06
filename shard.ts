@@ -7,6 +7,7 @@ import chalk from "chalk";
 import { setupToolchain } from "./src/toolchain/detect";
 import { Module } from "./src/module";
 import { PackageShape } from "./src/types";
+import { ClangToolchain } from "./src/toolchain/clang";
 
 const program = new Command();
 
@@ -24,6 +25,7 @@ program
       .option("--def <names...>", "Pass defines and enable $define:X conditionals (e.g. --def NODEBUG,VERSION=5)")
       .action(async (pkgPath: string, opts?: { ignoreCache?: string; run?: boolean; def?: string[] }) => {
     try {
+      console.log();
       const absPath = resolve(pkgPath);
       const mode = opts?.ignoreCache !== undefined ? parseInt(opts.ignoreCache, 10) : 0;
       if (mode < 0 || mode > 2) {
@@ -49,20 +51,13 @@ program
         process.exit(proc.status ?? 0);
       }
 
-      console.log(chalk.dim("Type:") + " " + r.type);
-      if (r.linkType) console.log(chalk.dim("Link:") + " " + r.linkType);
-      if (r.includePaths.length) console.log(chalk.dim("Include:") + " " + r.includePaths[0]);
-      for (let i = 1; i < r.includePaths.length; i++) console.log(`  ${r.includePaths[i]}`);
-      if (r.libPaths.length) console.log(chalk.dim("Lib:") + " " + r.libPaths[0]);
-      for (let i = 1; i < r.libPaths.length; i++) console.log(`  ${r.libPaths[i]}`);
-      if (r.executablePath) console.log(chalk.dim("Executable:") + " " + r.executablePath);
-      if (r.sharedLibs.length) {
-        console.log(chalk.dim("Shared libs:"));
-        for (const sl of r.sharedLibs) console.log(`  ${sl}`);
-      }
+      console.log("\n " + chalk.bgGreen.black.bold(" BUILD SUCCEEDED "));
+      console.log();
     } catch (e: unknown) {
       const message = e instanceof Error ? e.message : String(e);
-      console.error(chalk.red(`Error: ${message}`));
+      console.error(chalk.red(` Error: ${message}`));
+      console.log("\n " + chalk.bgRed.black.bold(" BUILD FAILED "));
+      console.log();
       process.exit(1);
     }
   });
@@ -190,61 +185,54 @@ program
   .command("doctor")
   .description("Check availability of required toolchain tools")
   .action(() => {
-    interface DoctorCheck {
-      tool: string;
+    interface CheckResult {
+      name: string;
       ok: boolean;
       version: string;
-      target?: string;
       error?: string;
     }
 
-    const results: DoctorCheck[] = [];
+    const compilers: CheckResult[] = [];
+    const tools: { section: string; results: CheckResult[] }[] = [
+      { section: "[Toolchain]", results: compilers },
+    ];
+
+    const clang = new ClangToolchain();
+    compilers.push(
+      clang.detect()
+        ? { name: clang.name, ok: true, version: clang.version }
+        : { name: clang.name, ok: false, version: "not found", error: "not found" }
+    );
 
     {
-      const r = spawnSync("clang", ["--version"], { stdio: "pipe" });
-      if (r.status !== 0) {
-        results.push({ tool: "clang", ok: false, version: "not found", error: "not found" });
-      } else {
-        const out = (r.stdout?.toString() ?? "") + (r.stderr?.toString() ?? "");
-        const lines = out.trim().split("\n");
-        const version = lines[0]?.trim() ?? "unknown";
-        const targetLine = lines.find(l => l.trim().startsWith("Target:"));
-        const target = targetLine?.trim().replace(/^Target:\s*/, "");
+      const r = spawnSync("git", ["--version"], { stdio: "pipe" });
+      const gitCheck: CheckResult = r.status !== 0
+        ? { name: "git", ok: false, version: "not found", error: "not found" }
+        : { name: "git", ok: true, version: (r.stdout?.toString() ?? "").trim() };
+      tools.push({ section: "[Version Control]", results: [gitCheck] });
+    }
 
-        if (target && process.platform === "win32" && !target.includes("-windows-gnu")) {
-          results.push({ tool: "clang", ok: false, version, target, error: "MinGW variant required, found MSVC" });
+    for (const section of tools) {
+      console.log(`\n ${chalk.bold(section.section)}`);
+      for (const r of section.results) {
+        const name = r.name.padEnd(6);
+        if (r.ok) {
+          console.log(` ${name}${r.version}`);
         } else {
-          results.push({ tool: "clang", ok: true, version, target });
+          console.log(` ${name}${chalk.red("✗")} ${r.error}`);
         }
       }
     }
 
-    {
-      const r = spawnSync("git", ["--version"], { stdio: "pipe" });
-      if (r.status !== 0) {
-        results.push({ tool: "git", ok: false, version: "not found", error: "not found" });
-      } else {
-        results.push({ tool: "git", ok: true, version: (r.stdout?.toString() ?? "").trim() });
-      }
-    }
-
-    for (const r of results) {
-      const name = r.tool.padEnd(6);
-      const status = r.ok ? "" : `  ${chalk.red("✗")} ${r.error}`;
-      console.log(`  ${name}${r.version}${status}`);
-      if (r.target) {
-        console.log(`  ${"".padEnd(6)}Target: ${r.target}`);
-      }
-    }
-
-    const allOk = results.every(r => r.ok);
+    const allChecks = tools.flatMap(s => s.results);
+    const allOk = allChecks.every(r => r.ok);
     if (allOk) {
-      console.log(chalk.dim(`\n  All OK`));
+      console.log("\n " + chalk.bgGreen.black.bold(" READY TO USE "));
     } else {
-      const issues = results.filter(r => !r.ok).map(r => `${r.tool}: ${r.error}`);
-      console.log(`\n${chalk.red("  Issues:")} ${issues.join(", ")}`);
+      console.log("\n " + chalk.bgRed.black.bold(" NOT READY TO USE "));
       process.exit(1);
     }
+    console.log();
   });
 
 program.parse();

@@ -12,11 +12,13 @@ export type Subsystem = "console" | "windows" | "native" | "efi_application";
 export interface TargetPlatform {
   platform: string;
   arch: string;
+  abi: string;
 }
 
 export const HOST_TARGET: TargetPlatform = {
   platform: process.platform,
   arch: process.arch,
+  abi: "none",
 };
 
 export interface UserBuildOptions {
@@ -85,13 +87,14 @@ export abstract class Toolchain {
 
   abstract readonly name: string;
 
+  version = "";
   cacheDir = "";
   private cache: Record<string, string> = {};
 
   currentTarget: TargetPlatform = HOST_TARGET;
 
   get targetDir(): string {
-    return `${this.currentTarget.arch}/${this.currentTarget.platform}`;
+    return `${this.currentTarget.arch}/${this.currentTarget.platform}/${this.currentTarget.abi}`;
   }
 
   get objExt(): string { return ".o"; }
@@ -102,7 +105,7 @@ export abstract class Toolchain {
   get importLibExt(): string | null { return { win32: ".lib" }[this.currentTarget.platform] ?? null; }
   get exeExt(): string { return { win32: ".exe" }[this.currentTarget.platform] ?? ""; }
 
-  abstract isAvailable(): boolean;
+  abstract detect(): boolean;
   abstract compile(task: CompileTask, cwd?: string): Promise<void>;
   abstract link(task: LinkTask): void;
   abstract archive(task: ArchiveTask): void;
@@ -157,7 +160,7 @@ export abstract class Toolchain {
     const dName = displayName ?? moduleName;
     const toCompile = useCache
       ? tasks.filter(t => {
-          if (this.isFresh(moduleName, t)) { process.stderr.write(`  ${chalk.dim(`≡ ${dName}/${t.relPath}`)}\n`); return false; }
+          if (this.isFresh(moduleName, t)) { process.stderr.write(` ${chalk.dim("≡")} ${dName}/${t.relPath}\n`); return false; }
           return true;
         })
       : tasks;
@@ -168,9 +171,9 @@ export abstract class Toolchain {
       mkdirSync(dirname(t.object), { recursive: true });
       try {
         await this.compile(t, cwd);
-        process.stderr.write(`  ${chalk.green(`v ${dName}/${t.relPath}`)}\n`);
+        process.stderr.write(` ${chalk.green("✔")} ${dName}/${t.relPath}\n`);
       } catch (err) {
-        process.stderr.write(`  ${chalk.red(`x ${dName}/${t.relPath}`)}\n`);
+        process.stderr.write(` ${chalk.red("✘")} ${dName}/${t.relPath}\n`);
         throw err;
       }
     }
