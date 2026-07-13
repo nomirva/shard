@@ -8,15 +8,19 @@ import { Manifest } from "./manifest";
 import { Prebuilt } from "./prebuilt";
 import { Dependency } from "./dependency";
 
-function detectShape(pkgPath: string): PackageShape {
+function detectShape(pkgPath: string, pkg: PackageJson): PackageShape {
   const hasMain = existsSync(join(pkgPath, "src", "main.c"));
   const hasSrc = existsSync(join(pkgPath, "src"));
   const hasInclude = existsSync(join(pkgPath, "include"));
   const hasTarget = existsSync(join(pkgPath, "target"));
 
-  if (hasMain) return PackageShape.Executable;
-  if (hasInclude && hasSrc && !hasMain) return PackageShape.Library;
-  if (hasInclude && hasTarget && !hasSrc) return PackageShape.Prebuilt;
+  const sources = pkg.sources ?? [];
+  const hasSources = sources.length > 0;
+  const sourcesHasMain = sources.includes("main.c") || sources.some(s => s.endsWith("/main.c"));
+
+  if (hasMain || sourcesHasMain) return PackageShape.Executable;
+  if (hasInclude && hasTarget && !hasSrc && !hasSources) return PackageShape.Prebuilt;
+  if (hasSrc || hasSources) return PackageShape.Library;
 
   throw new Error(
     `Cannot determine package type for "${pkgPath}". ` +
@@ -110,7 +114,7 @@ export class Module {
 
   load(): void {
     const pkg = Manifest.parse(this.path, this.tc, Module.extraDefines);
-    this.type = detectShape(this.path);
+    this.type = detectShape(this.path, pkg);
     this.manifest = pkg;
 
     this.deps.length = 0;

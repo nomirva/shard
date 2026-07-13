@@ -1,7 +1,7 @@
 import type { Toolchain } from "./toolchain/types";
 
 export class ConditionalParser {
-  private static COND = /^\$(!?)([a-zA-Z_]+):(.+)$/;
+  private static COND = /^\?([a-zA-Z_]+)(:|!)(.+)$/;
 
   static compute<T>(tc: Toolchain | undefined, defines: string[], raw: T): T {
     return ConditionalParser.resolve(raw, {
@@ -37,8 +37,8 @@ export class ConditionalParser {
     for (const [key, val] of Object.entries(obj)) {
       const m = key.match(ConditionalParser.COND);
       if (m) {
-        const negate = m[1] === "!";
-        const varName = m[2];
+        const negate = m[2] === "!";
+        const varName = m[1];
         const expected = m[3];
         const actual = vars[varName];
 
