@@ -1,5 +1,5 @@
 import { readdirSync, existsSync, rmSync } from "fs";
-import { join, resolve } from "path";
+import { join, resolve, sep } from "path";
 import { LinkType } from "./types";
 import { Fetcher } from "./fetcher";
 import type { Module } from "./module";
@@ -13,7 +13,8 @@ export class Dependency {
     readonly prefix: string,
     readonly value: string,
     readonly linkType?: LinkType,
-    readonly version?: string
+    readonly version?: string,
+    readonly pkg?: string
   ) {}
 
   get isSystem(): boolean { return this.prefix === "sys" || this.prefix === "framework"; }
@@ -32,7 +33,7 @@ export class Dependency {
   }
 
   install(rootDir: string, parentPath: string): string {
-    if (this.isRemote) return Fetcher.git(this.value, rootDir, this.version);
+    if (this.isRemote) return Fetcher.git(this.value, rootDir, this.version, this.pkg);
     if (this.isLocal) return Fetcher.local(resolve(parentPath, this.value), rootDir);
     throw new Error(`Cannot install system dependency: ${this.raw}`);
   }
@@ -43,7 +44,9 @@ export class Dependency {
     for (const entry of readdirSync(modulesDir, { withFileTypes: true })) {
       if (!entry.isDirectory()) continue;
       const fullPath = join(modulesDir, entry.name);
-      if (!activePaths.has(fullPath)) {
+      const isActive = activePaths.has(fullPath) ||
+        [...activePaths].some(p => p.startsWith(fullPath + sep));
+      if (!isActive) {
         rmSync(fullPath, { recursive: true, force: true });
         process.stderr.write(chalk.yellow(` ${chalk.dim("removed:")} ${entry.name}`) + "\n");
       }

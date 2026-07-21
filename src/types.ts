@@ -14,9 +14,11 @@ export enum PackageShape {
 export interface PackageJson {
   depend?: string[];
   options?: UserBuildOptions;
-  sources?: string[];
-  includes?: string[];
+  sources?: string[] | Record<string, string[]>;
+  exports?: string[] | Record<string, string[]>;
+  includes?: string[] | Record<string, string[]>;
   target?: string;
+  scripts?: Record<string, string>;
 }
 
 export enum BuildResultType {

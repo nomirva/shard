@@ -1,13 +1,13 @@
 #!/usr/bin/env bun
 import { Command } from "commander";
 import { resolve, basename, join } from "path";
-import { existsSync, rmSync, readdirSync } from "fs";
+import { existsSync, rmSync } from "fs";
 import { spawnSync } from "child_process";
 import chalk from "chalk";
 import { setupToolchain } from "./src/toolchain/detect";
 import { Module } from "./src/module";
-import { PackageShape } from "./src/types";
 import { ClangToolchain } from "./src/toolchain/clang";
+import { setGitProtocol } from "./src/fetcher";
 
 const program = new Command();
 
@@ -21,9 +21,10 @@ program
   .description("Build a shard module")
   .argument("[path]", "Path to the module (default: current directory)", ".")
       .option("--ignore-cache <mode>", "0=cache on (default), 1=ignore root cache, 2=ignore all cache")
-      .option("--run", "Build and run the executable")
+      .option("--start", "Build and run the executable")
       .option("--def <names...>", "Pass defines and enable $define:X conditionals (e.g. --def NODEBUG,VERSION=5)")
-      .action(async (pkgPath: string, opts?: { ignoreCache?: string; run?: boolean; def?: string[] }) => {
+      .option("--git-protocol <protocol>", "Git protocol: https (default), ssh, or http")
+      .action(async (pkgPath: string, opts?: { ignoreCache?: string; start?: boolean; def?: string[]; gitProtocol?: string }) => {
     try {
       console.log();
       const absPath = resolve(pkgPath);
@@ -34,6 +35,11 @@ program
 
       Module.ignoreCache = mode;
       Module.extraDefines = (opts?.def ?? []).flatMap((d: string) => d.split(',')).filter(Boolean);
+      if (opts?.gitProtocol) {
+        setGitProtocol(opts.gitProtocol);
+      } else if (process.env.SHARD_GIT_PROTOCOL) {
+        setGitProtocol(process.env.SHARD_GIT_PROTOCOL);
+      }
       const tc = setupToolchain();
       const root = new Module(absPath, tc);
       root.load();
@@ -42,7 +48,7 @@ program
 
       const r = root.result!;
 
-      if (opts?.run) {
+      if (opts?.start) {
         if (r.type !== "executable" || !r.executablePath) {
           throw new Error(`"${basename(absPath)}" is not an executable module`);
         }
@@ -105,10 +111,18 @@ program
   .action((pkgPath: string) => {
     try {
       const absPath = resolve(pkgPath);
+
+      const mod = new Module(absPath);
+      mod.load();
+      const preclean = mod.manifest.scripts?.preclean;
+      if (preclean) {
+        const r = spawnSync(preclean, [], { stdio: "inherit", shell: true, cwd: absPath });
+        if (r.status !== 0) throw new Error("preclean hook failed");
+      }
+
       const shardDir = join(absPath, ".shard");
       const modulesDir = join(absPath, "modules");
       const targetDir = join(absPath, "target");
-      const srcDir = join(absPath, "src");
 
       for (const d of [shardDir, modulesDir]) {
         if (existsSync(d)) {
@@ -117,7 +131,7 @@ program
         }
       }
 
-      if (existsSync(targetDir) && existsSync(srcDir)) {
+      if (existsSync(targetDir)) {
         rmSync(targetDir, { recursive: true, force: true });
         console.log(chalk.dim("  removed:") + " " + targetDir);
       }
@@ -130,50 +144,15 @@ program
 
 program
   .command("run")
-  .description("Run a built executable")
+  .description("Run a script from the module manifest")
+  .argument("<script>", "Script name from shard.json scripts field")
   .argument("[path]", "Path to the module (default: current directory)", ".")
-  .option("--variant <name>", "Select a build variant")
-  .action((pkgPath: string, opts?: { variant?: string }) => {
+  .action((script: string, pkgPath: string) => {
     try {
       const absPath = resolve(pkgPath);
       const mod = new Module(absPath);
       mod.load();
-
-      if (mod.type !== PackageShape.Executable) {
-        throw new Error(`"${mod.name}" is not an executable module`);
-      }
-
-      const tc = setupToolchain();
-      const baseDir = join(absPath, "target", tc.targetDir);
-      const variant = opts?.variant;
-      const subdir = variant ? join(baseDir, variant) : baseDir;
-      const exePath = join(subdir, `${mod.name}${tc.exeExt}`);
-
-      if (existsSync(exePath)) {
-        const proc = spawnSync(exePath, [], { stdio: "inherit" });
-        if (proc.error) throw proc.error;
-        process.exit(proc.status ?? 0);
-      }
-
-      if (variant) {
-        throw new Error(`Variant "${variant}" not found or not built`);
-      }
-
-      if (existsSync(baseDir)) {
-        const entries = readdirSync(baseDir, { withFileTypes: true });
-        const variants = entries
-          .filter(e => e.isDirectory() && existsSync(join(baseDir, e.name, `${mod.name}${tc.exeExt}`)))
-          .map(e => e.name);
-
-        if (variants.length > 0) {
-          console.log(chalk.yellow("Available variants:"));
-          for (const v of variants) console.log(`  ${v}`);
-          console.log(chalk.dim("\nUse --variant <name> to select one."));
-          process.exit(1);
-        }
-      }
-
-      throw new Error(`Executable not found: ${exePath}\nBuild it first: shard build`);
+      mod.runScript(script);
     } catch (e: unknown) {
       const message = e instanceof Error ? e.message : String(e);
       console.error(chalk.red(`Error: ${message}`));
