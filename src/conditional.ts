@@ -3,12 +3,18 @@ import type { Toolchain } from "./toolchain/types";
 export class ConditionalParser {
   private static COND = /^\?([a-zA-Z_]+)(:|!)(.+)$/;
 
-  static compute<T>(tc: Toolchain | undefined, defines: string[], raw: T): T {
-    return ConditionalParser.resolve(raw, {
+  static compute<T>(tc: Toolchain | undefined, raw: T, defines?: string[]): T {
+    const defs = defines ?? [];
+    const vars: Record<string, string> = {
       platform: process.platform,
       arch: process.arch,
       compiler: tc?.name ?? "unknown",
-    }, defines) as T;
+    };
+    for (const d of defs) {
+      const eq = d.indexOf("=");
+      vars[d.slice(0, eq === -1 ? d.length : eq)] = eq === -1 ? "" : d.slice(eq + 1);
+    }
+    return ConditionalParser.resolve(raw, vars, defs) as T;
   }
 
   private static isPlainObject(v: unknown): v is Record<string, unknown> {

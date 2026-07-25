@@ -12,6 +12,7 @@ export enum PackageShape {
 }
 
 export interface PackageJson {
+  version?: string;
   depend?: string[];
   options?: UserBuildOptions;
   sources?: string[] | Record<string, string[]>;

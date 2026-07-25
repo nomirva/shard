@@ -15,12 +15,11 @@ export class Prebuilt {
     const candidates: string[] = [];
     if (variant) candidates.push(join(pkgPath, "target", tc.targetDir, variant));
     candidates.push(join(pkgPath, "target", tc.targetDir));
-    candidates.push(join(pkgPath, "target"));
 
     let chosenDir = candidates.find(d => existsSync(d));
     if (!chosenDir) {
       throw new Error(
-        `Prebuilt package "${pkgName}" has no target/ directory for target "${tc.targetDir}"`
+        `Invalid prebuilt package "${pkgName}": expected libraries at "${join(pkgPath, "target", tc.targetDir)}"`
       );
     }
 

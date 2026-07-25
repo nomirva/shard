@@ -3,15 +3,6 @@ import { existsSync, mkdirSync, rmSync, renameSync, readdirSync } from "fs";
 import { spawnSync } from "child_process";
 import { Manifest, Version } from "./manifest";
 
-let gitProtocol = "https";
-
-export function setGitProtocol(protocol: string): void {
-  if (!["https", "ssh", "http"].includes(protocol)) {
-    throw new Error(`Invalid git protocol: "${protocol}". Must be https, ssh, or http.`);
-  }
-  gitProtocol = protocol;
-}
-
 function buildGitUrl(hostPath: string, protocol: string): string {
   const clean = hostPath.replace(/\.git$/, "");
   if (protocol === "ssh") {
@@ -47,8 +38,10 @@ function removeEmptyParents(dir: string, sub: string): void {
 }
 
 export class Fetcher {
+  static gitProtocol = "https";
+
   static git(url: string, rootDir: string, version?: string, pkg?: string): string {
-    const repoUrl = buildGitUrl(url, gitProtocol);
+    const repoUrl = buildGitUrl(url, Fetcher.gitProtocol);
     const name = pkg ? basename(pkg.replace(/[/\\]/g, '/')) : url.replace(/\.git$/, "").split("/").pop() || "repo";
     const targetDir = join(rootDir, "modules", name);
     const versionTag = pkg && version ? `${pkg}/${version}` : version;

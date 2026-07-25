@@ -27,6 +27,29 @@ export class Dependency {
     return null;
   }
 
+  getLinkerFlags(): string[] {
+    if (this.prefix === "sys") {
+      if (this.linkType === LinkType.Static && process.platform !== "darwin") {
+        return ["-Wl,-Bstatic", `-l${this.value}`, "-Wl,-Bdynamic"];
+      }
+      if (this.linkType === LinkType.Static) {
+        process.stderr.write(
+          chalk.yellow(`Warning: "${this.raw}" — -Bstatic unavailable on macOS, linking dynamically`) + "\n"
+        );
+      }
+      return [`-l${this.value}`];
+    }
+    if (this.prefix === "framework") {
+      if (this.linkType === LinkType.Static) {
+        process.stderr.write(
+          chalk.yellow(`Warning: "${this.raw}" — framework cannot be linked statically, linking dynamically`) + "\n"
+        );
+      }
+      return [`-Wl,-framework,${this.value}`];
+    }
+    return [];
+  }
+
   get label(): string {
     const parts = [this.linkType ?? `default (${LinkType.Static})`, this.version].filter(Boolean);
     return parts.join(", ");

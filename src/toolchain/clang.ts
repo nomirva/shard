@@ -81,7 +81,7 @@ export class ClangToolchain extends Toolchain {
     const colon = joined.search(/:(?=\s|$)/);
     if (colon === -1) return [];
     const deps = joined.slice(colon + 1).trim();
-    return deps.split(/\s+/).filter(p => p && !p.startsWith("/usr/") && !p.startsWith("/Library/"));
+    return deps.split(/\s+/).filter(Boolean);
   }
 
   async compile(task: CompileTask, cwd?: string): Promise<void> {

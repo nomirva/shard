@@ -293,8 +293,7 @@ export class Module {
 
     for (const dep of this.deps) {
       if (dep.isSystem) {
-        const flag = dep.libFlag;
-        if (flag) collect(libFlags, flag);
+        libFlags.push(...dep.getLinkerFlags());
         continue;
       }
       await dep.module!.build(dep.linkType);

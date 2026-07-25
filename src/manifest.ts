@@ -86,15 +86,15 @@ export class Manifest {
       ? JSON.parse(readFileSync(manifestPath, "utf-8"))
       : {};
     const rawDefines: string[] = [...(raw.options?.defines ?? []), ...(extraDefines ?? [])];
-    return ConditionalParser.compute(tc, rawDefines, raw) as PackageJson;
+    return ConditionalParser.compute(tc, raw, rawDefines) as PackageJson;
   }
 
   static readVersion(pkgPath: string): string | null {
     const p = join(pkgPath, Manifest.FILE_NAME);
     if (!existsSync(p)) return null;
     try {
-      const raw = JSON.parse(readFileSync(p, "utf-8"));
-      return raw.version ?? null;
+      const pkg: PackageJson = JSON.parse(readFileSync(p, "utf-8"));
+      return pkg.version ?? null;
     } catch {
       return null;
     }
@@ -102,9 +102,9 @@ export class Manifest {
 
   static writeVersion(pkgPath: string, version: string): void {
     const p = join(pkgPath, Manifest.FILE_NAME);
-    const raw = existsSync(p) ? JSON.parse(readFileSync(p, "utf-8")) : {};
-    raw.version = version;
-    writeFileSync(p, JSON.stringify(raw, null, 2) + "\n");
+    const pkg: PackageJson = existsSync(p) ? JSON.parse(readFileSync(p, "utf-8")) : {};
+    pkg.version = version;
+    writeFileSync(p, JSON.stringify(pkg, null, 2) + "\n");
   }
 
   static info(mod: ManifestInfo): void {

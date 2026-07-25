@@ -7,14 +7,15 @@ import chalk from "chalk";
 import { setupToolchain } from "./src/toolchain/detect";
 import { Module } from "./src/module";
 import { ClangToolchain } from "./src/toolchain/clang";
-import { setGitProtocol } from "./src/fetcher";
+import { Fetcher } from "./src/fetcher";
+import pkg from "./package.json" with { type: "json" };
 
 const program = new Command();
 
 program
   .name("shard")
   .description("C build manager for shard modules")
-  .version("1.0.0");
+  .version(pkg.version);
 
 program
   .command("build")
@@ -36,9 +37,9 @@ program
       Module.ignoreCache = mode;
       Module.extraDefines = (opts?.def ?? []).flatMap((d: string) => d.split(',')).filter(Boolean);
       if (opts?.gitProtocol) {
-        setGitProtocol(opts.gitProtocol);
+        Fetcher.gitProtocol = opts.gitProtocol;
       } else if (process.env.SHARD_GIT_PROTOCOL) {
-        setGitProtocol(process.env.SHARD_GIT_PROTOCOL);
+        Fetcher.gitProtocol = process.env.SHARD_GIT_PROTOCOL;
       }
       const tc = setupToolchain();
       const root = new Module(absPath, tc);

@@ -1,7 +1,5 @@
 # Shard Build Manager — Specification
 
-Version 0.2.0 (draft)
-
 ## 1 Scope
 
 This document specifies the behaviour of the Shard build manager, its manifest format (`shard.json`), module layout conventions, and the command-line interface. It is intended for implementers and tool integrators.
@@ -198,7 +196,7 @@ Each key is a prefix directory relative to the module root. Each value is a list
 - If `exports` is absent or empty, no headers are exported and `BuildResult.includePaths` MUST be empty.
 
 **BuildResult.includePaths** pointing to dependents:
-- MUST include the single path `<outBase>/target/<arch>/<platform>/<abi>/include/`.
+- MUST include the single path `<outBase>/target/<arch>/<platform>/<abi>[/<variant>]/include/`.
 
 **Copy examples**:
 
@@ -391,7 +389,7 @@ At toolchain initialisation (`detect()`) the output of `clang --version` is pars
 - The `Target:` line is split on `-`. The last component is the ABI:
   - `"gnu"`, `"musl"`, `"msvc"` are used as-is.
   - Any other value (or a three-component triple) produces `"none"`.
-- On `win32`, ABI `"msvc"` causes detection to fail: only the GNU/MinGW variant is supported.
+- On `win32`, only the GNU/MinGW variant (ABI `"gnu"`) is supported; all other ABIs cause detection to fail.
 
 ### 7.7 Build hooks
 
