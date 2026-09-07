@@ -1,39 +1,23 @@
-import type { UserBuildOptions } from "./toolchain/types";
+export enum PackageShape {
+  Executable = "executable",
+  Library = "library",
+  Prebuilt = "prebuilt",
+  HeaderOnly = "header-only",
+}
 
 export enum LinkType {
   Static = "static",
   Shared = "shared",
 }
 
-export enum PackageShape {
-  Executable = "executable",
-  Library = "library",
-  Prebuilt = "prebuilt",
-}
-
 export interface PackageJson {
+  name?: string;
   version?: string;
   depend?: string[];
-  options?: UserBuildOptions;
+  options?: Record<string, unknown>;
   sources?: string[] | Record<string, string[]>;
+  imports?: string[] | Record<string, string[]>;
   exports?: string[] | Record<string, string[]>;
-  includes?: string[] | Record<string, string[]>;
-  target?: string;
   scripts?: Record<string, string>;
-}
-
-export enum BuildResultType {
-  Executable = "executable",
-  StaticLib = "static-lib",
-  SharedLib = "shared-lib",
-}
-
-export interface BuildResult {
-  type: BuildResultType;
-  includePaths: string[];
-  libPaths: string[];
-  executablePath: string | null;
-  linkType: LinkType | null;
-  sharedLibs: string[];
-  sysLibs: string[];
+  [key: string]: unknown;
 }

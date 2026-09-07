@@ -1,4 +1,4 @@
-import type { Toolchain } from "./toolchain/types";
+import type { Toolchain } from "./toolchain";
 
 export class ConditionalParser {
   private static COND = /^\?([a-zA-Z_]+)(:|!)(.+)$/;

@@ -1,13 +1,10 @@
 #!/usr/bin/env bun
 import { Command } from "commander";
-import { resolve, basename, join } from "path";
-import { existsSync, rmSync } from "fs";
+import { basename, resolve } from "path";
 import { spawnSync } from "child_process";
 import chalk from "chalk";
-import { setupToolchain } from "./src/toolchain/detect";
-import { Module } from "./src/module";
-import { ClangToolchain } from "./src/toolchain/clang";
-import { Fetcher } from "./src/fetcher";
+import { Project } from "./src/project";
+import { ClangToolchain } from "./src/clang";
 import pkg from "./package.json" with { type: "json" };
 
 const program = new Command();
@@ -21,11 +18,11 @@ program
   .command("build")
   .description("Build a shard module")
   .argument("[path]", "Path to the module (default: current directory)", ".")
-      .option("--ignore-cache <mode>", "0=cache on (default), 1=ignore root cache, 2=ignore all cache")
-      .option("--start", "Build and run the executable")
-      .option("--def <names...>", "Pass defines and enable $define:X conditionals (e.g. --def NODEBUG,VERSION=5)")
-      .option("--git-protocol <protocol>", "Git protocol: https (default), ssh, or http")
-      .action(async (pkgPath: string, opts?: { ignoreCache?: string; start?: boolean; def?: string[]; gitProtocol?: string }) => {
+  .option("--ignore-cache <mode>", "0=cache on (default), 1=ignore root cache, 2=ignore all cache")
+  .option("--start", "Build and run the executable")
+  .option("--def <names...>", "Pass defines and enable $define:X conditionals (e.g. --def NODEBUG,VERSION=5)")
+  .option("--git-protocol <protocol>", "Git protocol: https (default), ssh, or http")
+  .action(async (pkgPath: string, opts?: { ignoreCache?: string; start?: boolean; def?: string[]; gitProtocol?: string }) => {
     try {
       console.log();
       const absPath = resolve(pkgPath);
@@ -34,26 +31,19 @@ program
         throw new Error("--ignore-cache must be 0, 1, or 2");
       }
 
-      Module.ignoreCache = mode;
-      Module.extraDefines = (opts?.def ?? []).flatMap((d: string) => d.split(',')).filter(Boolean);
-      if (opts?.gitProtocol) {
-        Fetcher.gitProtocol = opts.gitProtocol;
-      } else if (process.env.SHARD_GIT_PROTOCOL) {
-        Fetcher.gitProtocol = process.env.SHARD_GIT_PROTOCOL;
-      }
-      const tc = setupToolchain();
-      const root = new Module(absPath, tc);
-      root.load();
-      await root.update();
-      await root.build();
-
-      const r = root.result!;
+      const project = new Project(absPath, {
+        ignoreCache: mode,
+        defines: (opts?.def ?? []).flatMap((d: string) => d.split(',')).filter(Boolean),
+        gitProtocol: opts?.gitProtocol,
+      });
+      await project.build();
 
       if (opts?.start) {
-        if (r.type !== "executable" || !r.executablePath) {
+        const exe = project.executablePath();
+        if (!exe) {
           throw new Error(`"${basename(absPath)}" is not an executable module`);
         }
-        const proc = spawnSync(r.executablePath, [], { stdio: "inherit" });
+        const proc = spawnSync(exe, [], { stdio: "inherit" });
         if (proc.error) throw proc.error;
         process.exit(proc.status ?? 0);
       }
@@ -76,9 +66,8 @@ program
   .action((pkgPath: string) => {
     try {
       const absPath = resolve(pkgPath);
-      const mod = new Module(absPath);
-      mod.load();
-      mod.info();
+      const project = new Project(absPath);
+      project.info();
     } catch (e: unknown) {
       const message = e instanceof Error ? e.message : String(e);
       console.error(chalk.red(`Error: ${message}`));
@@ -90,14 +79,13 @@ program
   .command("update")
   .description("Sync modules/ with dependency declarations (install, remove stale, no compilation)")
   .argument("[path]", "Path to the root module (default: current directory)", ".")
-  .action(async (pkgPath: string) => {
+  .option("--git-protocol <protocol>", "Git protocol: https (default), ssh, or http")
+  .action(async (pkgPath: string, opts?: { gitProtocol?: string }) => {
     try {
       const absPath = resolve(pkgPath);
-      const root = new Module(absPath);
-      root.load();
-      await root.update();
-      const count = root.deps.filter(d => d.module !== null).length;
-      console.log(chalk.dim("Modules synced —") + " " + `${count} dependency module(s)`);
+      const project = new Project(absPath, { gitProtocol: opts?.gitProtocol });
+      await project.update();
+      console.log(chalk.dim("Modules synced —") + " " + "dependency modules up to date");
     } catch (e: unknown) {
       const message = e instanceof Error ? e.message : String(e);
       console.error(chalk.red(`Error: ${message}`));
@@ -112,30 +100,8 @@ program
   .action((pkgPath: string) => {
     try {
       const absPath = resolve(pkgPath);
-
-      const mod = new Module(absPath);
-      mod.load();
-      const preclean = mod.manifest.scripts?.preclean;
-      if (preclean) {
-        const r = spawnSync(preclean, [], { stdio: "inherit", shell: true, cwd: absPath });
-        if (r.status !== 0) throw new Error("preclean hook failed");
-      }
-
-      const shardDir = join(absPath, ".shard");
-      const modulesDir = join(absPath, "modules");
-      const targetDir = join(absPath, "target");
-
-      for (const d of [shardDir, modulesDir]) {
-        if (existsSync(d)) {
-          rmSync(d, { recursive: true, force: true });
-          console.log(chalk.dim("  removed:") + " " + d);
-        }
-      }
-
-      if (existsSync(targetDir)) {
-        rmSync(targetDir, { recursive: true, force: true });
-        console.log(chalk.dim("  removed:") + " " + targetDir);
-      }
+      const project = new Project(absPath);
+      project.cleanAll();
     } catch (e: unknown) {
       const message = e instanceof Error ? e.message : String(e);
       console.error(chalk.red(`Error: ${message}`));
@@ -151,9 +117,8 @@ program
   .action((script: string, pkgPath: string) => {
     try {
       const absPath = resolve(pkgPath);
-      const mod = new Module(absPath);
-      mod.load();
-      mod.runScript(script);
+      const project = new Project(absPath);
+      project.runScript(script);
     } catch (e: unknown) {
       const message = e instanceof Error ? e.message : String(e);
       console.error(chalk.red(`Error: ${message}`));

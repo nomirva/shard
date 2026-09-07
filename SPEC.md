@@ -19,7 +19,7 @@ Conformance language follows [RFC 2119](https://www.rfc-editor.org/rfc/rfc2119).
 A directory containing a `shard.json` manifest, C sources, and optionally headers and prebuilt artefacts. Every module has exactly one shape.
 
 **Root**  
-The top-level module passed on the command line. All dependencies are placed relative to the root's `.shard/` directory.
+The top-level module passed on the command line. Git dependencies are cloned into the root's `modules/` directory; build cache and artefacts live under `.shard/`.
 
 **Dependency**
 A module declared in the `depend` field. A dependency is resolved to a concrete path on disk, pointed to by a `Module` instance.
@@ -81,7 +81,7 @@ Note: only the array form of `sources` is checked for `main.c`. Object-form sour
 {
   "depend":     [ "<dependency>" ],
   "sources":    "<sources-field>",
-  "includes":   "<includes-field>",
+  "imports":   "<imports-field>",
   "exports":    "<exports-field>",
   "target":     "<string>",
   "version":    "<semver>",
@@ -104,7 +104,7 @@ Where:
 
 ```
 <sources-field>  = [ "<path>" ] | { "<prefix>": [ "<glob>" ] }
-<includes-field> = [ "<path>" ] | { "<prefix>": [ "<glob>" ] }
+<imports-field> = [ "<path>" ] | { "<prefix>": [ "<glob>" ] }
 <exports-field>  = [ "<path>" ] | { "<prefix>": [ "<glob>" ] }
 <glob>           = <path> | "*" | "**" | glob-pattern
 ```
@@ -116,7 +116,7 @@ Every field is optional. All paths are relative to the directory containing the 
 A list of dependency URIs with the following grammar:
 
 ```
-dependency = prefix ":" value [ "@" version ] [ "//" subpackage ] [ link-modifier ]
+dependency = prefix ":" value [ "@" ref ] [ "//" subpackage ] [ link-modifier ]
 link-modifier = "+static" | "+shared" | "+dynamic"
 prefix = "sys" | "git" | "local" | "framework"
 ```
@@ -130,15 +130,16 @@ The prefix is REQUIRED. Omitting it produces an error.
 | `local` | Path relative to parent module | Resolved via `Fetcher.local()` |
 | `git` | Git URL | Cloned via `Fetcher.git()`; `.git` directory removed |
 
-**Version pinning** (git only):
-- Append `@<semver>` to the value to pin to a specific tag (e.g. `git:user/repo@v1.2.3`).
-- The cloned repository is checked out at the matching tag and the version is recorded in the installed manifest.
+**Ref pinning** (git only):
+- Append `@<ref>` to the value to pin to a branch or tag (e.g. `git:user/repo@main`, `git:user/repo@v1.2.3`). Absent `@`, the repository is cloned at `HEAD`.
+- The value after `@` is treated as a version tag if it is a valid SemVer; otherwise it is a branch ref and its version is `null`.
+- The installed directory is named `<name>@<ref>` (or `<name>` for `HEAD`) and records the pinned state.
 - Version compatibility: two versions are compatible if their `major` components are equal.
 - A request for a newer compatible version upgrades the installed copy in-place.
-- An incompatible major version produces an error.
+- An incompatible major version produces an error; two distinct non-version pins (or a version pin vs a floating pin) produce an unresolvable error.
 
 **Monorepo sub-packages** (git only):
-- Append `//<subpath>` after the version to clone only a subdirectory of a monorepo (e.g. `git:user/monorepo@v1.0.0//libs/mylib`).
+- Append `//<subpath>` after the ref to clone only a subdirectory of a monorepo (e.g. `git:user/monorepo@v1.0.0//libs/mylib`).
 - The clone uses `git sparse-checkout` to retrieve only the specified subdirectory, then hoists its contents to the module root.
 
 **Link modifier semantics**:
@@ -211,30 +212,30 @@ Each key is a prefix directory relative to the module root. Each value is a list
 | Object | `{ "vendor": ["src/raylib.h"] }` | `<mod>/vendor/src/raylib.h` | `src/raylib.h` |
 | Object | `{ "vendor/include": ["uv"] }` | `<mod>/vendor/include/uv/` | `uv/` |
 
-### 5.5 includes
+### 5.5 imports
 
 A list of directory paths, OR an object mapping prefix directories to glob pattern lists. Declares include search directories for compilation.
 
 **Array form**:
 ```json
-"includes": ["vendor/include", "vendor/src"]
+"imports": ["vendor/include", "vendor/src"]
 ```
 Each entry is added to the compiler's include search path (`-I`).
 
 **Object form**:
 ```json
-"includes": {
+"imports": {
   "vendor/src": ["*.h"],
   "vendor/src/external/glfw/include": ["*"]
 }
 ```
 Each key is a directory path relative to the module root. The key is added to the compiler's include search path. The glob patterns are descriptive (document which headers are expected from that directory) and do not affect the `-I` flag.
 
-If `includes` is absent, no additional directories are added beyond those derived from `exports` and `sources`.
+If `imports` is absent, no additional directories are added beyond those derived from `exports` and `sources`.
 
 ### 5.6 Glob patterns
 
-The object form of `includes`, `sources`, and `exports` uses glob patterns with the following semantics:
+The object form of `imports`, `sources`, and `exports` uses glob patterns with the following semantics:
 
 - `*` matches any sequence of characters **within a single path segment** (no `/`). Example: `*.h` matches `raylib.h` but not `src/raylib.h`.
 - `**` matches **zero or more whole path segments**. Example: `**/*.h` matches `raylib.h` and `src/utils/raylib.h`.
@@ -313,7 +314,7 @@ A conditional block that evaluates to an object is deep-merged with the base obj
 |--------|-----------|
 | `sys` | No installation; linker flag created. |
 | `local` | Resolved to an absolute path via `Fetcher.local()`. |
-| `git` | Cloned into `<root>/modules/<name>/`, `.git` directory removed. Version is pinned via `@<semver>` (e.g. `git:user/repo@v1.2.3`); the tag is checked out and written into the installed manifest. A monorepo sub-package is specified via `//<subpath>` (e.g. `git:user/monorepo@v1.0.0//libs/mylib`), cloned with sparse checkout. |
+| `git` | Cloned into `<root>/modules/<name>[@<ref>]/`, `.git` directory removed. The directory name encodes the pinned state: no suffix for `HEAD`, `@<ref>` for a branch or version tag (e.g. `git:user/repo@main` → `<name>@main`, `git:user/repo@v1.2.3` → `<name>@v1.2.3`). A monorepo sub-package is specified via `//<subpath>` (e.g. `git:user/monorepo@v1.0.0//libs/mylib`), cloned with sparse checkout. |
 | `framework` | No installation; linker flag created (`-Wl,-framework,<value>`). |
 
 ### 6.2 Link type modifiers
@@ -322,7 +323,12 @@ If a dependency declares `+static`, `+shared`, or `+dynamic`, the link type is t
 
 ### 6.3 Version compatibility
 
-Two dependencies on the same module with differing major versions MUST produce an error. Within the same major version, the newer version replaces the older (if already installed, the installed version is upgraded in-place).
+A module is installed in exactly one pinned state per name; C is statically linked, so two copies of one package cannot coexist. The requested pin is compared against the installed state derived from the `modules/` directory name:
+
+- Two requests pinning the same value (including two identical `HEAD` requests) reuse the installed copy.
+- A request with no semver version (branch/ref or `HEAD`) conflicting with a different floating pin or a version tag produces an unresolvable error.
+- A version tag vs a floating pin produces an unresolvable error.
+- Two version tags with differing major versions produce an error. Within the same major version, the newer version replaces the older (the installed copy is upgraded in-place).
 
 ## 7 Build
 
@@ -341,7 +347,7 @@ A build invocation proceeds in the following order:
 The include search path for compilation is formed by concatenating:
 
 1. Include paths from each dependency's `BuildResult.includePaths`.
-2. Directory-only entries from the module's own `includes` field (if present).
+2. Directory-only entries from the module's own `imports` field (if present).
 3. Directory-only entries from the module's own `exports` (the original paths, not the copies).
 4. If `sources` is present in the manifest, any directory paths or prefix directories therein. Otherwise, `src/` if it exists on disk.
 
