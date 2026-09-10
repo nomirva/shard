@@ -72,10 +72,14 @@ function expand(baseDir: string, pattern: string): Unit[] {
     .map(rel => new Unit(join(baseDir, rel)));
 }
 
-export function deriveShape(content: ModuleContent): PackageShape {
+export function deriveShape(content: ModuleContent, label?: string): PackageShape {
+  const fail = (): never => {
+    const who = label ? `Module "${label}" is empty` : "Module is empty";
+    throw new Error(`${who}: no sources, exports, or artifacts`);
+  };
   if (content.sourceUnits.some(u => u.isMain)) return PackageShape.Executable;
   if (content.sourceUnits.length > 0) return PackageShape.Library;
   if (content.artifactUnits.length > 0) return PackageShape.Prebuilt;
   if (content.headerUnits.length > 0) return PackageShape.HeaderOnly;
-  throw new Error("Module is empty: no sources, exports, or artifacts");
+  return fail();
 }

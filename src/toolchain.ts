@@ -72,18 +72,14 @@ export interface Toolchain {
   currentTarget: TargetPlatform;
 
   detect(): boolean;
-  info(): { name: string; version: string };
 
-  compile(task: CompileTask): Promise<void>;
+  compile(task: CompileTask, cwd?: string): Promise<void>;
   link(task: LinkTask): void;
   archive(task: ArchiveTask): void;
 
   dependencies(task: CompileTask): string[];
 
   get targetDir(): string;
-  get objExt(): string;
   get exeExt(): string | null;
-  get staticLibExt(): string;
   get sharedLibExt(): string | null;
-  get importLibExt(): string | null;
 }

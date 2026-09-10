@@ -116,9 +116,20 @@ Every field is optional. All paths are relative to the directory containing the 
 A list of dependency URIs with the following grammar:
 
 ```
-dependency = prefix ":" value [ "@" ref ] [ "//" subpackage ] [ link-modifier ]
+dependency = prefix ":" value [ link-modifier ]
 link-modifier = "+static" | "+shared" | "+dynamic"
 prefix = "sys" | "git" | "local" | "framework"
+```
+
+For `git`, the value is one of:
+
+```
+git-value = repo [ "@" ref ]                // plain repository
+          | repo "//" subpackage [ "@" ref ] // monorepo sub-package (canonical)
+          | repo [ "@" ref ] "//" subpackage // equivalent alternate form
+repo = owner "/" name
+ref = version tag or branch name
+subpackage = path/to/package
 ```
 
 The prefix is REQUIRED. Omitting it produces an error.
@@ -131,7 +142,7 @@ The prefix is REQUIRED. Omitting it produces an error.
 | `git` | Git URL | Cloned via `Fetcher.git()`; `.git` directory removed |
 
 **Ref pinning** (git only):
-- Append `@<ref>` to the value to pin to a branch or tag (e.g. `git:user/repo@main`, `git:user/repo@v1.2.3`). Absent `@`, the repository is cloned at `HEAD`.
+- Append `@<ref>` to pin to a branch or tag (e.g. `git:user/repo@main`, `git:user/repo@v1.2.3`). Absent `@`, the repository is cloned at `HEAD`.
 - The value after `@` is treated as a version tag if it is a valid SemVer; otherwise it is a branch ref and its version is `null`.
 - The installed directory is named `<name>@<ref>` (or `<name>` for `HEAD`) and records the pinned state.
 - Version compatibility: two versions are compatible if their `major` components are equal.
@@ -139,7 +150,7 @@ The prefix is REQUIRED. Omitting it produces an error.
 - An incompatible major version produces an error; two distinct non-version pins (or a version pin vs a floating pin) produce an unresolvable error.
 
 **Monorepo sub-packages** (git only):
-- Append `//<subpath>` after the ref to clone only a subdirectory of a monorepo (e.g. `git:user/monorepo@v1.0.0//libs/mylib`).
+- A monorepo uses namespaced tags per sub-package, so the ref is resolved relative to the sub-package. With `repo//subpackage@ref`, the repository is checked out at tag `<subpackage>/<ref>`; the canonical form is `git:owner/monorepo//libs/mylib@v1.0.0` (the alternate `git:owner/monorepo@v1.0.0//libs/mylib` is also accepted).
 - The clone uses `git sparse-checkout` to retrieve only the specified subdirectory, then hoists its contents to the module root.
 
 **Link modifier semantics**:
@@ -196,6 +207,8 @@ Each key is a prefix directory relative to the module root. Each value is a list
 - Files that do not exist on disk are silently skipped.
 - If `exports` is absent or empty, no headers are exported and `BuildResult.includePaths` MUST be empty.
 
+`exports` controls only header publication: the copy step and the include path offered to dependents. It MUST NOT contribute to the module's own private include search path — to include its own exported headers during compilation a module declares them via `imports` or keeps them next to its sources.
+
 **BuildResult.includePaths** pointing to dependents:
 - MUST include the single path `<outBase>/target/<arch>/<platform>/<abi>[/<variant>]/include/`.
 
@@ -231,7 +244,7 @@ Each entry is added to the compiler's include search path (`-I`).
 ```
 Each key is a directory path relative to the module root. The key is added to the compiler's include search path. The glob patterns are descriptive (document which headers are expected from that directory) and do not affect the `-I` flag.
 
-If `imports` is absent, no additional directories are added beyond those derived from `exports` and `sources`.
+The private include search path is formed by the directories that contain the module's own sources plus the `imports` directories. If `imports` is absent, only the source directories are used.
 
 ### 5.6 Glob patterns
 
@@ -314,7 +327,7 @@ A conditional block that evaluates to an object is deep-merged with the base obj
 |--------|-----------|
 | `sys` | No installation; linker flag created. |
 | `local` | Resolved to an absolute path via `Fetcher.local()`. |
-| `git` | Cloned into `<root>/modules/<name>[@<ref>]/`, `.git` directory removed. The directory name encodes the pinned state: no suffix for `HEAD`, `@<ref>` for a branch or version tag (e.g. `git:user/repo@main` → `<name>@main`, `git:user/repo@v1.2.3` → `<name>@v1.2.3`). A monorepo sub-package is specified via `//<subpath>` (e.g. `git:user/monorepo@v1.0.0//libs/mylib`), cloned with sparse checkout. |
+| `git` | Cloned into `<root>/modules/<name>[@<ref>]/`, `.git` directory removed. The directory name encodes the pinned state: no suffix for `HEAD`, `@<ref>` for a branch or version tag (e.g. `git:user/repo@main` → `<name>@main`, `git:user/repo@v1.2.3` → `<name>@v1.2.3`). A monorepo sub-package is specified via `repo//<subpath>[@<ref>]` (e.g. `git:user/monorepo//libs/mylib@v1.0.0`), cloned with sparse checkout. |
 | `framework` | No installation; linker flag created (`-Wl,-framework,<value>`). |
 
 ### 6.2 Link type modifiers
@@ -348,10 +361,9 @@ The include search path for compilation is formed by concatenating:
 
 1. Include paths from each dependency's `BuildResult.includePaths`.
 2. Directory-only entries from the module's own `imports` field (if present).
-3. Directory-only entries from the module's own `exports` (the original paths, not the copies).
-4. If `sources` is present in the manifest, any directory paths or prefix directories therein. Otherwise, `src/` if it exists on disk.
+3. The directories containing the module's own source files.
 
-Items 2–4 constitute the **private include paths**. Private paths MUST NOT be exposed via `BuildResult.includePaths`.
+Items 2–3 constitute the **private include paths**. Private paths MUST NOT be exposed via `BuildResult.includePaths`. `exports` entries are never added here; they only feed the copy step and dependent include paths.
 
 ### 7.3 Linking and archiving
 

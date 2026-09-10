@@ -13,13 +13,3 @@ export interface Target {
   options: UserBuildOptions;
   requested: LinkType | null;
 }
-
-export interface BuildResult {
-  type: PackageShape;
-  includePaths: string[];
-  libPaths: string[];
-  executablePath: string | null;
-  linkType: LinkType | null;
-  sharedLibs: string[];
-  libFlags: string[];
-}

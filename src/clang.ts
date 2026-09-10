@@ -1,6 +1,7 @@
 import { spawn, spawnSync } from "child_process";
 import { readFileSync } from "fs";
 import { HOST_TARGET, TargetPlatform, WarningSet, Subsystem, CompileTask, LinkTask, ArchiveTask, CompileOptions, Toolchain } from "./toolchain";
+import { ShardError } from "./errors";
 
 const WARN_MAP: Record<WarningSet, string[]> = {
   none: [],
@@ -42,10 +43,6 @@ export class ClangToolchain implements Toolchain {
     return true;
   }
 
-  info(): { name: string; version: string } {
-    return { name: this.name, version: this.version };
-  }
-
   private static extractAbi(triple: string): string {
     const last = triple.split("-").pop() ?? "";
     return (KNOWN_ABIS as readonly string[]).includes(last) ? last : "none";
@@ -59,12 +56,9 @@ export class ClangToolchain implements Toolchain {
     return `${this.currentTarget.arch}/${this.currentTarget.platform}/${this.currentTarget.abi}`;
   }
 
-  get objExt(): string { return ".o"; }
-  get staticLibExt(): string { return ".a"; }
   get sharedLibExt(): string | null {
     return { win32: ".dll", darwin: ".dylib", linux: ".so" }[this.currentTarget.platform] ?? null;
   }
-  get importLibExt(): string | null { return { win32: ".lib" }[this.currentTarget.platform] ?? null; }
   get exeExt(): string | null { return { win32: ".exe" }[this.currentTarget.platform] ?? null; }
 
   private depFilePath(object: string): string {
@@ -152,10 +146,14 @@ export class ClangToolchain implements Toolchain {
 
   private run(tool: string, args: string[]): void {
     const result = spawnSync(tool, args, { stdio: "pipe" });
-    if (result.error) throw new Error(`Failed to run "${tool}": ${result.error.message}`);
+    if (result.error) throw new ShardError("toolchain", `Failed to run "${tool}": ${result.error.message}`);
     if (result.status !== 0) {
       const msg = (result.stderr?.toString() || result.stdout?.toString() || "").trim();
-      throw new Error(`${tool} failed: ${msg}`);
+      throw new ShardError(
+        "build",
+        `${tool} failed (exit code ${result.status})`,
+        msg || undefined,
+      );
     }
   }
 
@@ -165,9 +163,11 @@ export class ClangToolchain implements Toolchain {
       const proc = spawn(tool, args, { stdio: ["inherit", "pipe", "inherit"], cwd, env });
       proc.on("close", (code) => {
         if (code === 0) resolve();
-        else reject(new Error(`"${tool} ${args[0]}" failed with exit code ${code}`));
+        else reject(new ShardError("build", `Compilation failed (exit code ${code})`));
       });
-      proc.on("error", (e: Error) => reject(e));
+      proc.on("error", (e: Error) =>
+        reject(new ShardError("toolchain", `Failed to run "${tool}": ${e.message}`)),
+      );
     });
   }
 }
@@ -175,5 +175,9 @@ export class ClangToolchain implements Toolchain {
 export function detectClangToolchain(): Toolchain {
   const clang = new ClangToolchain();
   if (clang.detect()) return clang;
-  throw new Error("No supported toolchain found — install Clang");
+  throw new ShardError(
+    "toolchain",
+    "No supported toolchain found — install Clang",
+    "macOS: brew install llvm · Debian/Ubuntu: sudo apt install clang",
+  );
 }

@@ -1,16 +1,21 @@
-import { spawnSync } from "child_process";
 import { existsSync, readdirSync, rmSync } from "fs";
 import { join, sep } from "path";
-import chalk from "chalk";
-import { detectClangToolchain, Toolchain } from "./clang";
+import { detectClangToolchain } from "./clang";
+import type { Toolchain } from "./toolchain";
 import { Module } from "./module";
 import { Builder } from "./builder";
 import { DIRS } from "./constants";
+import type { InstallProgress, InstallResult, ProgressSink, ResolveContext } from "./dependency";
+import { requireScript, runHook } from "./scripts";
+
+const DRAW_INTERVAL_MS = 80;
+const DRAW_GRACE_MS = 150;
 
 export interface ProjectConfig {
   defines?: string[];
   ignoreCache?: number;
   gitProtocol?: string;
+  progress?: ProgressSink;
 }
 
 export class Project {
@@ -27,43 +32,15 @@ export class Project {
   }
 
   async build(): Promise<void> {
-    this.resolve();
+    await this.resolve();
     const builder = new Builder(this.toolchain, this.rootPath, this.config.defines ?? [], this.config.ignoreCache ?? 0);
     const modules = this.collectPostOrder(this.rootModule);
     await builder.buildModules(modules);
   }
 
   async update(): Promise<void> {
-    this.resolve();
+    await this.resolve();
     this.clean();
-  }
-
-  doctor(): boolean {
-    const ok = this.toolchain.detect();
-    const info = this.toolchain.info();
-    console.log(`\n [Toolchain]`);
-    if (ok) {
-      console.log(` ${info.name.padEnd(6)}${info.version}`);
-    } else {
-      console.log(` ${info.name.padEnd(6)}${chalk.red("✗")} not found`);
-    }
-
-    const r = spawnSync("git", ["--version"], { stdio: "pipe" });
-    const gitOk = r.status === 0;
-    console.log(`\n [Version Control]`);
-    if (gitOk) {
-      console.log(` git   ${(r.stdout?.toString() ?? "").trim()}`);
-    } else {
-      console.log(` git   ${chalk.red("✗")} not found`);
-    }
-
-    if (ok && gitOk) {
-      console.log("\n " + chalk.bgGreen.black.bold(" READY TO USE "));
-    } else {
-      console.log("\n " + chalk.bgRed.black.bold(" NOT READY TO USE "));
-    }
-    console.log();
-    return ok && gitOk;
   }
 
   info(): void {
@@ -76,7 +53,7 @@ export class Project {
     if (deps.length) {
       console.log(`  Dependencies (${deps.length}):`);
       for (const d of deps) {
-        console.log(`    - ${d.label}`);
+        console.log(`    - ${d.describe()}`);
       }
     } else {
       console.log(`  Dependencies: none`);
@@ -91,19 +68,12 @@ export class Project {
 
   runScript(name: string): void {
     this.rootModule.load(this.toolchain, this.config.defines);
-    const cmd = this.rootModule.manifest.scripts?.[name];
-    if (!cmd) throw new Error(`Script "${name}" not defined in shard.json`);
-    const r = spawnSync(cmd, [], { stdio: "inherit", shell: true, cwd: this.rootPath });
-    if (r.status !== 0) throw new Error(`"${name}" failed`);
+    requireScript(this.rootPath, this.rootModule.manifest.scripts, name);
   }
 
   cleanAll(): void {
     this.rootModule.load(this.toolchain, this.config.defines);
-    const preclean = this.rootModule.manifest.scripts?.preclean;
-    if (preclean) {
-      const r = spawnSync(preclean, [], { stdio: "inherit", shell: true, cwd: this.rootPath });
-      if (r.status !== 0) throw new Error("preclean hook failed");
-    }
+    runHook(this.rootPath, this.rootModule.manifest.scripts, "preclean");
     const shardDir = join(this.rootPath, DIRS.SHARD);
     const modulesDir = join(this.rootPath, DIRS.MODULES);
     const targetDir = join(this.rootPath, DIRS.TARGET);
@@ -115,23 +85,79 @@ export class Project {
     }
   }
 
-  private resolve(): void {
+  private async resolve(): Promise<void> {
     const visited = new Set<string>();
-    this.resolveModule(this.rootModule, visited);
+    await this.resolveModule(this.rootModule, visited);
   }
 
-  private resolveModule(module: Module, visited: Set<string>): void {
+  private async resolveModule(module: Module, visited: Set<string>): Promise<void> {
     if (visited.has(module.path)) return;
     visited.add(module.path);
 
     module.load(this.toolchain, this.config.defines);
-    for (const dep of module.deps) {
-      const child = dep.install(this, module);
-      if (!child) continue;
-      child.parent = module;
-      child.requested = dep.linkType ?? null;
-      module.children.push(child);
-      this.resolveModule(child, visited);
+    const total = module.deps.length;
+
+    for (let i = 0; i < total; i++) {
+      const dep = module.deps[i];
+      const result = await this.installOne(dep.name, dep.version, i + 1, total, module.path, (ctx) =>
+        dep.install(ctx),
+      );
+
+      if ("module" in result) {
+        const child = result.module;
+        child.parent = module;
+        child.requested = dep.link ?? null;
+        module.children.push(child);
+        await this.resolveModule(child, visited);
+      } else {
+        module.libFlags.push(...result.flags);
+      }
+    }
+  }
+
+  private async installOne(
+    name: string,
+    version: string | null,
+    index: number,
+    total: number,
+    from: string,
+    run: (ctx: ResolveContext) => Promise<InstallResult>,
+  ): Promise<InstallResult> {
+    const sink = this.config.progress;
+    const progress: InstallProgress = { name, version, percent: 0 };
+    let started = false;
+    let finished = false;
+
+    const draw = (): void => {
+      if (!started) return;
+      sink?.line({ name, version, index, total, percent: progress.percent });
+    };
+    const ensureStarted = (): void => {
+      if (!started && !finished) {
+        started = true;
+        draw();
+      }
+    };
+
+    const interval = setInterval(() => {
+      if (started) draw();
+      else if (progress.percent > 0) ensureStarted();
+    }, DRAW_INTERVAL_MS);
+    const grace = setTimeout(ensureStarted, DRAW_GRACE_MS);
+
+    try {
+      const ctx = { project: this, from, progress, index, total };
+      const result = await run(ctx);
+      finished = true;
+      return result;
+    } finally {
+      finished = true;
+      clearInterval(interval);
+      clearTimeout(grace);
+      if (started) {
+        draw();
+        sink?.end();
+      }
     }
   }
 

@@ -1,13 +1,21 @@
-import { spawnSync } from "child_process";
 import { createHash } from "crypto";
 import { copyFileSync, existsSync, mkdirSync, readFileSync, statSync, writeFileSync } from "fs";
 import { dirname, join } from "path";
 import { Glob } from "bun";
 import chalk from "chalk";
 import { PackageShape, LinkType } from "./types";
-import { CompileTask, CompileOptions, LinkTask, ArchiveTask, Toolchain } from "./toolchain";
+import { CompileTask, CompileOptions, Toolchain, UserBuildOptions } from "./toolchain";
 import { Module } from "./module";
 import { DIRS } from "./constants";
+import { runHook } from "./scripts";
+import { ShardError } from "./errors";
+
+interface TransitiveInfo {
+  includeDirs: string[];
+  libPaths: string[];
+  flags: string[];
+  sharedLibs: string[];
+}
 
 export class Builder {
   private cache: Record<string, string> = {};
@@ -30,24 +38,25 @@ export class Builder {
   }
 
   private async buildModule(module: Module): Promise<void> {
-    this.runHook(module, "prebuild");
+    runHook(module.path, module.manifest.scripts, "prebuild");
+    module.refreshContent();
 
     if (module.shape === PackageShape.Prebuilt) {
       this.buildPrebuilt(module);
     } else if (module.shape === PackageShape.HeaderOnly) {
       // nothing to compile or link
     } else {
-      const obj = await this.compileModule(module);
-      this.linkModule(module, obj);
+      const info = this.transitiveInfo(module);
+      const objects = await this.compileModule(module, info.includeDirs);
+      this.linkModule(module, objects, info);
     }
 
     this.exportHeaders(module);
-    this.runHook(module, "postbuild");
+    runHook(module.path, module.manifest.scripts, "postbuild");
   }
 
-  private async compileModule(module: Module): Promise<string[]> {
-    const mode = this.ignoreCache;
-    const useCache = mode === 0 || (mode === 1 && !module.isRoot);
+  private async compileModule(module: Module, includeDirs: string[]): Promise<string[]> {
+    const useCache = this.ignoreCache === 0 || (this.ignoreCache === 1 && !module.isRoot);
     const prefix = module.isRoot ? "_" : module.name;
     const objects: string[] = [];
 
@@ -58,7 +67,7 @@ export class Builder {
         source,
         object,
         relPath: rel,
-        options: this.compileOptions(module),
+        options: this.compileOptions(module, includeDirs),
       };
 
       if (useCache && this.isFresh(prefix, task)) {
@@ -83,9 +92,10 @@ export class Builder {
     return objects;
   }
 
-  private linkModule(module: Module, objects: string[]): void {
-    const o = module.manifest.options ?? {};
+  private linkModule(module: Module, objects: string[], info: TransitiveInfo): void {
+    const o = optionsOf(module);
     const requested = module.requested ?? LinkType.Static;
+    const libFlags = [...info.flags, ...module.libFlags];
 
     if (module.shape === PackageShape.Executable) {
       const output = join(module.outDir, `${module.name}${this.toolchain.exeExt ?? ""}`);
@@ -95,26 +105,33 @@ export class Builder {
         objects,
         output,
         options: {
-          libPaths: this.transitiveLibPaths(module),
-          libFlags: [...this.transitiveFlags(module), ...module.libFlags],
+          libPaths: info.libPaths,
+          libFlags,
           subsystem: o.subsystem,
-          extra: o.linkExtra as string[] | undefined,
+          extra: o.linkExtra,
         },
       });
-      for (const sl of this.transitiveShared(module)) {
+      for (const sl of info.sharedLibs) {
         copyFileSync(sl, join(dirname(output), sl.split("/").pop()!));
       }
       return;
     }
 
-    this.buildLibrary(module, objects, requested, o.subsystem, o.linkExtra as string[] | undefined);
+    this.buildLibrary(module, objects, requested, libFlags, info.libPaths);
     if (module.isRoot && module.shape === PackageShape.Library) {
       const other = requested === LinkType.Static ? LinkType.Shared : LinkType.Static;
-      this.buildLibrary(module, objects, other, o.subsystem, o.linkExtra as string[] | undefined);
+      this.buildLibrary(module, objects, other, libFlags, info.libPaths);
     }
   }
 
-  private buildLibrary(module: Module, objects: string[], linkType: LinkType, subsystem?: string, extra?: string[]): void {
+  private buildLibrary(
+    module: Module,
+    objects: string[],
+    linkType: LinkType,
+    libFlags: string[],
+    libPaths: string[],
+  ): void {
+    const o = optionsOf(module);
     mkdirSync(module.outDir, { recursive: true });
 
     if (linkType === LinkType.Static) {
@@ -124,32 +141,41 @@ export class Builder {
     }
 
     const sExt = this.toolchain.sharedLibExt;
-    if (!sExt) throw new Error(`Shared libraries not supported on target "${this.toolchain.currentTarget.platform}"`);
+    if (!sExt) {
+      throw new ShardError(
+        "build",
+        `Shared libraries not supported on platform "${this.toolchain.currentTarget.platform}"`,
+        "request static linking or use a supported platform",
+      );
+    }
     const output = join(module.outDir, `${module.name}${sExt}`);
     this.toolchain.link({
       kind: "shared",
       objects,
       output,
       options: {
-        libPaths: this.transitiveLibPaths(module),
-        libFlags: [...this.transitiveFlags(module), ...module.libFlags],
-        subsystem,
-        extra,
+        libPaths,
+        libFlags,
+        subsystem: o.subsystem,
+        extra: o.linkExtra,
       },
     });
   }
 
   private buildPrebuilt(module: Module): void {
     if (!existsSync(module.outDir)) {
-      throw new Error(`Invalid prebuilt package "${module.name}": expected libraries at "${module.outDir}"`);
+      throw new ShardError(
+        "build",
+        `Invalid prebuilt package "${module.name}": expected libraries at "${module.outDir}"`,
+        "check the module layout or exports field",
+      );
     }
   }
 
-  private compileOptions(module: Module): CompileOptions {
-    const o = module.manifest.options ?? {};
-    const includePaths = [...this.transitiveIncludeDirs(module)];
-    const own = module.extract().includeDirs;
-    for (const d of own) {
+  private compileOptions(module: Module, transitiveIncludeDirs: string[]): CompileOptions {
+    const o = optionsOf(module);
+    const includePaths = [...transitiveIncludeDirs];
+    for (const d of module.extract().includeDirs) {
       if (!includePaths.includes(d)) includePaths.push(d);
     }
     return {
@@ -158,79 +184,45 @@ export class Builder {
       debug: o.debug,
       standard: o.standard ? (`-std=${o.standard}` as const) : undefined,
       warnings: o.warnings,
-      defines: [...(o.defines as string[] | undefined ?? []), ...this.extraDefines],
-      extra: o.compileExtra as string[] | undefined,
+      defines: [...(o.defines ?? []), ...this.extraDefines],
+      extra: o.compileExtra,
     };
   }
 
-  private transitiveIncludeDirs(module: Module): string[] {
-    const dirs: string[] = [];
-    const walk = (m: Module): void => {
-      for (const child of m.children) {
-        for (const d of exportDirs(child)) {
-          if (!dirs.includes(d)) dirs.push(d);
-        }
-        walk(child);
-      }
-    };
-    walk(module);
-    return dirs;
-  }
-
-  private transitiveLibPaths(module: Module): string[] {
-    const paths: string[] = [];
-    const walk = (m: Module): void => {
-      for (const child of m.children) {
-        const p = artifactPath(child, this.toolchain);
-        if (p && !paths.includes(p)) paths.push(p);
-        walk(child);
-      }
-    };
-    walk(module);
-    return paths;
-  }
-
-  private transitiveFlags(module: Module): string[] {
+  private transitiveInfo(module: Module): TransitiveInfo {
+    const includeDirs: string[] = [];
+    const libPaths: string[] = [];
     const flags: string[] = [];
-    const walk = (m: Module): void => {
-      for (const child of m.children) {
-        flags.push(...child.libFlags);
-        walk(child);
-      }
-    };
-    walk(module);
-    return flags;
-  }
+    const sharedLibs: string[] = [];
 
-  private transitiveShared(module: Module): string[] {
-    const shared: string[] = [];
+    const pushUnique = (arr: string[], v: string): void => {
+      if (!arr.includes(v)) arr.push(v);
+    };
+
     const walk = (m: Module): void => {
       for (const child of m.children) {
-        const p = sharedArtifactPath(child, this.toolchain);
-        if (p && existsSync(p) && !shared.includes(p)) shared.push(p);
+        for (const d of exportDirs(child)) pushUnique(includeDirs, d);
+        const lib = artifactPath(child, this.toolchain);
+        if (lib) pushUnique(libPaths, lib);
+        flags.push(...child.libFlags);
+        const shared = sharedArtifactPath(child, this.toolchain);
+        if (shared && existsSync(shared)) pushUnique(sharedLibs, shared);
         walk(child);
       }
     };
     walk(module);
-    return shared;
+
+    return { includeDirs, libPaths, flags, sharedLibs };
   }
 
   private exportHeaders(module: Module): void {
     if (module.content.headerUnits.length === 0) return;
     const destRoot = join(module.outDir, DIRS.INCLUDE);
-    const plans = exportDestinations(module);
-    for (const { unit, rel } of plans) {
+    for (const { unit, rel } of exportDestinations(module)) {
       const dst = join(destRoot, rel);
       mkdirSync(dirname(dst), { recursive: true });
       copyFileSync(unit.path, dst);
     }
-  }
-
-  private runHook(module: Module, name: string): void {
-    const cmd = module.manifest.scripts?.[name];
-    if (!cmd) return;
-    const r = spawnSync(cmd, [], { stdio: "inherit", shell: true, cwd: module.path });
-    if (r.status !== 0) throw new Error(`"${name}" failed`);
   }
 
   private key(moduleName: string, relPath: string): string {
@@ -274,6 +266,10 @@ function exportDirs(module: Module): string[] {
   return [join(module.outDir, DIRS.INCLUDE)];
 }
 
+function optionsOf(module: Module): UserBuildOptions {
+  return (module.manifest.options ?? {}) as UserBuildOptions;
+}
+
 function artifactPath(module: Module, tc: Toolchain): string | null {
   if (module.shape === PackageShape.Prebuilt || module.shape === PackageShape.HeaderOnly) {
     const target = module.content.artifactUnits.find(u => u.isArtifact);
@@ -309,61 +305,51 @@ function exportDestinations(module: Module): ExportPlan[] {
   const e = module.manifest.exports;
   if (!e) return [];
   const plans: ExportPlan[] = [];
-  const units = new Map(module.content.headerUnits.map(u => [u.path, u]));
-
-  const addMatch = (prefixSegs: number, file: string): void => {
-    const unit = units.get(file);
-    const rel = relPath(module.path, file);
-    const parts = rel.split("/");
-    const destRel = parts.slice(prefixSegs).join("/");
-    if (unit && destRel) plans.push({ unit: { path: unit.path }, rel: destRel });
+  const relOf = (file: string): string => relPath(module.path, file);
+  const add = (unitPath: string, rel: string): void => {
+    if (rel) plans.push({ unit: { path: unitPath }, rel });
   };
 
   if (Array.isArray(e)) {
-    // first path component is stripped
+    // first path component is stripped from every destination
     for (const entry of e) {
       const abs = join(module.path, entry);
-      if (existsSync(abs)) {
-        if (statSync(abs).isDirectory()) {
-          for (const u of module.content.headerUnits) {
-            const rel = relPath(module.path, u.path);
-            if (rel.startsWith(entry + "/")) {
-              const destRel = rel.split("/").slice(1).join("/");
-              plans.push({ unit: { path: u.path }, rel: destRel });
-            }
-          }
-        } else {
-          const rel = relPath(module.path, abs);
-          const unit = units.get(abs);
-          if (unit) plans.push({ unit: { path: abs }, rel: rel.split("/").slice(1).join("/") });
-        }
-      } else {
-        // glob pattern relative to module root — best-effort prefix strip of first segment
-        for (const u of module.content.headerUnits) {
-          const rel = relPath(module.path, u.path);
-          if (new Glob(entry).match(rel)) {
-            plans.push({ unit: { path: u.path }, rel: rel.split("/").slice(1).join("/") });
-          }
-        }
+      const isDir = existsSync(abs) && statSync(abs).isDirectory();
+      for (const u of module.content.headerUnits) {
+        const rel = relOf(u.path);
+        const hit = isDir
+          ? rel.startsWith(entry + "/")
+          : !hasGlobMeta(entry) && existsSync(abs)
+            ? rel === entry
+            : new Glob(entry).match(rel);
+        if (hit) add(u.path, rel.split("/").slice(1).join("/"));
       }
     }
     return plans;
   }
 
-  // object form: entire prefix key is stripped
+  // object form: entire prefix key is stripped; a non-glob pattern that is a
+  // directory exports that subtree recursively
   for (const [prefix, patterns] of Object.entries(e)) {
-    const base = join(module.path, prefix);
     for (const pattern of patterns) {
-      if (!existsSync(base)) continue;
+      const key = prefix + "/" + pattern;
+      const abs = join(module.path, key);
+      const isDir = existsSync(abs) && statSync(abs).isDirectory();
       for (const u of module.content.headerUnits) {
-        const rel = relPath(module.path, u.path);
-        if (!rel.startsWith(prefix + "/")) continue;
-        const sub = rel.slice(prefix.length + 1);
-        if (new Glob(pattern).match(sub)) {
-          plans.push({ unit: { path: u.path }, rel: sub });
-        }
+        const rel = relOf(u.path);
+        const sub = rel.startsWith(prefix + "/") ? rel.slice(prefix.length + 1) : "";
+        const hit = isDir
+          ? rel.startsWith(key + "/")
+          : hasGlobMeta(pattern)
+            ? !!sub && new Glob(pattern).match(sub)
+            : rel === key;
+        if (hit) add(u.path, sub);
       }
     }
   }
   return plans;
+}
+
+function hasGlobMeta(s: string): boolean {
+  return /[*?[\]]/.test(s);
 }

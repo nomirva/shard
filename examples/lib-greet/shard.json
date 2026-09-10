@@ -1,3 +1,4 @@
 {
+  "imports": ["include"],
   "exports": ["include"]
 }

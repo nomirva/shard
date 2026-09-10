@@ -1,12 +1,13 @@
 import { existsSync, readFileSync } from "fs";
 import { dirname, join } from "path";
 import { PackageShape, PackageJson, LinkType } from "./types";
-import { Dependency } from "./dependency";
+import { Dependency, parseDependency } from "./dependency";
 import { collectModuleContent, deriveShape, ModuleContent } from "./content";
 import { ConditionalParser } from "./conditional";
 import { Toolchain, UserBuildOptions } from "./toolchain";
 import type { Target } from "./target";
 import { DIRS } from "./constants";
+import { ShardError } from "./errors";
 
 export class Module {
   readonly path: string;
@@ -17,7 +18,6 @@ export class Module {
   manifest: PackageJson = {};
   content: ModuleContent = { sourceUnits: [], headerUnits: [], artifactUnits: [] };
   libFlags: string[] = [];
-  frameworks: string[] = [];
   requested: LinkType | null = null;
   tc: Toolchain | null = null;
 
@@ -35,7 +35,7 @@ export class Module {
   }
 
   get shape(): PackageShape {
-    return deriveShape(this.content);
+    return deriveShape(this.content, this.name);
   }
 
   load(tc?: Toolchain, defines?: string[]): void {
@@ -45,18 +45,20 @@ export class Module {
       ? JSON.parse(readFileSync(manifestPath, "utf-8"))
       : {};
     this.manifest = ConditionalParser.compute(this.tc ?? tc, raw, defines ?? []) as PackageJson;
-    this.deps = (this.manifest.depend ?? []).map(d => Dependency.parse(d));
+    this.deps = (this.manifest.depend ?? []).map(parseDependency);
+    this.content = collectModuleContent(this.path, this.manifest);
+  }
+
+  refreshContent(): void {
     this.content = collectModuleContent(this.path, this.manifest);
   }
 
   extract(): Target {
-    const tc = this.tc;
-    if (!tc) throw new Error(`Toolchain not available for "${this.name}"`);
+    const tc = this.toolchain();
     const includeDirs: string[] = [];
     const add = (d: string): void => { if (!includeDirs.includes(d)) includeDirs.push(d); };
 
     for (const u of this.content.sourceUnits) add(dirname(u.path));
-    for (const u of this.content.headerUnits) add(dirname(u.path));
 
     const incl = this.manifest.imports;
     if (incl) {
@@ -80,16 +82,18 @@ export class Module {
     };
   }
 
-  get outDir(): string {
-    const tc = this.tc;
-    if (!tc) throw new Error(`Toolchain not available for "${this.name}"`);
-    const base = this.isRoot ? this.path : join(this.root.path, DIRS.SHARD, this.name);
-    return join(base, DIRS.TARGET, this.targetSubdir(tc));
+  private toolchain(): Toolchain {
+    if (!this.tc) throw new ShardError("toolchain", `Toolchain not available for "${this.name}"`);
+    return this.tc;
   }
 
-  private targetSubdir(tc: Toolchain): string {
+  get outDir(): string {
+    const base = this.isRoot ? this.path : join(this.root.path, DIRS.SHARD, this.name);
+    return join(base, DIRS.TARGET, this.targetSubdir());
+  }
+
+  private targetSubdir(): string {
     const variant = typeof this.manifest.target === "string" ? this.manifest.target : undefined;
-    const td = tc.targetDir;
-    return variant ? join(td, variant) : td;
+    return variant ? join(this.toolchain().targetDir, variant) : this.toolchain().targetDir;
   }
 }
