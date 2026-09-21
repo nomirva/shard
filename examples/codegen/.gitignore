@@ -1,0 +1,5 @@
+/.shard
+/target
+/modules
+/src/generated.c
+/src/generated.h

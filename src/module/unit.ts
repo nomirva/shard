@@ -1,5 +1,7 @@
 import { basename, extname } from "path";
 
+const ARTIFACT_EXTS = [".a", ".so", ".dylib", ".lib", ".dll"];
+
 export class Unit {
   readonly path: string;
   readonly ext: string;
@@ -12,9 +14,6 @@ export class Unit {
   }
 
   get isC(): boolean { return this.ext === ".c"; }
-  get isHeader(): boolean { return this.ext === ".h"; }
   get isMain(): boolean { return this.name === "main.c"; }
-  get isArtifact(): boolean {
-    return [".a", ".so", ".dylib", ".lib", ".dll"].includes(this.ext);
-  }
+  get isArtifact(): boolean { return ARTIFACT_EXTS.includes(this.ext); }
 }

@@ -4,6 +4,7 @@
     "module": "ESNext",
     "types": ["node", "bun-types"],
     "moduleResolution": "bundler",
+    "resolveJsonModule": true,
     "strict": true,
     "esModuleInterop": true,
     "outDir": "dist",

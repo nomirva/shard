@@ -1,9 +1,7 @@
-import type { Unit } from "./unit";
+import type { Unit } from "../module/unit";
+import type { WarningSet, Subsystem, Profile, StandardOptions } from "../module/types";
 
-export type OptLevel = `-O${string}`;
-export type CStd = `-std=${string}`;
-export type WarningSet = "none" | "default" | "extra" | "pedantic" | "all" | "error";
-export type Subsystem = "console" | "windows" | "native" | "efi_application";
+export type { WarningSet, Subsystem, Profile, StandardOptions } from "../module/types";
 
 export interface TargetPlatform {
   platform: string;
@@ -17,23 +15,11 @@ export const HOST_TARGET: TargetPlatform = {
   abi: "none",
 };
 
-export interface UserBuildOptions {
-  optimize?: string;
-  debug?: boolean;
-  standard?: string;
-  warnings?: WarningSet;
-  defines?: string[];
-  compileExtra?: string[];
-  linkExtra?: string[];
-  subsystem?: Subsystem;
-}
-
 export interface CompileOptions {
   includePaths: string[];
   target?: TargetPlatform;
-  optimize?: OptLevel;
-  debug?: boolean;
-  standard?: CStd;
+  profile?: Profile;
+  standard?: StandardOptions;
   warnings?: WarningSet;
   defines?: string[];
   extra?: string[];

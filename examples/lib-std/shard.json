@@ -1,0 +1,8 @@
+{
+  "imports": ["include"],
+  "exports": ["include"],
+  "options": {
+    "profile": "debug-opt",
+    "standard": { "version": "c11", "support": "c99", "pedantic": true }
+  }
+}

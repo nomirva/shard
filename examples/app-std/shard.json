@@ -1,0 +1,5 @@
+{
+  "depend": ["local:../lib-std"],
+  "options": { "profile": "fast", "standard": { "version": "c17" } },
+  "?define:C89": { "options": { "standard": { "version": "c89" } } }
+}

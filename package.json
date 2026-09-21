@@ -3,12 +3,17 @@
   "version": "0.1.0",
   "module": "shard.ts",
   "type": "module",
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "smoke": "bun shard.ts build examples/app --def GREET && bun shard.ts build examples/app --def MATH"
+  },
   "dependencies": {
     "chalk": "^5.6.2",
     "commander": "^13.1.0"
   },
   "devDependencies": {
     "@types/node": "^26.1.1",
-    "bun-types": "^1.4.2"
+    "bun-types": "^1.4.2",
+    "typescript": "^7.0.2"
   }
 }

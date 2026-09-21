@@ -1,5 +1,9 @@
 # Shard Build Manager — Specification
 
+> **Note:** This specification is partially outdated. It no longer fully matches
+> the implementation (for example, shape detection and the set of package shapes /
+> link types have diverged). Treat it as a reference only; to be reconciled later.
+
 ## 1 Scope
 
 This document specifies the behaviour of the Shard build manager, its manifest format (`shard.json`), module layout conventions, and the command-line interface. It is intended for implementers and tool integrators.
@@ -87,8 +91,7 @@ Note: only the array form of `sources` is checked for `main.c`. Object-form sour
   "version":    "<semver>",
   "scripts":    { "<name>": "<command>" },
   "options": {
-    "optimize":   "<0|1|2|s|z>",
-    "debug":      "<boolean>",
+    "profile":    "<debug|debug-opt|release|fast|small|tiny>",
     "standard":   "<string>",
     "warnings":   "<none|default|extra|pedantic|all|error>",
     "defines":    [ "<string>" ],
@@ -270,18 +273,30 @@ A SemVer 2.0.0 string. Used by `Fetcher.git()` to pin a dependency to a specific
 
 | Field | Type | Behaviour |
 |-------|------|-----------|
-| `optimize` | `"0"`|`"1"`|`"2"`|`"s"`|`"z"` | `-O<value>`. Default `-O2`. |
-| `debug` | boolean | Pass `-g`. |
-| `standard` | string | `-std=<value>`. |
+| `profile` | string | Compilation profile. Default `release`. See below. |
+| `standard` | string \| object | Canonical C standard. String: equivalent to `{ "version": "<std>" }`. Object fields: `version` (canonical name), `support` (oldest standard a consumer of the exported headers may use), `pedantic` (`true` → `-Wpedantic`, `"error"` → `-pedantic-errors`). All fields are optional; an empty object adds no flags. See §5.12. |
 | `warnings` | string | Maps to warning flags. |
 | `defines` | `string[]` | Each entry passed as `-D<value>`. |
 | `compileExtra` | `string[]` | Passed verbatim to the compiler. |
 | `linkExtra` | `string[]` | Passed verbatim to the linker. |
 | `subsystem` | string | Subsystem flag for the linker (Windows, EFI). |
 
+**Compilation profiles.** A profile selects a preset of optimisation and debug settings. The name is toolchain-independent; the mapping to compiler flags is defined by the toolchain. For Clang:
+
+| Profile | Flags |
+|---------|-------|
+| `debug` | `-O0 -g` |
+| `debug-opt` | `-O2 -g` |
+| `release` | `-O2` |
+| `fast` | `-O3` |
+| `small` | `-Os` |
+| `tiny` | `-Oz` |
+
+The `--profile <name>` CLI flag overrides the profile for the whole build, including modules that declare their own. Profiles affect compilation only, and are not inherited between modules.
+
 ### 5.10 scripts
 
-A mapping of script names to shell commands. Each entry MAY reference a `prebuild`, `postbuild` or `preclean` key, which are reserved as build or clean hooks (see §7.7). All other keys are arbitrary and MAY be invoked via `shard run <name>`.
+A mapping of script names to shell commands. Each entry MAY reference a `preload`, `prebuild`, `postbuild` or `preclean` key, which are reserved as build or clean hooks (see §7.7). All other keys are arbitrary and MAY be invoked via `shard run <name>`.
 
 Examples:
 
@@ -319,6 +334,22 @@ For the `define` variable, a conditional `?define:X` matches if any `--def` valu
 
 A conditional block that evaluates to an object is deep-merged with the base object and with other matching conditionals. Arrays from matching conditionals are concatenated. Conditionals defined later in the document have higher priority during merge.
 
+### 5.12 Standard compatibility
+
+Canonical C standard names are `c89`, `c99`, `c11`, `c17`, `c23` and the GNU dialects `gnu89`, `gnu99`, `gnu11`, `gnu17`, `gnu23`. Only these names are accepted; aliases such as `c90`, `c2x`, `gnu90`, `gnu2x` are errors. C++ is not supported and any C++ standard name is an error. The mapping from a canonical name to a compiler flag is a toolchain concern and is not part of the manifest.
+
+`standard.version` declares the standard used to compile a module. `standard.support` declares the oldest standard that a consumer of the module's exported headers may use; it is optional and defaults to `effective(B)` (the module's own standard). Both must be canonical names.
+
+**Inheritance.** A module that does not declare `version` inherits the effective standard of the modules that depend on it, transitively up to the root. If the root declares no version, no `-std` flag is passed and no compatibility checks apply. When a module is reachable through several paths that inherit different standards, the oldest standard wins (C versions are backwards compatible); for the same version the pure `c` dialect is preferred over the corresponding `gnu` dialect.
+
+**Header compatibility.** Let `baselines(B) = { effective(B) } ∪ { support(B) }`. When a module `A` depends, directly or transitively, on a module `B` that exports headers, the build fails unless some baseline `s ∈ baselines(B)` is covered by `A`:
+
+```
+rank(version_A) ≥ rank(s)   and   (s is pure `c`  or  A uses a `gnu` dialect)
+```
+
+Because C is backwards compatible, a pure-`c` header is usable by newer and by `gnu` consumers; a `gnu` header is usable only by `gnu` consumers at the same or a newer version. A `support` older than `version` broadens the set of accepted consumers. Modules without exported headers are not checked.
+
 ## 6 Dependency resolution
 
 ### 6.1 URI schemes
@@ -349,11 +380,12 @@ A module is installed in exactly one pinned state per name; C is statically link
 
 A build invocation proceeds in the following order:
 
-1. Module loading (`load()`): manifest parsing, shape detection, dependency list construction.
-2. Dependency sync (`update()`): all transitive dependencies are installed (fetched) and each loaded.
-3. Recursive build: each dependency is built before its consumer. Before compilation, the `prebuild` hook is executed (if defined). After linking but before returning the result, `postbuild` is executed (if defined).
-4. Export copying: exports are copied to the target include directory (after `prebuild`, before `postbuild`).
-5. Linking or archiving.
+1. Manifest loading: manifests are parsed and dependency lists are constructed.
+2. Dependency sync (`update()`): all transitive dependencies are installed (fetched) and their manifests loaded.
+3. Materialization: for each module in dependency order, the `preload` hook runs (if defined) and the module's files are scanned, fixing its content and shape.
+4. Recursive build: each dependency is built before its consumer. Before compilation, the `prebuild` hook is executed (if defined). After linking but before returning the result, `postbuild` is executed (if defined).
+5. Export copying: exports are copied to the target include directory (after `prebuild`, before `postbuild`).
+6. Linking or archiving.
 
 ### 7.2 Compilation
 
@@ -411,8 +443,9 @@ At toolchain initialisation (`detect()`) the output of `clang --version` is pars
 
 ### 7.7 Build hooks
 
-A module MAY declare `prebuild`, `postbuild` and `preclean` scripts in `scripts`:
+A module MAY declare `preload`, `prebuild`, `postbuild` and `preclean` scripts in `scripts`:
 
+- `preload`: executed after the manifest is parsed and before the module's files are scanned. Intended for code generation that produces source or header files; the generated files are discovered by the subsequent scan.
 - `prebuild`: executed after include paths are resolved and before compilation. Runs before individual compile tasks, after the dependency build loop.
 - `postbuild`: executed after export copying and `BuildResult.includePaths` assignment, before the result is returned to the parent.
 - `preclean`: executed at the start of `shard clean`, before any filesystem removal. If it fails, the cleaning operation is aborted.
@@ -450,12 +483,13 @@ The hash is computed using SHA-256.
 Build a module. Synopsis:
 
 ```
-shard build [<path>] [--ignore-cache <0|1|2>] [--def <names...>] [--start] [--git-protocol <protocol>]
+shard build [<path>] [--ignore-cache <0|1|2>] [--def <names...>] [--profile <name>] [--start] [--git-protocol <protocol>]
 ```
 
 - `<path>` defaults to `.` (current directory).
 - `--def` passes defines; each definition is split on `,` and each token is available as `?define:` conditionals.
 - `--ignore-cache` controls cache mode.
+- `--profile` selects the compilation profile for the whole build, overriding per-module `options.profile` (see §5.9).
 - `--start` builds and runs the resulting executable.
 - `--git-protocol` selects the git protocol for dependency cloning: `https` (default), `ssh`, or `http`. May also be set via the `SHARD_GIT_PROTOCOL` environment variable.
 
