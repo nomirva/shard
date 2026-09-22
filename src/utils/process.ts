@@ -1,5 +1,21 @@
 import { spawn, spawnSync } from "child_process";
+import { existsSync } from "fs";
 import { ShardError } from "./errors";
+
+function posixShell(): string | null {
+  if (process.platform !== "win32") return "sh";
+  const candidates = [
+    process.env.SHELL,
+    "C:\\Program Files\\Git\\bin\\sh.exe",
+    "C:\\Program Files\\Git\\usr\\bin\\sh.exe",
+    "C:\\Program Files (x86)\\Git\\bin\\sh.exe",
+    "C:\\Program Files (x86)\\Git\\usr\\bin\\sh.exe",
+  ].filter((p): p is string => !!p && existsSync(p));
+  if (candidates.length > 0) return candidates[0];
+  const probe = spawnSync("where", ["sh"], { stdio: "pipe" });
+  const found = probe.status === 0 ? (probe.stdout?.toString() ?? "").split(/\r?\n/)[0]?.trim() : "";
+  return found || null;
+}
 
 export interface RunResult {
   status: number;
@@ -36,7 +52,10 @@ export function runAsync(
 }
 
 export function shellSync(cwd: string, command: string, stdio: "pipe" | "inherit"): RunResult {
-  const r = spawnSync(command, [], { stdio, shell: true, cwd });
+  const shell = posixShell();
+  const r = shell
+    ? spawnSync(shell, ["-c", command], { stdio, cwd })
+    : spawnSync(command, [], { stdio, shell: true, cwd });
   if (r.error) throw new ShardError("script", `Failed to run "${command}": ${r.error.message}`);
   return {
     status: r.status ?? -1,

@@ -5,7 +5,7 @@ export function relativeTo(fromDir: string, file: string): string {
   if (rel === "" || rel.startsWith("..") || isAbsolute(rel)) {
     throw new Error(`Path "${file}" is outside "${fromDir}"`);
   }
-  return rel;
+  return rel.replace(/\\/g, "/");
 }
 
 export function moduleId(rootPath: string, modulePath: string): string {
