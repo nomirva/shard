@@ -1,9 +1,11 @@
 import { ShardError } from "../utils/errors";
+import { ConfigurationContainer } from "./configurations";
+import type { ResolutionServices } from "./resolution";
 import { TaskContainer, type TaskProvider } from "./tasks";
 import type { Task } from "./task";
 
 /**
- * Extends a project: registers tasks, extensions and (later) configurations.
+ * Extends a project: registers tasks, extensions and configurations.
  * `apply` runs once per project; reacting to other plugins goes through
  * `project.plugins.withId`, never through application order.
  */
@@ -88,10 +90,16 @@ export interface ProjectInit {
   readonly buildDir: string;
 }
 
+/** What a project gets from the build it belongs to. */
+export interface ProjectServices {
+  readonly onRegister: (task: TaskProvider<Task>) => void;
+  readonly resolution: ResolutionServices;
+}
+
 /**
  * One module of the build. A project holds registries and nothing else; it
  * has no way to reach other projects, so they exchange data only through
- * published artifacts.
+ * consumable configurations.
  */
 export class Project {
   readonly name: string;
@@ -101,13 +109,15 @@ export class Project {
   readonly tasks: TaskContainer;
   readonly extensions: ExtensionContainer;
   readonly plugins: PluginContainer;
+  readonly configurations: ConfigurationContainer;
 
-  constructor(init: ProjectInit, onRegister: (task: TaskProvider<Task>) => void) {
+  constructor(init: ProjectInit, services: ProjectServices) {
     this.name = init.name;
     this.path = init.path;
     this.dir = init.dir;
     this.buildDir = init.buildDir;
-    this.tasks = new TaskContainer(init.path, init.dir, init.buildDir, onRegister);
+    this.tasks = new TaskContainer(init.path, init.dir, init.buildDir, services.onRegister);
+    this.configurations = new ConfigurationContainer(init.path, services.resolution);
     this.extensions = new ExtensionContainer(init.path);
     this.plugins = new PluginContainer(this);
   }

@@ -3,7 +3,11 @@ import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "fs";
 import { tmpdir } from "os";
 import { join } from "path";
 import type { CacheStore } from "../src/cache/store";
-import { Build, extension, Property, provider, Task, type ExecutionListener, type Plugin, type TaskContext } from "../src/core";
+import {
+  attribute, AttributeContainer, Build, extension, projectDependency, Property, provider, Task,
+  type Dependency, type ExecutionListener, type Plugin, type TaskContext,
+} from "../src/core";
+import type { ShardError } from "../src/utils/errors";
 
 class MemoryCache implements CacheStore {
   readonly entries = new Map<string, string>();
@@ -229,5 +233,122 @@ describe("execution", () => {
     const { events } = await run(["target"], 1);
     expect(events).toEqual([":broken failed", ":target skipped", ":after skipped"]);
     cleanup();
+  });
+});
+
+describe("variant resolution", () => {
+  const linkage = attribute<string>("shard.linkage");
+  const standard = attribute<string>("shard.c.standard");
+  const RANK = ["c89", "c99", "c11", "c17", "c23"];
+
+  /** Builds a .a for one project; its output is what the variant publishes. */
+  class Archive extends Task {
+    readonly file = this.outputFile("file");
+    run() { writeFileSync(this.file.get(), this.path); }
+  }
+
+  /** Consumes resolved artifacts; records their values. */
+  class LinkInputs extends Task {
+    readonly libs = this.inputList<string>("libs");
+    readonly out = this.outputFile("out");
+    run() { writeFileSync(this.out.get(), this.libs.get().join(" ")); }
+  }
+
+  function cBuild() {
+    const env = setup();
+    const { build, dir } = env;
+    // Consumers that do not ask for a linkage get static; standards are backwards compatible.
+    build.schema.define(linkage, { disambiguate: (requested, offered) => requested ? [requested] : offered.filter(v => v === "static") });
+    build.schema.define(standard, { compatible: (requested, produced) => RANK.indexOf(produced) <= RANK.indexOf(requested) });
+
+    const library = (name: string, opts: { shared?: boolean; support?: string; api?: string[] } = {}) => {
+      const p = build.addProject({ name, path: `:${name}`, dir: join(dir, name), buildDir: join(dir, name) });
+      const api = p.configurations.scope("api");
+      for (const dep of opts.api ?? []) api.add(projectDependency(dep));
+      const archive = p.tasks.register("archive", Archive, t => t.file.set(join(dir, `${name}.a`)));
+      const linkStatic = p.configurations.consumable("linkStatic").attribute(linkage, "static").extendsFrom(api);
+      linkStatic.artifacts.add(archive.flatMap(t => t.file).map(value => ({ type: "static-lib", value })));
+      if (opts.support) linkStatic.attribute(standard, opts.support);
+      if (opts.shared) {
+        p.configurations.consumable("linkShared").attribute(linkage, "shared").extendsFrom(api)
+          .artifacts.add({ type: "shared-lib", value: `${name}.so` });
+      }
+      return p;
+    };
+
+    const consumer = (deps: Dependency[], requestedStandard = "c17") => {
+      const classpath = env.root.configurations.resolvable("linkClasspath").attribute(standard, requestedStandard);
+      for (const dep of deps) classpath.add(dep);
+      env.root.tasks.register("link", LinkInputs, t => {
+        t.libs.addAll(classpath.incoming.artifacts().map(a => a.map(x => x.value)));
+        t.out.set(join(dir, "link.txt"));
+      });
+      return classpath;
+    };
+    return { ...env, library, consumer };
+  }
+
+  test("transitive api dependencies come after their consumers, once", async () => {
+    const { library, consumer, build, run, dir, cleanup } = cBuild();
+    library("leaf");
+    library("mid-a", { api: [":leaf"] });
+    library("mid-b", { api: [":leaf"] });
+    const classpath = consumer([projectDependency(":mid-a"), projectDependency(":mid-b")]);
+
+    expect(classpath.incoming.nodes().map(n => n.owner)).toEqual([":mid-a", ":mid-b", ":leaf"]);
+    expect(build.graph(["link"]).describe()).toEqual([":leaf:archive", ":mid-a:archive", ":mid-b:archive", ":link ← :mid-a:archive, :mid-b:archive, :leaf:archive"]);
+    await run(["link"]);
+    expect(readFileSync(join(dir, "link.txt"), "utf-8")).toBe([join(dir, "mid-a.a"), join(dir, "mid-b.a"), join(dir, "leaf.a")].join(" "));
+    cleanup();
+  });
+
+  test("an edge attribute picks the variant, a disambiguation rule the default", () => {
+    const { library, consumer, cleanup } = cBuild();
+    library("greet", { shared: true });
+    library("math", { shared: true });
+    const classpath = consumer([
+      projectDependency(":greet", AttributeContainer.empty().with(linkage, "shared")),
+      projectDependency(":math"),
+    ]);
+    expect(classpath.incoming.nodes().map(n => `${n.owner} ${n.variant.name}`)).toEqual([":greet linkShared", ":math linkStatic"]);
+    cleanup();
+  });
+
+  test("plugin-published variants resolve like projects", () => {
+    const { consumer, cleanup } = cBuild();
+    const m: Dependency = {
+      kind: "variants", name: "sys:m", attributes: AttributeContainer.empty(),
+      variants: [{ name: "system", attributes: AttributeContainer.empty(), artifacts: provider([{ type: "link-flag", value: "-lm" }]), dependencies: [] }],
+    };
+    const classpath = consumer([m]);
+    expect(classpath.incoming.artifacts("link-flag").get()).toEqual([{ type: "link-flag", value: "-lm" }]);
+    cleanup();
+  });
+
+  test("an incompatible standard names the request and what is offered", () => {
+    const { library, consumer, cleanup } = cBuild();
+    library("lib-std", { support: "c99" });
+    const classpath = consumer([projectDependency(":lib-std")], "c89");
+    let error: ShardError | null = null;
+    try { classpath.incoming.nodes(); } catch (e) { error = e as ShardError; }
+    expect(error?.message).toBe("No variant of :lib-std matches what :linkClasspath requests");
+    expect(error?.details).toEqual([["requested", "shard.c.standard=c89"], ["linkStatic", "shard.linkage=static, shard.c.standard=c99"]]);
+    cleanup();
+  });
+
+  test("dependency cycles are reported; resolved configurations are final", () => {
+    const { library, consumer, cleanup } = cBuild();
+    library("a", { api: [":b"] });
+    library("b", { api: [":a"] });
+    const classpath = consumer([projectDependency(":a")]);
+    expect(() => classpath.incoming.nodes()).toThrow("Dependency cycle");
+
+    const { library: lib2, consumer: consumer2, cleanup: cleanup2 } = cBuild();
+    lib2("x");
+    const resolved = consumer2([projectDependency(":x")]);
+    resolved.incoming.nodes();
+    expect(() => resolved.add(projectDependency(":y"))).toThrow("already resolved");
+    cleanup();
+    cleanup2();
   });
 });

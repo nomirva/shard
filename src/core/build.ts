@@ -1,7 +1,9 @@
 import { ShardError } from "../utils/errors";
+import { AttributeSchema } from "./attributes";
 import { execute, type ExecuteOptions, type ExecutionResult } from "./executor";
 import { TaskGraph } from "./graph";
 import { Project, type ProjectInit } from "./project";
+import type { ResolutionServices } from "./resolution";
 import type { Task } from "./task";
 import type { TaskProvider } from "./tasks";
 
@@ -11,12 +13,21 @@ import type { TaskProvider } from "./tasks";
  * configuration builds the graph for the request, execution runs it.
  */
 export class Build {
+  /** Attribute matching rules; plugins define the attributes they introduce. */
+  readonly schema = new AttributeSchema();
   private readonly projects = new Map<string, Project>();
   private readonly registry = new Map<string, TaskProvider<Task>>();
+  private readonly resolution: ResolutionServices = {
+    schema: this.schema,
+    variantsOf: path => this.projects.get(path)?.configurations.consumableVariants(),
+  };
 
   addProject(init: ProjectInit): Project {
     if (this.projects.has(init.path)) throw new ShardError("config", `Project ${init.path} already exists`);
-    const project = new Project(init, task => this.registry.set(task.path, task));
+    const project = new Project(init, {
+      onRegister: task => this.registry.set(task.path, task),
+      resolution: this.resolution,
+    });
     this.projects.set(init.path, project);
     return project;
   }
