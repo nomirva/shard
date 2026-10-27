@@ -11,8 +11,11 @@ export const start: Stage<TargetGraph<PlannedTarget>, never> = {
   run(graph, ws) {
     const exe = graph.root.build.executable;
     if (!exe) throw new ShardError("usage", `"${basename(ws.rootPath)}" is not an executable module`);
+    const name = graph.root.name;
+    ws.reporter.emit({ type: "program.start", name });
     const proc = spawnSync(exe, [], { stdio: "inherit" });
     if (proc.error) throw proc.error;
+    ws.reporter.emit({ type: "program.end", name, status: proc.status ?? 0 });
     process.exit(proc.status ?? 0);
   },
 };

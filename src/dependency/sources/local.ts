@@ -16,7 +16,9 @@ export const localSource: DependencySource<LocalDependency> = {
     return { kind: "local", link, name, version: null, target: value };
   },
 
+  spec: dep => dep.target,
+
   decide(dep: LocalDependency, env: ResolveEnv): Decision {
-    return { kind: "module", path: resolvePath(env.rootPath, dep.target), name: dep.name };
+    return { kind: "module", path: resolvePath(env.rootPath, dep.target), name: dep.name, action: "local" };
   },
 };

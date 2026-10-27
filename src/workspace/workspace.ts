@@ -1,6 +1,7 @@
 import { existsSync, rmSync } from "fs";
 import { basename, join } from "path";
 import { ShardError } from "../utils/errors";
+import { diskUsage } from "../utils/fs";
 import type { Reporter } from "../report/reporter";
 import type { ConditionalContext } from "../manifest/conditional";
 import { loadManifest } from "../manifest/manifest";
@@ -20,7 +21,7 @@ export interface WorkspaceOptions {
 
 /** Composition root of one run: the root path, settings, toolchain, layout and hooks. */
 export class Workspace {
-  readonly hooks = new HookRunner();
+  readonly hooks: HookRunner;
   readonly settings: WorkspaceSettings;
   readonly reporter: Reporter;
   private readonly tc: Toolchain | null;
@@ -28,6 +29,7 @@ export class Workspace {
   private constructor(readonly rootPath: string, options: WorkspaceOptions) {
     this.settings = options.settings;
     this.reporter = options.reporter;
+    this.hooks = new HookRunner(options.reporter);
     this.tc = options.toolchain ? selectToolchain() : null;
   }
 
@@ -67,13 +69,14 @@ export class Workspace {
     return layoutOf(target, this.toolchain.target, this.rootPath);
   }
 
-  /** Removes build cache, installed modules and artifacts; returns the removed directories. */
-  clean(): string[] {
-    const removed: string[] = [];
+  /** Removes build cache, installed modules and artifacts; returns what was removed and its size. */
+  clean(): { dir: string; bytes: number }[] {
+    const removed: { dir: string; bytes: number }[] = [];
     for (const dir of [this.shardDir, this.modulesDir, join(this.rootPath, DIRS.TARGET)]) {
       if (existsSync(dir)) {
+        const bytes = diskUsage(dir);
         rmSync(dir, { recursive: true, force: true });
-        removed.push(dir);
+        removed.push({ dir, bytes });
       }
     }
     return removed;

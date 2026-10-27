@@ -13,6 +13,8 @@ export interface ResolveEnv {
   readonly rootPath: string;
   readonly store: ModuleStore;
   readonly gitProtocol: string;
+  /** Module names from the root to the module declaring this dependency. */
+  readonly requestedBy: readonly string[];
   readonly onProgress?: (percent: number) => void;
 }
 
@@ -21,7 +23,15 @@ export interface ResolveEnv {
  * the module store; fetching happens only in `install`.
  */
 export type Decision =
-  | { kind: "module"; path: string; name: string; install?: () => Promise<void> }
+  | {
+      kind: "module";
+      path: string;
+      name: string;
+      action: "local" | "reused" | "installed" | "upgraded";
+      /** Pin being replaced when upgrading. */
+      previous?: string;
+      install?: () => Promise<void>;
+    }
   | { kind: "link"; inputs: LinkInput[] };
 
 /** One `depend` prefix family (git:, local:, sys:/framework:, ...). */
@@ -30,6 +40,8 @@ export interface DependencySource<D extends Dependency = Dependency> {
   /** Example specs for error hints, e.g. "local:../path". */
   readonly examples: readonly string[];
   parse(prefix: string, value: string, link: LinkType | null): D;
+  /** Short human form of what is requested, e.g. "v1.2.0" or "../lib". */
+  spec(dep: D): string;
   /** Reuse, install, reinstall or conflict — throws on conflict. */
   decide(dep: D, env: ResolveEnv): Decision;
 }

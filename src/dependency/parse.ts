@@ -30,6 +30,11 @@ export function parseDependencies(depend: readonly string[]): Dependency[] {
   return depend.map(parseDependency);
 }
 
+/** Display name of the source family ("sys:" deps read as "system"). */
+export function sourceLabel(dep: Dependency): string {
+  return dep.kind === "sys" ? "system" : dep.kind;
+}
+
 export function describeDependency(dep: Dependency): string {
   return `${dep.name} ${dep.link ?? "default (static)"}`;
 }

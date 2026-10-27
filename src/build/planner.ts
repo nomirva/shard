@@ -62,6 +62,8 @@ function planTarget(target: PreparedTarget, inherited: Usage, isRoot: boolean, w
       const output = executablePath(target.name, layout, tc.naming);
       build.link = [{
         dir: dirname(output),
+        kind: "executable",
+        output,
         invocation: tc.linker.link({ kind: "executable", objects, output, libPaths, libFlags, subsystem, extra }),
       }];
       build.ship = { libs: inherited.sharedLibs, toDir: dirname(output) };
@@ -69,15 +71,20 @@ function planTarget(target: PreparedTarget, inherited: Usage, isRoot: boolean, w
     } else {
       const library = (type: LinkType): LinkStep => {
         if (type === LinkType.Static) {
+          const output = staticLibPath(target.name, layout, tc.naming);
           return {
             dir: layout.outDir,
-            invocation: tc.linker.archive({ objects, output: staticLibPath(target.name, layout, tc.naming) }),
+            kind: "static",
+            output,
+            invocation: tc.linker.archive({ objects, output }),
           };
         }
         const output = sharedLibPath(target.name, layout, tc.naming);
         if (!output) {
           return {
             dir: layout.outDir,
+            kind: "shared",
+            output: join(layout.outDir, target.name),
             error: new ShardError(
               "build",
               `Shared libraries not supported on platform "${tc.target.platform}"`,
@@ -87,6 +94,8 @@ function planTarget(target: PreparedTarget, inherited: Usage, isRoot: boolean, w
         }
         return {
           dir: layout.outDir,
+          kind: "shared",
+          output,
           invocation: tc.linker.link({ kind: "shared", objects, output, libPaths, libFlags, subsystem, extra }),
         };
       };
@@ -113,13 +122,14 @@ function planTarget(target: PreparedTarget, inherited: Usage, isRoot: boolean, w
 function compileUnits(target: PreparedTarget, layout: Layout, includePaths: string[], tc: Toolchain): CompileUnit[] {
   const options = { includePaths, ...target.settings.compile };
   return target.content.sources.map(source => {
-    const rel = relativeTo(target.path, source.path).replace(/\.c$/, ".o");
+    const file = relativeTo(target.path, source.path);
+    const rel = file.replace(/\.c$/, ".o");
     const task = { source: source.path, object: join(layout.objectDir, rel), options };
     return {
       task,
       invocation: tc.compiler.compile(task, target.path),
       cacheKey: `${layout.id}/${rel}`,
-      label: `${target.name}/${rel}`,
+      file,
     };
   });
 }

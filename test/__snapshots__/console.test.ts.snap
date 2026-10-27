@@ -1,0 +1,120 @@
+// Bun Snapshot v1, https://bun.sh/docs/test/snapshots
+
+exports[`console reporter live build: one line per module, details after it 1`] = `
+"
+ shard 0.1.0 · clang 21.0.0 · arm64-darwin
+
+ Dependencies
+   ✓ leaf        local      ../leaf  static
+     ↻ gitlib      git        v1.0.0 → v1.2.0  upgraded <t>
+   ⚙ m           system     -lm  ⚠ -Bstatic unavailable on macOS, linking dynamically
+
+ Building 2 modules
+   leaf  library     c99 · release  2 files  ✔ <t> (1 cached)  → leaf.a
+   app   executable  c11 · release  1 file   ✔ <t>  → app
+     ▸ prebuild  sh gen.sh  <t>
+       src/main.c:3:5: warning: unused variable 'x'
+
+ ✔ Built app in <t>  ·  1 upgraded  ·  2 compiled  ·  1 cached  ·  2 warnings
+   → /x/target/app
+
+"
+`;
+
+exports[`console reporter plain build: files listed under their module 1`] = `
+"
+ shard 0.1.0 · clang 21.0.0 · arm64-darwin
+
+ Dependencies
+   ✓ leaf        local      ../leaf  static
+     ↻ gitlib      git        v1.0.0 → v1.2.0  upgraded <t>
+   ⚙ m           system     -lm  ⚠ -Bstatic unavailable on macOS, linking dynamically
+
+ Building 2 modules
+   leaf (library · c99 · release)
+     ✔ src/leaf.c  <t>
+     ≡ src/nested.c  cached
+     → /x/.shard/leaf/target/leaf.a  <t>
+   app (executable · c11 · release)
+     ▸ prebuild  sh gen.sh  <t>
+     ✔ src/main.c  <t>
+       src/main.c:3:5: warning: unused variable 'x'
+     → /x/target/app  <t>
+
+ ✔ Built app in <t>  ·  1 upgraded  ·  2 compiled  ·  1 cached  ·  2 warnings
+   → /x/target/app
+
+"
+`;
+
+exports[`console reporter verbose build shows commands and hook output 1`] = `
+"
+ shard 0.1.0 · clang 21.0.0 · arm64-darwin
+
+ Dependencies
+   ✓ leaf        local      ../leaf  static
+     /x/leaf
+     ↻ gitlib      git        v1.0.0 → v1.2.0  upgraded <t>
+       /x/modules/gitlib@v1.2.0
+   ⚙ m           system     -lm  ⚠ -Bstatic unavailable on macOS, linking dynamically
+
+ Building 2 modules
+   leaf  library     c99 · release  2 files  ✔ <t> (1 cached)  → leaf.a
+     ✔ src/leaf.c  <t>
+       $ clang -c leaf.c
+     ≡ src/nested.c  cached
+       $ clang -c nested.c
+     → /x/.shard/leaf/target/leaf.a  <t>
+       $ ar rcs leaf.a
+   app   executable  c11 · release  1 file   ✔ <t>  → app
+     ▸ prebuild  sh gen.sh  <t>
+       generated
+     ✔ src/main.c  <t>
+       $ clang -c main.c
+       src/main.c:3:5: warning: unused variable 'x'
+     → /x/target/app  <t>
+       $ clang -o app
+
+ ✔ Built app in <t>  ·  1 upgraded  ·  2 compiled  ·  1 cached  ·  2 warnings
+   → /x/target/app
+
+"
+`;
+
+exports[`console reporter failure in the middle of a module 1`] = `
+"
+ shard 0.1.0 · clang 21.0.0 · arm64-darwin
+
+ Dependencies
+   ✓ leaf        local      ../leaf  static
+     ↻ gitlib      git        v1.0.0 → v1.2.0  upgraded <t>
+   ⚙ m           system     -lm  ⚠ -Bstatic unavailable on macOS, linking dynamically
+
+ Building 2 modules
+   leaf  library     c99 · release  2 files  ✘ failed
+       src/leaf.c:1:1: error: unknown type name 'nope'
+       1 error generated.
+
+ ✘ Compilation failed: leaf
+   file  /x/leaf/src/leaf.c
+
+ ✘ Build failed after <t>
+
+"
+`;
+
+exports[`console reporter structured error with hint and tool output 1`] = `
+"
+ Dependencies
+   ✘ gitlib      git        v2.0.0
+
+ ✘ Version conflict: gitlib
+   installed  v1.0.0   modules/gitlib@v1.0.0
+   requested  v2.0.0   by app → mid-a
+   hint       one pinned state per module can be installed at a time
+
+   │ fatal: something
+   │ second line
+
+"
+`;

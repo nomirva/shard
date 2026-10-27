@@ -29,15 +29,20 @@ export class ModuleStore {
     return matches[0] ?? null;
   }
 
-  /** Removes installed modules that no active module path lives in. */
-  prune(activePaths: readonly string[]): void {
-    if (!existsSync(this.dir)) return;
+  /** Removes installed modules that no active module path lives in; returns their directory names. */
+  prune(activePaths: readonly string[]): string[] {
+    const removed: string[] = [];
+    if (!existsSync(this.dir)) return removed;
     const active = new Set(activePaths);
     for (const entry of readdirSync(this.dir, { withFileTypes: true })) {
       if (!entry.isDirectory()) continue;
       const full = join(this.dir, entry.name);
       const isActive = active.has(full) || activePaths.some(p => p.startsWith(full + sep));
-      if (!isActive) rmSync(full, { recursive: true, force: true });
+      if (!isActive) {
+        rmSync(full, { recursive: true, force: true });
+        removed.push(entry.name);
+      }
     }
+    return removed;
   }
 }

@@ -37,11 +37,10 @@ export async function installGit(job: GitInstall): Promise<void> {
     const sparse = runSync("git", ["sparse-checkout", "set", subdir], targetDir);
     if (sparse.status !== 0 || !existsSync(join(targetDir, subdir))) {
       rmSync(targetDir, { recursive: true, force: true });
-      throw new ShardError(
-        "git",
-        `Sparse checkout failed for "${subdir}"`,
-        sparse.stderr || sparse.stdout,
-      );
+      throw new ShardError("git", `Sparse checkout failed for "${subdir}"`, undefined, {
+        details: [["repository", repoUrl]],
+        output: (sparse.stderr || sparse.stdout).trim() || undefined,
+      });
     }
     moveContentsUp(targetDir, subdir);
     removeEmptyParentDirs(targetDir, subdir);
@@ -88,8 +87,8 @@ function clone(
 }
 
 function cloneError(ref: string | null, url: string, err: string): ShardError {
-  if (ref) return new ShardError("git", `Ref "${ref}" not found for ${url}`, err);
-  return new ShardError("git", "git clone failed", err || `could not clone ${url}`);
+  if (ref) return new ShardError("git", `Ref "${ref}" not found`, undefined, { details: [["repository", url]], output: err });
+  return new ShardError("git", "git clone failed", undefined, { details: [["repository", url]], output: err || undefined });
 }
 
 function moveContentsUp(dir: string, sub: string): void {

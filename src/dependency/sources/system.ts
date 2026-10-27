@@ -16,6 +16,8 @@ export const systemSource: DependencySource<SystemDependency> = {
     return { kind, link, name: `${kind}:${value}`, version: null, value };
   },
 
+  spec: dep => dep.value,
+
   decide(dep: SystemDependency): Decision {
     return {
       kind: "link",

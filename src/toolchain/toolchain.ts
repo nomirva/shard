@@ -20,6 +20,8 @@ export interface Toolchain {
 /** Detects one kind of toolchain on the host. */
 export interface ToolchainProvider {
   readonly name: string;
+  /** How to install it, shown by `shard doctor`. */
+  readonly installHint?: string;
   detect(): Toolchain | null;
 }
 

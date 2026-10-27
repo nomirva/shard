@@ -65,8 +65,8 @@ export class Sandbox {
     return {
       args: args.map(a => this.normalize(a)),
       status: r.status,
-      stdout: this.normalize(r.stdout.toString()),
-      stderr: this.normalize(stripProgress(r.stderr.toString())),
+      stdout: normalizeOutput(this.normalize(r.stdout.toString())),
+      stderr: normalizeOutput(this.normalize(r.stderr.toString())),
       invocations: log.split("\n").filter(Boolean).map(line => this.normalize(line).split("\t")),
     };
   }
@@ -105,12 +105,12 @@ export interface RunSnapshot {
   invocations: string[][];
 }
 
-function stripProgress(s: string): string {
+/** Timings, sizes and the compiler version differ between runs and machines. */
+function normalizeOutput(s: string): string {
   return s
-    .split("\n")
-    .map(line => line.replace(/^.*\r/, "").replace(/\x1b\[2K/g, ""))
-    .filter(line => !/^\(\d+\/\d+\) /.test(line))
-    .join("\n");
+    .replace(/\b\d+(\.\d+)?(ms|s)\b/g, "<t>")
+    .replace(/\b\d+(\.\d+)? (B|KB|MB|GB)\b/g, "<size>")
+    .replace(/clang \d+\.\d+(\.\d+)?/g, "clang <ver>");
 }
 
 function copyTracked(src: string, dest: string): void {

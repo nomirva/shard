@@ -21,7 +21,6 @@ export class Pipeline<I, O> {
   async run(input: I, ws: Workspace): Promise<O> {
     let value: unknown = input;
     for (const stage of this.stages) {
-      ws.reporter.stage?.(stage.name);
       value = await stage.run(value, ws);
     }
     return value as O;

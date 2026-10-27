@@ -1,7 +1,7 @@
 import { Command, Option } from "commander";
 import pkg from "../../package.json" with { type: "json" };
 import { PROFILE_NAMES } from "../lang/profiles";
-import { reportError } from "./console/reporter";
+import { activeConsole } from "./console/session";
 import { buildCommand } from "./commands/build";
 import { infoCommand } from "./commands/info";
 import { updateCommand } from "./commands/update";
@@ -14,7 +14,7 @@ function act(fn: (...args: any[]) => void | Promise<void>): (...args: any[]) => 
     try {
       await fn(...args);
     } catch (e: unknown) {
-      reportError(e);
+      activeConsole().error(e);
       process.exit(1);
     }
   };
@@ -36,12 +36,14 @@ export function createProgram(): Command {
     .option("--def <names...>", "Pass defines and enable ?define:X conditionals (e.g. --def NODEBUG,VERSION=5)")
     .addOption(new Option("--profile <name>", "Compilation profile (overrides manifest)").choices([...PROFILE_NAMES]))
     .option("--git-protocol <protocol>", "Git protocol: https (default), ssh, or http")
+    .option("--verbose", "Show every file, command line and hook output")
     .action(act(buildCommand));
 
   program
     .command("info")
     .description("Show module information")
     .argument("<path>", "Path to the module")
+    .option("--tree", "Show the whole dependency tree")
     .action(act(infoCommand));
 
   program
@@ -49,6 +51,7 @@ export function createProgram(): Command {
     .description("Sync modules/ with dependency declarations (install, remove stale, no compilation)")
     .argument("[path]", "Path to the root module (default: current directory)", ".")
     .option("--git-protocol <protocol>", "Git protocol: https (default), ssh, or http")
+    .option("--verbose", "Show install paths")
     .action(act(updateCommand));
 
   program

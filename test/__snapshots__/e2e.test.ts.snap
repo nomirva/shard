@@ -41,16 +41,20 @@ exports[`examples hello: build, cached rebuild, start 1`] = `
     ],
     "status": 0,
     "stderr": 
-" ✔ hello/src/main.o
+"
+ shard 0.1.0 · clang <ver> · arm64-darwin
+
+ Building 1 module
+   hello (executable · — · debug)
+     ✔ src/main.c  <t>
+     → examples/hello/target/arm64/darwin/none/hello  <t>
+
+ ✔ Built hello in <t>  ·  1 compiled
+   → examples/hello/target/arm64/darwin/none/hello
+
 "
 ,
-    "stdout": 
-"
-
-  BUILD SUCCEEDED 
-
-"
-,
+    "stdout": "",
   },
   "second": {
     "args": [
@@ -69,16 +73,20 @@ exports[`examples hello: build, cached rebuild, start 1`] = `
     ],
     "status": 0,
     "stderr": 
-" ≡ hello/src/main.o
+"
+ shard 0.1.0 · clang <ver> · arm64-darwin
+
+ Building 1 module
+   hello (executable · — · debug)
+     ≡ src/main.c  cached
+     → examples/hello/target/arm64/darwin/none/hello  <t>
+
+ ✔ Built hello in <t>  ·  1 cached
+   → examples/hello/target/arm64/darwin/none/hello
+
 "
 ,
-    "stdout": 
-"
-
-  BUILD SUCCEEDED 
-
-"
-,
+    "stdout": "",
   },
   "start": {
     "args": [
@@ -98,12 +106,23 @@ exports[`examples hello: build, cached rebuild, start 1`] = `
     ],
     "status": 0,
     "stderr": 
-" ≡ hello/src/main.o
+"
+ shard 0.1.0 · clang <ver> · arm64-darwin
+
+ Building 1 module
+   hello (executable · — · debug)
+     ≡ src/main.c  cached
+     → examples/hello/target/arm64/darwin/none/hello  <t>
+
+ ✔ Built hello in <t>  ·  1 cached
+   → examples/hello/target/arm64/darwin/none/hello
+
+ ── running hello ──
+ ── hello exited with code 0 ──
 "
 ,
     "stdout": 
-"
-Hello, shard!
+"Hello, shard!
 "
 ,
   },
@@ -193,17 +212,26 @@ exports[`examples app: variants and cache modes 1`] = `
     ],
     "status": 0,
     "stderr": 
-" ✔ lib-math/src/math_util.o
- ✔ app/src/main.o
+"
+ shard 0.1.0 · clang <ver> · arm64-darwin
+
+ Dependencies
+   ✓ lib-math    local      ../lib-math
+
+ Building 2 modules
+   lib-math (library · — · release)
+     ✔ src/math_util.c  <t>
+     → examples/app/.shard/lib-math/target/arm64/darwin/none/lib-math.a  <t>
+   app (executable · — · release)
+     ✔ src/main.c  <t>
+     → examples/app/target/arm64/darwin/none/math/app  <t>
+
+ ✔ Built app in <t>  ·  2 compiled
+   → examples/app/target/arm64/darwin/none/math/app
+
 "
 ,
-    "stdout": 
-"
-
-  BUILD SUCCEEDED 
-
-"
-,
+    "stdout": "",
   },
   "greet": {
     "args": [
@@ -272,13 +300,29 @@ exports[`examples app: variants and cache modes 1`] = `
     ],
     "status": 0,
     "stderr": 
-" ✔ lib-greet/src/greet.o
- ✔ app/src/main.o
+"
+ shard 0.1.0 · clang <ver> · arm64-darwin
+
+ Dependencies
+   ✓ lib-greet   local      ../lib-greet  shared
+
+ Building 2 modules
+   lib-greet (library · — · release)
+     ✔ src/greet.c  <t>
+     → examples/app/.shard/lib-greet/target/arm64/darwin/none/lib-greet.dylib  <t>
+   app (executable · — · release)
+     ✔ src/main.c  <t>
+     → examples/app/target/arm64/darwin/none/greet/app  <t>
+
+ ✔ Built app in <t>  ·  2 compiled
+   → examples/app/target/arm64/darwin/none/greet/app
+
+ ── running app ──
+ ── app exited with code 0 ──
 "
 ,
     "stdout": 
-"
-Hello, shard!
+"Hello, shard!
 "
 ,
   },
@@ -350,17 +394,26 @@ Hello, shard!
     ],
     "status": 0,
     "stderr": 
-" ✔ lib-greet/src/greet.o
- ✔ app/src/main.o
+"
+ shard 0.1.0 · clang <ver> · arm64-darwin · cache off
+
+ Dependencies
+   ✓ lib-greet   local      ../lib-greet  shared
+
+ Building 2 modules
+   lib-greet (library · — · release)
+     ✔ src/greet.c  <t>
+     → examples/app/.shard/lib-greet/target/arm64/darwin/none/lib-greet.dylib  <t>
+   app (executable · — · release)
+     ✔ src/main.c  <t>
+     → examples/app/target/arm64/darwin/none/greet/app  <t>
+
+ ✔ Built app in <t>  ·  2 compiled
+   → examples/app/target/arm64/darwin/none/greet/app
+
 "
 ,
-    "stdout": 
-"
-
-  BUILD SUCCEEDED 
-
-"
-,
+    "stdout": "",
   },
   "ignoreRoot": {
     "args": [
@@ -411,17 +464,26 @@ Hello, shard!
     ],
     "status": 0,
     "stderr": 
-" ≡ lib-greet/src/greet.o
- ✔ app/src/main.o
+"
+ shard 0.1.0 · clang <ver> · arm64-darwin · root cache off
+
+ Dependencies
+   ✓ lib-greet   local      ../lib-greet  shared
+
+ Building 2 modules
+   lib-greet (library · — · release)
+     ≡ src/greet.c  cached
+     → examples/app/.shard/lib-greet/target/arm64/darwin/none/lib-greet.dylib  <t>
+   app (executable · — · release)
+     ✔ src/main.c  <t>
+     → examples/app/target/arm64/darwin/none/greet/app  <t>
+
+ ✔ Built app in <t>  ·  1 compiled  ·  1 cached
+   → examples/app/target/arm64/darwin/none/greet/app
+
 "
 ,
-    "stdout": 
-"
-
-  BUILD SUCCEEDED 
-
-"
-,
+    "stdout": "",
   },
   "math": {
     "args": [
@@ -487,13 +549,29 @@ Hello, shard!
     ],
     "status": 0,
     "stderr": 
-" ✔ lib-math/src/math_util.o
- ✔ app/src/main.o
+"
+ shard 0.1.0 · clang <ver> · arm64-darwin
+
+ Dependencies
+   ✓ lib-math    local      ../lib-math
+
+ Building 2 modules
+   lib-math (library · — · release)
+     ✔ src/math_util.c  <t>
+     → examples/app/.shard/lib-math/target/arm64/darwin/none/lib-math.a  <t>
+   app (executable · — · release)
+     ✔ src/main.c  <t>
+     → examples/app/target/arm64/darwin/none/math/app  <t>
+
+ ✔ Built app in <t>  ·  2 compiled
+   → examples/app/target/arm64/darwin/none/math/app
+
+ ── running app ──
+ ── app exited with code 0 ──
 "
 ,
     "stdout": 
-"
-2 + 3 = 5
+"2 + 3 = 5
 4 * 5 = 20
 "
 ,
@@ -525,17 +603,26 @@ Hello, shard!
     ],
     "status": 0,
     "stderr": 
-" ≡ lib-math/src/math_util.o
- ≡ app/src/main.o
+"
+ shard 0.1.0 · clang <ver> · arm64-darwin
+
+ Dependencies
+   ✓ lib-math    local      ../lib-math
+
+ Building 2 modules
+   lib-math (library · — · release)
+     ≡ src/math_util.c  cached
+     → examples/app/.shard/lib-math/target/arm64/darwin/none/lib-math.a  <t>
+   app (executable · — · release)
+     ≡ src/main.c  cached
+     → examples/app/target/arm64/darwin/none/math/app  <t>
+
+ ✔ Built app in <t>  ·  2 cached
+   → examples/app/target/arm64/darwin/none/math/app
+
 "
 ,
-    "stdout": 
-"
-
-  BUILD SUCCEEDED 
-
-"
-,
+    "stdout": "",
   },
   "tree": [
     ".gitignore",
@@ -586,20 +673,25 @@ exports[`examples app: no variant is a compile error 1`] = `
     ],
     "status": 1,
     "stderr": 
-"\x1B[1m$SB/examples/app/src/main.c:17:2: \x1B[0m\x1B[0;1;31merror: \x1B[0m\x1B[1m"No variant selected. Build with: --def GREET | --def MATH"\x1B[0m
-   17 | #error \x1B[0;32m"No variant selected. Build with: --def GREET | --def MATH"\x1B[0m
-      | \x1B[0;1;32m ^
-\x1B[0m1 error generated.
- ✘ app/src/main.o
-  ✖ [build] clang failed (exit code 1)
+"
+ shard 0.1.0 · clang <ver> · arm64-darwin
+
+ Building 1 module
+   app (executable · — · release)
+     ✘ src/main.c  <t>
+       examples/app/src/main.c:17:2: error: "No variant selected. Build with: --def GREET | --def MATH"
+          17 | #error "No variant selected. Build with: --def GREET | --def MATH"
+             |  ^
+       1 error generated.
+
+ ✘ Compilation failed: app
+   file  examples/app/src/main.c
+
+ ✘ Build failed after <t>
+
 "
 ,
-    "stdout": 
-"
-
-
-"
-,
+    "stdout": "",
   },
 }
 `;
@@ -616,16 +708,20 @@ exports[`examples app-std: standards and compatibility 1`] = `
     "invocations": [],
     "status": 1,
     "stderr": 
-"  ✖ [config] Module 'lib-std' exports headers requiring at least c99, but 'app-std' uses c89.
-    hint: Lower 'lib-std'.standard.support to 'c89' if the headers are compatible.
+"
+ shard 0.1.0 · clang <ver> · arm64-darwin
+
+ Dependencies
+   ✓ lib-std     local      ../lib-std
+
+ ✘ Module 'lib-std' exports headers requiring at least c99, but 'app-std' uses c89.
+   hint  Lower 'lib-std'.standard.support to 'c89' if the headers are compatible.
+
+ ✘ Build failed after <t>
+
 "
 ,
-    "stdout": 
-"
-
-
-"
-,
+    "stdout": "",
   },
   "ok": {
     "args": [
@@ -693,13 +789,29 @@ exports[`examples app-std: standards and compatibility 1`] = `
     ],
     "status": 0,
     "stderr": 
-" ✔ lib-std/src/calc.o
- ✔ app-std/src/main.o
+"
+ shard 0.1.0 · clang <ver> · arm64-darwin
+
+ Dependencies
+   ✓ lib-std     local      ../lib-std
+
+ Building 2 modules
+   lib-std (library · c11 · debug-opt)
+     ✔ src/calc.c  <t>
+     → examples/app-std/.shard/lib-std/target/arm64/darwin/none/lib-std.a  <t>
+   app-std (executable · c17 · fast)
+     ✔ src/main.c  <t>
+     → examples/app-std/target/arm64/darwin/none/app-std  <t>
+
+ ✔ Built app-std in <t>  ·  2 compiled
+   → examples/app-std/target/arm64/darwin/none/app-std
+
+ ── running app-std ──
+ ── app-std exited with code 0 ──
 "
 ,
     "stdout": 
-"
-calc_square(5) = 25
+"calc_square(5) = 25
 "
 ,
   },
@@ -763,16 +875,22 @@ exports[`examples libraries as root 1`] = `
     ],
     "status": 0,
     "stderr": 
-" ✔ lib-greet/src/greet.o
+"
+ shard 0.1.0 · clang <ver> · arm64-darwin
+
+ Building 1 module
+   lib-greet (library · — · release)
+     ✔ src/greet.c  <t>
+     → examples/lib-greet/target/arm64/darwin/none/lib-greet.a  <t>
+     → examples/lib-greet/target/arm64/darwin/none/lib-greet.dylib  <t>
+
+ ✔ Built lib-greet in <t>  ·  1 compiled
+   → examples/lib-greet/target/arm64/darwin/none/lib-greet.a
+   → examples/lib-greet/target/arm64/darwin/none/lib-greet.dylib
+
 "
 ,
-    "stdout": 
-"
-
-  BUILD SUCCEEDED 
-
-"
-,
+    "stdout": "",
   },
   "greetTree": [
     ".gitignore",
@@ -826,16 +944,22 @@ exports[`examples libraries as root 1`] = `
     ],
     "status": 0,
     "stderr": 
-" ✔ lib-math/src/math_util.o
+"
+ shard 0.1.0 · clang <ver> · arm64-darwin
+
+ Building 1 module
+   lib-math (library · — · release)
+     ✔ src/math_util.c  <t>
+     → examples/lib-math/target/arm64/darwin/none/lib-math.a  <t>
+     → examples/lib-math/target/arm64/darwin/none/lib-math.dylib  <t>
+
+ ✔ Built lib-math in <t>  ·  1 compiled
+   → examples/lib-math/target/arm64/darwin/none/lib-math.a
+   → examples/lib-math/target/arm64/darwin/none/lib-math.dylib
+
 "
 ,
-    "stdout": 
-"
-
-  BUILD SUCCEEDED 
-
-"
-,
+    "stdout": "",
   },
   "startLib": {
     "args": [
@@ -862,16 +986,27 @@ exports[`examples libraries as root 1`] = `
     ],
     "status": 1,
     "stderr": 
-" ≡ lib-greet/src/greet.o
-  ✖ [usage] "lib-greet" is not an executable module
 "
-,
-    "stdout": 
-"
+ shard 0.1.0 · clang <ver> · arm64-darwin
+
+ Building 1 module
+   lib-greet (library · — · release)
+     ≡ src/greet.c  cached
+     → examples/lib-greet/target/arm64/darwin/none/lib-greet.a  <t>
+     → examples/lib-greet/target/arm64/darwin/none/lib-greet.dylib  <t>
+
+ ✔ Built lib-greet in <t>  ·  1 cached
+   → examples/lib-greet/target/arm64/darwin/none/lib-greet.a
+   → examples/lib-greet/target/arm64/darwin/none/lib-greet.dylib
 
 
+ ✘ "lib-greet" is not an executable module
+
+ ✘ Build failed after <t>
+
 "
 ,
+    "stdout": "",
   },
   "std": {
     "args": [
@@ -918,16 +1053,22 @@ exports[`examples libraries as root 1`] = `
     ],
     "status": 0,
     "stderr": 
-" ✔ lib-std/src/calc.o
+"
+ shard 0.1.0 · clang <ver> · arm64-darwin
+
+ Building 1 module
+   lib-std (library · c11 · debug-opt)
+     ✔ src/calc.c  <t>
+     → examples/lib-std/target/arm64/darwin/none/lib-std.a  <t>
+     → examples/lib-std/target/arm64/darwin/none/lib-std.dylib  <t>
+
+ ✔ Built lib-std in <t>  ·  1 compiled
+   → examples/lib-std/target/arm64/darwin/none/lib-std.a
+   → examples/lib-std/target/arm64/darwin/none/lib-std.dylib
+
 "
 ,
-    "stdout": 
-"
-
-  BUILD SUCCEEDED 
-
-"
-,
+    "stdout": "",
   },
   "stdTree": [
     ".gitignore",
@@ -982,12 +1123,23 @@ exports[`examples profiles override 1`] = `
     ],
     "status": 0,
     "stderr": 
-" ✔ profiles/src/main.o
+"
+ shard 0.1.0 · clang <ver> · arm64-darwin · profile fast
+
+ Building 1 module
+   profiles (executable · — · fast)
+     ✔ src/main.c  <t>
+     → examples/profiles/target/arm64/darwin/none/profiles  <t>
+
+ ✔ Built profiles in <t>  ·  1 compiled
+   → examples/profiles/target/arm64/darwin/none/profiles
+
+ ── running profiles ──
+ ── profiles exited with code 0 ──
 "
 ,
     "stdout": 
-"
-profile: optimized (-O2/-O3)
+"profile: optimized (-O2/-O3)
 "
 ,
   },
@@ -1041,12 +1193,23 @@ profile: optimized (-O2/-O3)
     ],
     "status": 0,
     "stderr": 
-" ✔ profiles/src/main.o
+"
+ shard 0.1.0 · clang <ver> · arm64-darwin
+
+ Building 1 module
+   profiles (executable · — · debug)
+     ✔ src/main.c  <t>
+     → examples/profiles/target/arm64/darwin/none/profiles  <t>
+
+ ✔ Built profiles in <t>  ·  1 compiled
+   → examples/profiles/target/arm64/darwin/none/profiles
+
+ ── running profiles ──
+ ── profiles exited with code 0 ──
 "
 ,
     "stdout": 
-"
-profile: debug (-O0)
+"profile: debug (-O0)
 "
 ,
   },
@@ -1086,12 +1249,23 @@ profile: debug (-O0)
     ],
     "status": 0,
     "stderr": 
-" ✔ profiles/src/main.o
+"
+ shard 0.1.0 · clang <ver> · arm64-darwin · profile tiny
+
+ Building 1 module
+   profiles (executable · — · tiny)
+     ✔ src/main.c  <t>
+     → examples/profiles/target/arm64/darwin/none/profiles  <t>
+
+ ✔ Built profiles in <t>  ·  1 compiled
+   → examples/profiles/target/arm64/darwin/none/profiles
+
+ ── running profiles ──
+ ── profiles exited with code 0 ──
 "
 ,
     "stdout": 
-"
-profile: size (-Os/-Oz)
+"profile: size (-Os/-Oz)
 "
 ,
   },
@@ -1151,13 +1325,27 @@ exports[`examples codegen: preload and preclean hooks 1`] = `
     ],
     "status": 0,
     "stderr": 
-" ✔ codegen/src/generated.o
- ✔ codegen/src/main.o
+"
+ shard 0.1.0 · clang <ver> · arm64-darwin
+
+ Preparing
+   ▸ codegen · preload  sh gen.sh  <t>
+
+ Building 1 module
+   codegen (executable · — · release)
+     ✔ src/generated.c  <t>
+     ✔ src/main.c  <t>
+     → examples/codegen/target/arm64/darwin/none/codegen  <t>
+
+ ✔ Built codegen in <t>  ·  2 compiled
+   → examples/codegen/target/arm64/darwin/none/codegen
+
+ ── running codegen ──
+ ── codegen exited with code 0 ──
 "
 ,
     "stdout": 
-"
-The answer is 42
+"The answer is 42
 "
 ,
   },
@@ -1168,12 +1356,17 @@ The answer is 42
     ],
     "invocations": [],
     "status": 0,
-    "stderr": "",
-    "stdout": 
-"  removed: $SB/examples/codegen/.shard
-  removed: $SB/examples/codegen/target
+    "stderr": 
+"   ▸ codegen · preclean  sh clean.sh  <t>
+
+   − examples/codegen/.shard  <size>
+   − examples/codegen/target  <size>
+
+ ✔ Cleaned codegen  ·  <size> freed
+
 "
 ,
+    "stdout": "",
   },
   "script": {
     "args": [
@@ -1223,11 +1416,14 @@ exports[`commands info 1`] = `
     "stderr": "",
     "stdout": 
 "
-  Name: app-std
-  Type: executable
-  Include: $SB/examples/app-std/src
-  Dependencies (1):
-    - lib-std default (static)
+ app-std · executable
+   path        examples/app-std
+   include     examples/app-std/src
+   standard    c17
+   profile     fast
+   dependencies
+     └─ lib-std  local  ../lib-std
+
 "
 ,
   },
@@ -1241,12 +1437,15 @@ exports[`commands info 1`] = `
     "stderr": "",
     "stdout": 
 "
-  Name: app
-  Type: executable
-  Include: $SB/fixtures/diamond/app/src
-  Dependencies (2):
-    - mid-a default (static)
-    - mid-b default (static)
+ app · executable
+   path        fixtures/diamond/app
+   include     fixtures/diamond/app/src
+   standard    c11
+   profile     release (default)
+   dependencies
+     ├─ mid-a  local  ../mid-a
+     └─ mid-b  local  ../mid-b
+
 "
 ,
   },
@@ -1260,10 +1459,13 @@ exports[`commands info 1`] = `
     "stderr": "",
     "stdout": 
 "
-  Name: lib-greet
-  Type: library
-  Include: $SB/examples/lib-greet/src
-  Dependencies: none
+ lib-greet · library
+   path        examples/lib-greet
+   include     examples/lib-greet/src
+   standard    —
+   profile     release (default)
+   dependenciesnone
+
 "
 ,
   },
@@ -1277,14 +1479,346 @@ exports[`commands info 1`] = `
     "stderr": "",
     "stdout": 
 "
-  Name: sysdeps
-  Type: executable
-  Include: $SB/fixtures/sysdeps/src
-  Dependencies (2):
-    - sys:m static
-    - framework:CoreFoundation static
+ sysdeps · executable
+   path        fixtures/sysdeps
+   include     fixtures/sysdeps/src
+   standard    —
+   profile     release (default)
+   dependencies
+     ├─ m  system  static
+     └─ CoreFoundation  framework  static
+
 "
 ,
+  },
+  "tree": {
+    "args": [
+      "info",
+      "$SB/fixtures/diamond/app",
+      "--tree",
+    ],
+    "invocations": [],
+    "status": 0,
+    "stderr": "",
+    "stdout": 
+"
+ app · executable
+   path        fixtures/diamond/app
+   include     fixtures/diamond/app/src
+   standard    c11
+   profile     release (default)
+   dependencies
+     ├─ mid-a  local  ../mid-a
+     │  ├─ leaf  local  ../leaf  static
+     │  └─ m  system
+     └─ mid-b  local  ../mid-b
+        └─ leaf  local  ../leaf  shared  (see above)
+
+"
+,
+  },
+}
+`;
+
+exports[`commands verbose build 1`] = `
+{
+  "build": {
+    "args": [
+      "build",
+      "$SB/fixtures/diamond/app",
+      "--verbose",
+    ],
+    "invocations": [
+      [
+        "clang",
+        "$SB/fixtures/diamond/leaf",
+        "-c",
+        "-fansi-escape-codes",
+        "-fcolor-diagnostics",
+        "-O2",
+        "-std=c99",
+        "-pedantic-errors",
+        "-I",
+        "$SB/fixtures/diamond/leaf/src",
+        "-I",
+        "$SB/fixtures/diamond/leaf/src/nested",
+        "-I",
+        "$SB/fixtures/diamond/leaf/api",
+        "-o",
+        "$SB/fixtures/diamond/app/.shard/..__leaf/src/leaf.o",
+        "$SB/fixtures/diamond/leaf/src/leaf.c",
+        "-MMD",
+        "-MF",
+        "$SB/fixtures/diamond/app/.shard/..__leaf/src/leaf.d",
+      ],
+      [
+        "clang",
+        "$SB/fixtures/diamond/leaf",
+        "-c",
+        "-fansi-escape-codes",
+        "-fcolor-diagnostics",
+        "-O2",
+        "-std=c99",
+        "-pedantic-errors",
+        "-I",
+        "$SB/fixtures/diamond/leaf/src",
+        "-I",
+        "$SB/fixtures/diamond/leaf/src/nested",
+        "-I",
+        "$SB/fixtures/diamond/leaf/api",
+        "-o",
+        "$SB/fixtures/diamond/app/.shard/..__leaf/src/nested/nested.o",
+        "$SB/fixtures/diamond/leaf/src/nested/nested.c",
+        "-MMD",
+        "-MF",
+        "$SB/fixtures/diamond/app/.shard/..__leaf/src/nested/nested.d",
+      ],
+      [
+        "ar",
+        "$SB",
+        "rcs",
+        "$SB/fixtures/diamond/app/.shard/leaf/target/arm64/darwin/none/leaf.a",
+        "$SB/fixtures/diamond/app/.shard/..__leaf/src/leaf.o",
+        "$SB/fixtures/diamond/app/.shard/..__leaf/src/nested/nested.o",
+      ],
+      [
+        "clang",
+        "$SB/fixtures/diamond/mid-a",
+        "-c",
+        "-fansi-escape-codes",
+        "-fcolor-diagnostics",
+        "-O2",
+        "-std=c99",
+        "-I",
+        "$SB/fixtures/diamond/app/.shard/leaf/target/arm64/darwin/none/include",
+        "-I",
+        "$SB/fixtures/diamond/mid-a/src",
+        "-o",
+        "$SB/fixtures/diamond/app/.shard/..__mid-a/src/mid_a.o",
+        "$SB/fixtures/diamond/mid-a/src/mid_a.c",
+        "-MMD",
+        "-MF",
+        "$SB/fixtures/diamond/app/.shard/..__mid-a/src/mid_a.d",
+      ],
+      [
+        "ar",
+        "$SB",
+        "rcs",
+        "$SB/fixtures/diamond/app/.shard/mid-a/target/arm64/darwin/none/mid-a.a",
+        "$SB/fixtures/diamond/app/.shard/..__mid-a/src/mid_a.o",
+      ],
+      [
+        "clang",
+        "$SB/fixtures/diamond/mid-b",
+        "-c",
+        "-fansi-escape-codes",
+        "-fcolor-diagnostics",
+        "-Os",
+        "-std=c11",
+        "-I",
+        "$SB/fixtures/diamond/app/.shard/leaf/target/arm64/darwin/none/include",
+        "-I",
+        "$SB/fixtures/diamond/mid-b/src",
+        "-o",
+        "$SB/fixtures/diamond/app/.shard/..__mid-b/src/mid_b.o",
+        "$SB/fixtures/diamond/mid-b/src/mid_b.c",
+        "-MMD",
+        "-MF",
+        "$SB/fixtures/diamond/app/.shard/..__mid-b/src/mid_b.d",
+      ],
+      [
+        "ar",
+        "$SB",
+        "rcs",
+        "$SB/fixtures/diamond/app/.shard/mid-b/target/arm64/darwin/none/mid-b.a",
+        "$SB/fixtures/diamond/app/.shard/..__mid-b/src/mid_b.o",
+      ],
+      [
+        "clang",
+        "$SB/fixtures/diamond/app",
+        "-c",
+        "-fansi-escape-codes",
+        "-fcolor-diagnostics",
+        "-O2",
+        "-std=c11",
+        "-Wall",
+        "-Wextra",
+        "-DAPP=1",
+        "-DON_DARWIN",
+        "-DON_CLANG",
+        "-I",
+        "$SB/fixtures/diamond/app/.shard/mid-a/target/arm64/darwin/none/include",
+        "-I",
+        "$SB/fixtures/diamond/app/.shard/leaf/target/arm64/darwin/none/include",
+        "-I",
+        "$SB/fixtures/diamond/app/.shard/mid-b/target/arm64/darwin/none/include",
+        "-I",
+        "$SB/fixtures/diamond/app/src",
+        "-o",
+        "$SB/fixtures/diamond/app/.shard/_/src/main.o",
+        "$SB/fixtures/diamond/app/src/main.c",
+        "-MMD",
+        "-MF",
+        "$SB/fixtures/diamond/app/.shard/_/src/main.d",
+      ],
+      [
+        "clang",
+        "$SB",
+        "$SB/fixtures/diamond/app/.shard/_/src/main.o",
+        "$SB/fixtures/diamond/app/.shard/mid-a/target/arm64/darwin/none/mid-a.a",
+        "$SB/fixtures/diamond/app/.shard/leaf/target/arm64/darwin/none/leaf.a",
+        "$SB/fixtures/diamond/app/.shard/mid-b/target/arm64/darwin/none/mid-b.a",
+        "-lm",
+        "-Wl,-rpath,@executable_path",
+        "-o",
+        "$SB/fixtures/diamond/app/target/arm64/darwin/none/variant/app",
+      ],
+    ],
+    "status": 0,
+    "stderr": 
+"
+ shard 0.1.0 · clang <ver> · arm64-darwin
+
+ Dependencies
+   ✓ mid-a       local      ../mid-a
+     fixtures/diamond/mid-a
+     ✓ leaf        local      ../leaf  static
+       fixtures/diamond/leaf
+     ⚙ m           system     -lm
+   ✓ mid-b       local      ../mid-b
+     fixtures/diamond/mid-b
+     · leaf  (already resolved)
+       fixtures/diamond/leaf
+
+ Preparing
+   ▸ mid-a · preload  echo preload-mid-a > preload.log  <t>
+
+ Building 4 modules
+   leaf (library · c99 · release)
+     ✔ src/leaf.c  <t>
+       $ clang -c -fansi-escape-codes -fcolor-diagnostics -O2 -std=c99 -pedantic-errors -I fixtures/diamond/leaf/src -I fixtures/diamond/leaf/src/nested -I fixtures/diamond/leaf/api -o fixtures/diamond/app/.shard/..__leaf/src/leaf.o fixtures/diamond/leaf/src/leaf.c -MMD -MF fixtures/diamond/app/.shard/..__leaf/src/leaf.d
+     ✔ src/nested/nested.c  <t>
+       $ clang -c -fansi-escape-codes -fcolor-diagnostics -O2 -std=c99 -pedantic-errors -I fixtures/diamond/leaf/src -I fixtures/diamond/leaf/src/nested -I fixtures/diamond/leaf/api -o fixtures/diamond/app/.shard/..__leaf/src/nested/nested.o fixtures/diamond/leaf/src/nested/nested.c -MMD -MF fixtures/diamond/app/.shard/..__leaf/src/nested/nested.d
+     → fixtures/diamond/app/.shard/leaf/target/arm64/darwin/none/leaf.a  <t>
+       $ ar rcs fixtures/diamond/app/.shard/leaf/target/arm64/darwin/none/leaf.a fixtures/diamond/app/.shard/..__leaf/src/leaf.o fixtures/diamond/app/.shard/..__leaf/src/nested/nested.o
+   mid-a (library · c99 · release)
+     ✔ src/mid_a.c  <t>
+       $ clang -c -fansi-escape-codes -fcolor-diagnostics -O2 -std=c99 -I fixtures/diamond/app/.shard/leaf/target/arm64/darwin/none/include -I fixtures/diamond/mid-a/src -o fixtures/diamond/app/.shard/..__mid-a/src/mid_a.o fixtures/diamond/mid-a/src/mid_a.c -MMD -MF fixtures/diamond/app/.shard/..__mid-a/src/mid_a.d
+     → fixtures/diamond/app/.shard/mid-a/target/arm64/darwin/none/mid-a.a  <t>
+       $ ar rcs fixtures/diamond/app/.shard/mid-a/target/arm64/darwin/none/mid-a.a fixtures/diamond/app/.shard/..__mid-a/src/mid_a.o
+   mid-b (library · c11 · small)
+     ✔ src/mid_b.c  <t>
+       $ clang -c -fansi-escape-codes -fcolor-diagnostics -Os -std=c11 -I fixtures/diamond/app/.shard/leaf/target/arm64/darwin/none/include -I fixtures/diamond/mid-b/src -o fixtures/diamond/app/.shard/..__mid-b/src/mid_b.o fixtures/diamond/mid-b/src/mid_b.c -MMD -MF fixtures/diamond/app/.shard/..__mid-b/src/mid_b.d
+     → fixtures/diamond/app/.shard/mid-b/target/arm64/darwin/none/mid-b.a  <t>
+       $ ar rcs fixtures/diamond/app/.shard/mid-b/target/arm64/darwin/none/mid-b.a fixtures/diamond/app/.shard/..__mid-b/src/mid_b.o
+   app (executable · c11 · release)
+     ▸ prebuild  echo prebuild-app > hook.log  <t>
+     ✔ src/main.c  <t>
+       $ clang -c -fansi-escape-codes -fcolor-diagnostics -O2 -std=c11 -Wall -Wextra -DAPP=1 -DON_DARWIN -DON_CLANG -I fixtures/diamond/app/.shard/mid-a/target/arm64/darwin/none/include -I fixtures/diamond/app/.shard/leaf/target/arm64/darwin/none/include -I fixtures/diamond/app/.shard/mid-b/target/arm64/darwin/none/include -I fixtures/diamond/app/src -o fixtures/diamond/app/.shard/_/src/main.o fixtures/diamond/app/src/main.c -MMD -MF fixtures/diamond/app/.shard/_/src/main.d
+     → fixtures/diamond/app/target/arm64/darwin/none/variant/app  <t>
+       $ clang fixtures/diamond/app/.shard/_/src/main.o fixtures/diamond/app/.shard/mid-a/target/arm64/darwin/none/mid-a.a fixtures/diamond/app/.shard/leaf/target/arm64/darwin/none/leaf.a fixtures/diamond/app/.shard/mid-b/target/arm64/darwin/none/mid-b.a -lm -Wl,-rpath,@executable_path -o fixtures/diamond/app/target/arm64/darwin/none/variant/app
+     ▸ postbuild  echo postbuild-app >> hook.log  <t>
+
+ ✔ Built app in <t>  ·  5 compiled
+   → fixtures/diamond/app/target/arm64/darwin/none/variant/app
+
+"
+,
+    "stdout": "",
+  },
+  "cached": {
+    "args": [
+      "build",
+      "$SB/fixtures/diamond/app",
+      "--verbose",
+    ],
+    "invocations": [
+      [
+        "ar",
+        "$SB",
+        "rcs",
+        "$SB/fixtures/diamond/app/.shard/leaf/target/arm64/darwin/none/leaf.a",
+        "$SB/fixtures/diamond/app/.shard/..__leaf/src/leaf.o",
+        "$SB/fixtures/diamond/app/.shard/..__leaf/src/nested/nested.o",
+      ],
+      [
+        "ar",
+        "$SB",
+        "rcs",
+        "$SB/fixtures/diamond/app/.shard/mid-a/target/arm64/darwin/none/mid-a.a",
+        "$SB/fixtures/diamond/app/.shard/..__mid-a/src/mid_a.o",
+      ],
+      [
+        "ar",
+        "$SB",
+        "rcs",
+        "$SB/fixtures/diamond/app/.shard/mid-b/target/arm64/darwin/none/mid-b.a",
+        "$SB/fixtures/diamond/app/.shard/..__mid-b/src/mid_b.o",
+      ],
+      [
+        "clang",
+        "$SB",
+        "$SB/fixtures/diamond/app/.shard/_/src/main.o",
+        "$SB/fixtures/diamond/app/.shard/mid-a/target/arm64/darwin/none/mid-a.a",
+        "$SB/fixtures/diamond/app/.shard/leaf/target/arm64/darwin/none/leaf.a",
+        "$SB/fixtures/diamond/app/.shard/mid-b/target/arm64/darwin/none/mid-b.a",
+        "-lm",
+        "-Wl,-rpath,@executable_path",
+        "-o",
+        "$SB/fixtures/diamond/app/target/arm64/darwin/none/variant/app",
+      ],
+    ],
+    "status": 0,
+    "stderr": 
+"
+ shard 0.1.0 · clang <ver> · arm64-darwin
+
+ Dependencies
+   ✓ mid-a       local      ../mid-a
+     fixtures/diamond/mid-a
+     ✓ leaf        local      ../leaf  static
+       fixtures/diamond/leaf
+     ⚙ m           system     -lm
+   ✓ mid-b       local      ../mid-b
+     fixtures/diamond/mid-b
+     · leaf  (already resolved)
+       fixtures/diamond/leaf
+
+ Preparing
+   ▸ mid-a · preload  echo preload-mid-a > preload.log  <t>
+
+ Building 4 modules
+   leaf (library · c99 · release)
+     ≡ src/leaf.c  cached
+       $ clang -c -fansi-escape-codes -fcolor-diagnostics -O2 -std=c99 -pedantic-errors -I fixtures/diamond/leaf/src -I fixtures/diamond/leaf/src/nested -I fixtures/diamond/leaf/api -o fixtures/diamond/app/.shard/..__leaf/src/leaf.o fixtures/diamond/leaf/src/leaf.c -MMD -MF fixtures/diamond/app/.shard/..__leaf/src/leaf.d
+     ≡ src/nested/nested.c  cached
+       $ clang -c -fansi-escape-codes -fcolor-diagnostics -O2 -std=c99 -pedantic-errors -I fixtures/diamond/leaf/src -I fixtures/diamond/leaf/src/nested -I fixtures/diamond/leaf/api -o fixtures/diamond/app/.shard/..__leaf/src/nested/nested.o fixtures/diamond/leaf/src/nested/nested.c -MMD -MF fixtures/diamond/app/.shard/..__leaf/src/nested/nested.d
+     → fixtures/diamond/app/.shard/leaf/target/arm64/darwin/none/leaf.a  <t>
+       $ ar rcs fixtures/diamond/app/.shard/leaf/target/arm64/darwin/none/leaf.a fixtures/diamond/app/.shard/..__leaf/src/leaf.o fixtures/diamond/app/.shard/..__leaf/src/nested/nested.o
+   mid-a (library · c99 · release)
+     ≡ src/mid_a.c  cached
+       $ clang -c -fansi-escape-codes -fcolor-diagnostics -O2 -std=c99 -I fixtures/diamond/app/.shard/leaf/target/arm64/darwin/none/include -I fixtures/diamond/mid-a/src -o fixtures/diamond/app/.shard/..__mid-a/src/mid_a.o fixtures/diamond/mid-a/src/mid_a.c -MMD -MF fixtures/diamond/app/.shard/..__mid-a/src/mid_a.d
+     → fixtures/diamond/app/.shard/mid-a/target/arm64/darwin/none/mid-a.a  <t>
+       $ ar rcs fixtures/diamond/app/.shard/mid-a/target/arm64/darwin/none/mid-a.a fixtures/diamond/app/.shard/..__mid-a/src/mid_a.o
+   mid-b (library · c11 · small)
+     ≡ src/mid_b.c  cached
+       $ clang -c -fansi-escape-codes -fcolor-diagnostics -Os -std=c11 -I fixtures/diamond/app/.shard/leaf/target/arm64/darwin/none/include -I fixtures/diamond/mid-b/src -o fixtures/diamond/app/.shard/..__mid-b/src/mid_b.o fixtures/diamond/mid-b/src/mid_b.c -MMD -MF fixtures/diamond/app/.shard/..__mid-b/src/mid_b.d
+     → fixtures/diamond/app/.shard/mid-b/target/arm64/darwin/none/mid-b.a  <t>
+       $ ar rcs fixtures/diamond/app/.shard/mid-b/target/arm64/darwin/none/mid-b.a fixtures/diamond/app/.shard/..__mid-b/src/mid_b.o
+   app (executable · c11 · release)
+     ▸ prebuild  echo prebuild-app > hook.log  <t>
+     ≡ src/main.c  cached
+       $ clang -c -fansi-escape-codes -fcolor-diagnostics -O2 -std=c11 -Wall -Wextra -DAPP=1 -DON_DARWIN -DON_CLANG -I fixtures/diamond/app/.shard/mid-a/target/arm64/darwin/none/include -I fixtures/diamond/app/.shard/leaf/target/arm64/darwin/none/include -I fixtures/diamond/app/.shard/mid-b/target/arm64/darwin/none/include -I fixtures/diamond/app/src -o fixtures/diamond/app/.shard/_/src/main.o fixtures/diamond/app/src/main.c -MMD -MF fixtures/diamond/app/.shard/_/src/main.d
+     → fixtures/diamond/app/target/arm64/darwin/none/variant/app  <t>
+       $ clang fixtures/diamond/app/.shard/_/src/main.o fixtures/diamond/app/.shard/mid-a/target/arm64/darwin/none/mid-a.a fixtures/diamond/app/.shard/leaf/target/arm64/darwin/none/leaf.a fixtures/diamond/app/.shard/mid-b/target/arm64/darwin/none/mid-b.a -lm -Wl,-rpath,@executable_path -o fixtures/diamond/app/target/arm64/darwin/none/variant/app
+     ▸ postbuild  echo postbuild-app >> hook.log  <t>
+
+ ✔ Built app in <t>  ·  5 cached
+   → fixtures/diamond/app/target/arm64/darwin/none/variant/app
+
+"
+,
+    "stdout": "",
   },
 }
 `;
@@ -1356,17 +1890,26 @@ exports[`commands update and clean 1`] = `
     ],
     "status": 0,
     "stderr": 
-" ✔ lib-std/src/calc.o
- ✔ app-std/src/main.o
+"
+ shard 0.1.0 · clang <ver> · arm64-darwin
+
+ Dependencies
+   ✓ lib-std     local      ../lib-std
+
+ Building 2 modules
+   lib-std (library · c11 · debug-opt)
+     ✔ src/calc.c  <t>
+     → examples/app-std/.shard/lib-std/target/arm64/darwin/none/lib-std.a  <t>
+   app-std (executable · c17 · fast)
+     ✔ src/main.c  <t>
+     → examples/app-std/target/arm64/darwin/none/app-std  <t>
+
+ ✔ Built app-std in <t>  ·  2 compiled
+   → examples/app-std/target/arm64/darwin/none/app-std
+
 "
 ,
-    "stdout": 
-"
-
-  BUILD SUCCEEDED 
-
-"
-,
+    "stdout": "",
   },
   "clean": {
     "args": [
@@ -1375,12 +1918,16 @@ exports[`commands update and clean 1`] = `
     ],
     "invocations": [],
     "status": 0,
-    "stderr": "",
-    "stdout": 
-"  removed: $SB/examples/app-std/.shard
-  removed: $SB/examples/app-std/target
+    "stderr": 
+"
+   − examples/app-std/.shard  <size>
+   − examples/app-std/target  <size>
+
+ ✔ Cleaned app-std  ·  <size> freed
+
 "
 ,
+    "stdout": "",
   },
   "tree": [
     ".gitignore",
@@ -1394,11 +1941,18 @@ exports[`commands update and clean 1`] = `
     ],
     "invocations": [],
     "status": 0,
-    "stderr": "",
-    "stdout": 
-"Modules synced — dependency modules up to date
+    "stderr": 
+"
+ shard 0.1.0 · clang <ver> · arm64-darwin
+
+ Dependencies
+   ✓ lib-std     local      ../lib-std
+
+ ✔ Modules synced in <t>
+
 "
 ,
+    "stdout": "",
   },
 }
 `;
@@ -1441,14 +1995,14 @@ exports[`commands run scripts 1`] = `
     "invocations": [],
     "status": 1,
     "stderr": 
-"  ✖ [config] Script "nope" is not defined in shard.json
 "
-,
-    "stdout": 
-"
+ ✘ Script "nope" is not defined in shard.json
+   module     app
+   available  prebuild, postbuild, hello
 
 "
 ,
+    "stdout": "",
   },
 }
 `;
@@ -1465,15 +2019,13 @@ exports[`commands usage errors 1`] = `
     "invocations": [],
     "status": 1,
     "stderr": 
-"  ✖ [usage] --ignore-cache must be 0, 1, or 2
 "
-,
-    "stdout": 
-"
-
+ ✘ --ignore-cache must be 0, 1, or 2
+   got  5
 
 "
 ,
+    "stdout": "",
   },
   "badPrefix": {
     "args": [
@@ -1483,16 +2035,18 @@ exports[`commands usage errors 1`] = `
     "invocations": [],
     "status": 1,
     "stderr": 
-"  ✖ [config] Unknown dependency prefix "foo"
-    hint: supported prefixes: git, local, sys, framework
+"
+ shard 0.1.0 · clang <ver> · arm64-darwin
+
+ ✘ Unknown dependency prefix "foo"
+   declared in  fixtures/bad-dep/shard.json
+   hint         supported prefixes: git, local, sys, framework
+
+ ✘ Build failed after <t>
+
 "
 ,
-    "stdout": 
-"
-
-
-"
-,
+    "stdout": "",
   },
   "emptyDep": {
     "args": [
@@ -1502,15 +2056,19 @@ exports[`commands usage errors 1`] = `
     "invocations": [],
     "status": 1,
     "stderr": 
-"  ✖ [config] Module "empty" is empty: no sources, exports, or artifacts
+"
+ shard 0.1.0 · clang <ver> · arm64-darwin
+
+ Dependencies
+   ✓ empty       local      ../empty
+
+ ✘ Module "empty" is empty: no sources, exports, or artifacts
+
+ ✘ Build failed after <t>
+
 "
 ,
-    "stdout": 
-"
-
-
-"
-,
+    "stdout": "",
   },
   "missingDir": {
     "args": [
@@ -1520,15 +2078,16 @@ exports[`commands usage errors 1`] = `
     "invocations": [],
     "status": 1,
     "stderr": 
-"  ✖ [config] Module "does-not-exist" is empty: no sources, exports, or artifacts
+"
+ shard 0.1.0 · clang <ver> · arm64-darwin
+
+ ✘ Module "does-not-exist" is empty: no sources, exports, or artifacts
+
+ ✘ Build failed after <t>
+
 "
 ,
-    "stdout": 
-"
-
-
-"
-,
+    "stdout": "",
   },
   "nanCacheMode": {
     "args": [
@@ -1540,15 +2099,13 @@ exports[`commands usage errors 1`] = `
     "invocations": [],
     "status": 1,
     "stderr": 
-"  ✖ [usage] --ignore-cache must be 0, 1, or 2
 "
-,
-    "stdout": 
-"
-
+ ✘ --ignore-cache must be 0, 1, or 2
+   got  x
 
 "
 ,
+    "stdout": "",
   },
 }
 `;
@@ -1591,14 +2148,27 @@ exports[`fixtures sys and framework deps 1`] = `
     ],
     "status": 0,
     "stderr": 
-"Warning: "m" — -Bstatic unavailable on macOS, linking dynamically
-Warning: "CoreFoundation" — framework cannot be linked statically, linking dynamically
- ✔ sysdeps/src/main.o
+"
+ shard 0.1.0 · clang <ver> · arm64-darwin
+
+ Dependencies
+   ⚙ m           system     -lm  ⚠ -Bstatic unavailable on macOS, linking dynamically
+   ⚙ CoreFoundation  framework  -Wl,-framework,CoreFoundation  ⚠ frameworks cannot be linked statically, linking dynamically
+
+ Building 1 module
+   sysdeps (executable · — · release)
+     ✔ src/main.c  <t>
+     → fixtures/sysdeps/target/arm64/darwin/none/sysdeps  <t>
+
+ ✔ Built sysdeps in <t>  ·  1 compiled  ·  2 warnings
+   → fixtures/sysdeps/target/arm64/darwin/none/sysdeps
+
+ ── running sysdeps ──
+ ── sysdeps exited with code 0 ──
 "
 ,
     "stdout": 
-"
-sqrt(16) = 4
+"sqrt(16) = 4
 "
 ,
   },
@@ -1643,12 +2213,27 @@ exports[`fixtures header-only dependency 1`] = `
     ],
     "status": 0,
     "stderr": 
-" ✔ app-hdr/src/main.o
+"
+ shard 0.1.0 · clang <ver> · arm64-darwin
+
+ Dependencies
+   ✓ hdr-only    local      ../hdr-only
+
+ Building 2 modules
+   hdr-only (header-only · — · release)
+   app-hdr (executable · — · release)
+     ✔ src/main.c  <t>
+     → fixtures/app-hdr/target/arm64/darwin/none/app-hdr  <t>
+
+ ✔ Built app-hdr in <t>  ·  1 compiled
+   → fixtures/app-hdr/target/arm64/darwin/none/app-hdr
+
+ ── running app-hdr ──
+ ── app-hdr exited with code 0 ──
 "
 ,
     "stdout": 
-"
-twice(21) = 42
+"twice(21) = 42
 "
 ,
   },
@@ -1675,16 +2260,23 @@ exports[`fixtures prebuilt dependency 1`] = `
     "invocations": [],
     "status": 1,
     "stderr": 
-"  ✖ [build] Invalid prebuilt package "prebuilt": expected libraries at "$SB/fixtures/app-prebuilt/.shard/prebuilt/target/arm64/darwin/none"
-    hint: check the module layout or exports field
+"
+ shard 0.1.0 · clang <ver> · arm64-darwin
+
+ Dependencies
+   ✓ prebuilt    local      ../prebuilt
+
+ Building 2 modules
+   prebuilt (prebuilt · — · release)
+
+ ✘ Invalid prebuilt package "prebuilt": expected libraries at "fixtures/app-prebuilt/.shard/prebuilt/target/arm64/darwin/none"
+   hint  check the module layout or exports field
+
+ ✘ Build failed after <t>
+
 "
 ,
-    "stdout": 
-"
-
-
-"
-,
+    "stdout": "",
   },
   "tree": [
     "shard.json",
@@ -1849,16 +2441,45 @@ exports[`fixtures diamond graph 1`] = `
     ],
     "status": 0,
     "stderr": 
-" ✔ leaf/src/leaf.o
- ✔ leaf/src/nested/nested.o
- ✔ mid-a/src/mid_a.o
- ✔ mid-b/src/mid_b.o
- ✔ app/src/main.o
+"
+ shard 0.1.0 · clang <ver> · arm64-darwin
+
+ Dependencies
+   ✓ mid-a       local      ../mid-a
+     ✓ leaf        local      ../leaf  static
+     ⚙ m           system     -lm
+   ✓ mid-b       local      ../mid-b
+     · leaf  (already resolved)
+
+ Preparing
+   ▸ mid-a · preload  echo preload-mid-a > preload.log  <t>
+
+ Building 4 modules
+   leaf (library · c99 · release)
+     ✔ src/leaf.c  <t>
+     ✔ src/nested/nested.c  <t>
+     → fixtures/diamond/app/.shard/leaf/target/arm64/darwin/none/leaf.a  <t>
+   mid-a (library · c99 · release)
+     ✔ src/mid_a.c  <t>
+     → fixtures/diamond/app/.shard/mid-a/target/arm64/darwin/none/mid-a.a  <t>
+   mid-b (library · c11 · small)
+     ✔ src/mid_b.c  <t>
+     → fixtures/diamond/app/.shard/mid-b/target/arm64/darwin/none/mid-b.a  <t>
+   app (executable · c11 · release)
+     ▸ prebuild  echo prebuild-app > hook.log  <t>
+     ✔ src/main.c  <t>
+     → fixtures/diamond/app/target/arm64/darwin/none/variant/app  <t>
+     ▸ postbuild  echo postbuild-app >> hook.log  <t>
+
+ ✔ Built app in <t>  ·  5 compiled
+   → fixtures/diamond/app/target/arm64/darwin/none/variant/app
+
+ ── running app ──
+ ── app exited with code 0 ──
 "
 ,
     "stdout": 
-"
-41 42
+"41 42
 "
 ,
   },
@@ -2041,20 +2662,42 @@ postbuild-app
     ],
     "status": 0,
     "stderr": 
-" ✔ leaf/src/leaf.o
- ✔ leaf/src/nested/nested.o
- ✔ mid-a/src/mid_a.o
- ✔ mid-b/src/mid_b.o
- ✔ app/src/main.o
+"
+ shard 0.1.0 · clang <ver> · arm64-darwin
+
+ Dependencies
+   ✓ mid-a       local      ../mid-a
+     ✓ leaf        local      ../leaf  static
+     ⚙ m           system     -lm
+   ✓ mid-b       local      ../mid-b
+     · leaf  (already resolved)
+
+ Preparing
+   ▸ mid-a · preload  echo preload-mid-a > preload.log  <t>
+
+ Building 4 modules
+   leaf (library · c99 · release)
+     ✔ src/leaf.c  <t>
+     ✔ src/nested/nested.c  <t>
+     → fixtures/diamond/app/.shard/leaf/target/arm64/darwin/none/leaf.a  <t>
+   mid-a (library · c99 · release)
+     ✔ src/mid_a.c  <t>
+     → fixtures/diamond/app/.shard/mid-a/target/arm64/darwin/none/mid-a.a  <t>
+   mid-b (library · c11 · small)
+     ✔ src/mid_b.c  <t>
+     → fixtures/diamond/app/.shard/mid-b/target/arm64/darwin/none/mid-b.a  <t>
+   app (executable · c11 · release)
+     ▸ prebuild  echo prebuild-app > hook.log  <t>
+     ✔ src/main.c  <t>
+     → fixtures/diamond/app/target/arm64/darwin/none/variant/app  <t>
+     ▸ postbuild  echo postbuild-app >> hook.log  <t>
+
+ ✔ Built app in <t>  ·  5 compiled
+   → fixtures/diamond/app/target/arm64/darwin/none/variant/app
+
 "
 ,
-    "stdout": 
-"
-
-  BUILD SUCCEEDED 
-
-"
-,
+    "stdout": "",
   },
   "tree": [
     ".shard/..__leaf/src/leaf.d",
@@ -2094,16 +2737,22 @@ exports[`fixtures git dependencies 1`] = `
     "invocations": [],
     "status": 1,
     "stderr": 
-"  ✖ [conflict] Version conflict for "gitlib": installed v1.2.0, requested branch:main
-    hint: one pinned state per module can be installed at a time
+"
+ shard 0.1.0 · clang <ver> · arm64-darwin
+
+ Dependencies
+   ✘ gitlib      git        branch:main
+
+ ✘ Version conflict: gitlib
+   installed  v1.2.0   fixtures/app-git/modules/gitlib@v1.2.0
+   requested  branch:main   by app-git
+   hint       one pinned state per module can be installed at a time
+
+ ✘ Build failed after <t>
+
 "
 ,
-    "stdout": 
-"
-
-
-"
-,
+    "stdout": "",
   },
   "envProtocol": {
     "args": [
@@ -2168,13 +2817,29 @@ exports[`fixtures git dependencies 1`] = `
     ],
     "status": 0,
     "stderr": 
-" ✔ sub/src/gitlib.o
- ✔ app-git/src/main.o
+"
+ shard 0.1.0 · clang <ver> · arm64-darwin
+
+ Dependencies
+   ↓ sub         git        libs/sub@v1.0.0  installed <t>
+
+ Building 2 modules
+   sub (library · — · release)
+     ✔ src/gitlib.c  <t>
+     → fixtures/app-git/.shard/sub/target/arm64/darwin/none/sub.a  <t>
+   app-git (executable · — · release)
+     ✔ src/main.c  <t>
+     → fixtures/app-git/target/arm64/darwin/none/app-git  <t>
+
+ ✔ Built app-git in <t>  ·  1 installed  ·  2 compiled
+   → fixtures/app-git/target/arm64/darwin/none/app-git
+
+ ── running app-git ──
+ ── app-git exited with code 0 ──
 "
 ,
     "stdout": 
-"
-gitlib 7
+"gitlib 7
 "
 ,
   },
@@ -2243,13 +2908,29 @@ gitlib 7
     ],
     "status": 0,
     "stderr": 
-" ✔ gitlib/src/gitlib.o
- ✔ app-git/src/main.o
+"
+ shard 0.1.0 · clang <ver> · arm64-darwin
+
+ Dependencies
+   ↓ gitlib      git        HEAD  installed <t>
+
+ Building 2 modules
+   gitlib (library · — · release)
+     ✔ src/gitlib.c  <t>
+     → fixtures/app-git/.shard/gitlib/target/arm64/darwin/none/gitlib.a  <t>
+   app-git (executable · — · release)
+     ✔ src/main.c  <t>
+     → fixtures/app-git/target/arm64/darwin/none/app-git  <t>
+
+ ✔ Built app-git in <t>  ·  1 installed  ·  2 compiled
+   → fixtures/app-git/target/arm64/darwin/none/app-git
+
+ ── running app-git ──
+ ── app-git exited with code 0 ──
 "
 ,
     "stdout": 
-"
-gitlib 120
+"gitlib 120
 "
 ,
   },
@@ -2263,16 +2944,22 @@ gitlib 120
     "invocations": [],
     "status": 1,
     "stderr": 
-"  ✖ [conflict] Version conflict for "gitlib": installed v1.2.0, requested v2.0.0
-    hint: one pinned state per module can be installed at a time
+"
+ shard 0.1.0 · clang <ver> · arm64-darwin
+
+ Dependencies
+   ✘ gitlib      git        v2.0.0
+
+ ✘ Version conflict: gitlib
+   installed  v1.2.0   fixtures/app-git/modules/gitlib@v1.2.0
+   requested  v2.0.0   by app-git
+   hint       one pinned state per module can be installed at a time
+
+ ✘ Build failed after <t>
+
 "
 ,
-    "stdout": 
-"
-
-
-"
-,
+    "stdout": "",
   },
   "missingRef": {
     "args": [
@@ -2284,16 +2971,23 @@ gitlib 120
     "invocations": [],
     "status": 1,
     "stderr": 
-"  ✖ [git] Ref "9.9.9" not found for file://$SB/remotes/gitlib.git
-    hint: Cloning into '$SB/fixtures/app-git/modules/gitlib@v9.9.9'...
-fatal: Remote branch 9.9.9 not found in upstream origin
 "
-,
-    "stdout": 
-"
+ shard 0.1.0 · clang <ver> · arm64-darwin
+
+ Dependencies
+   ✘ gitlib      git        v9.9.9
+
+ ✘ Ref "9.9.9" not found
+   repository  file://$SB/remotes/gitlib.git
+
+   │ Cloning into 'fixtures/app-git/modules/gitlib@v9.9.9'...
+   │ fatal: Remote branch 9.9.9 not found in upstream origin
+
+ ✘ Update failed after <t>
 
 "
 ,
+    "stdout": "",
   },
   "modulesAfterPrune": [
     "sub@v1.0.0/README",
@@ -2352,13 +3046,29 @@ fatal: Remote branch 9.9.9 not found in upstream origin
     ],
     "status": 0,
     "stderr": 
-" ≡ gitlib/src/gitlib.o
- ≡ app-git/src/main.o
+"
+ shard 0.1.0 · clang <ver> · arm64-darwin
+
+ Dependencies
+   ≡ gitlib      git        v1.0.0  reused
+
+ Building 2 modules
+   gitlib (library · — · release)
+     ≡ src/gitlib.c  cached
+     → fixtures/app-git/.shard/gitlib/target/arm64/darwin/none/gitlib.a  <t>
+   app-git (executable · — · release)
+     ≡ src/main.c  cached
+     → fixtures/app-git/target/arm64/darwin/none/app-git  <t>
+
+ ✔ Built app-git in <t>  ·  2 cached
+   → fixtures/app-git/target/arm64/darwin/none/app-git
+
+ ── running app-git ──
+ ── app-git exited with code 0 ──
 "
 ,
     "stdout": 
-"
-gitlib 120
+"gitlib 120
 "
 ,
   },
@@ -2371,11 +3081,21 @@ gitlib 120
     ],
     "invocations": [],
     "status": 0,
-    "stderr": "",
-    "stdout": 
-"Modules synced — dependency modules up to date
+    "stderr": 
+"
+ shard 0.1.0 · clang <ver> · arm64-darwin
+
+ Dependencies
+   ≡ sub         git        libs/sub@v1.0.0  reused
+
+ Removed
+   − gitlib@v1.2.0
+
+ ✔ Modules synced in <t>  ·  1 removed
+
 "
 ,
+    "stdout": "",
   },
   "reuse": {
     "args": [
@@ -2405,13 +3125,29 @@ gitlib 120
     ],
     "status": 0,
     "stderr": 
-" ≡ gitlib/src/gitlib.o
- ≡ app-git/src/main.o
+"
+ shard 0.1.0 · clang <ver> · arm64-darwin
+
+ Dependencies
+   ≡ gitlib      git        v1.0.0  reused
+
+ Building 2 modules
+   gitlib (library · — · release)
+     ≡ src/gitlib.c  cached
+     → fixtures/app-git/.shard/gitlib/target/arm64/darwin/none/gitlib.a  <t>
+   app-git (executable · — · release)
+     ≡ src/main.c  cached
+     → fixtures/app-git/target/arm64/darwin/none/app-git  <t>
+
+ ✔ Built app-git in <t>  ·  2 cached
+   → fixtures/app-git/target/arm64/darwin/none/app-git
+
+ ── running app-git ──
+ ── app-git exited with code 0 ──
 "
 ,
     "stdout": 
-"
-gitlib 100
+"gitlib 100
 "
 ,
   },
@@ -2462,13 +3198,29 @@ gitlib 100
     ],
     "status": 0,
     "stderr": 
-" ✔ gitlib/src/gitlib.o
- ≡ app-git/src/main.o
+"
+ shard 0.1.0 · clang <ver> · arm64-darwin
+
+ Dependencies
+   ↻ gitlib      git        v1.0.0 → v1.2.0  upgraded <t>
+
+ Building 2 modules
+   gitlib (library · — · release)
+     ✔ src/gitlib.c  <t>
+     → fixtures/app-git/.shard/gitlib/target/arm64/darwin/none/gitlib.a  <t>
+   app-git (executable · — · release)
+     ≡ src/main.c  cached
+     → fixtures/app-git/target/arm64/darwin/none/app-git  <t>
+
+ ✔ Built app-git in <t>  ·  1 upgraded  ·  1 compiled  ·  1 cached
+   → fixtures/app-git/target/arm64/darwin/none/app-git
+
+ ── running app-git ──
+ ── app-git exited with code 0 ──
 "
 ,
     "stdout": 
-"
-gitlib 120
+"gitlib 120
 "
 ,
   },
@@ -2483,16 +3235,22 @@ gitlib 120
     "invocations": [],
     "status": 1,
     "stderr": 
-"  ✖ [conflict] Version conflict for "gitlib": installed v1.0.0, requested 1.2.0
-    hint: one pinned state per module can be installed at a time
+"
+ shard 0.1.0 · clang <ver> · arm64-darwin
+
+ Dependencies
+   ✘ gitlib      git        1.2.0
+
+ ✘ Version conflict: gitlib
+   installed  v1.0.0   fixtures/app-git/modules/gitlib@v1.0.0
+   requested  1.2.0   by app-git
+   hint       one pinned state per module can be installed at a time
+
+ ✘ Build failed after <t>
+
 "
 ,
-    "stdout": 
-"
-
-
-"
-,
+    "stdout": "",
   },
   "v100": {
     "args": [
@@ -2559,13 +3317,29 @@ gitlib 120
     ],
     "status": 0,
     "stderr": 
-" ✔ gitlib/src/gitlib.o
- ✔ app-git/src/main.o
+"
+ shard 0.1.0 · clang <ver> · arm64-darwin
+
+ Dependencies
+   ↓ gitlib      git        v1.0.0  installed <t>
+
+ Building 2 modules
+   gitlib (library · — · release)
+     ✔ src/gitlib.c  <t>
+     → fixtures/app-git/.shard/gitlib/target/arm64/darwin/none/gitlib.a  <t>
+   app-git (executable · — · release)
+     ✔ src/main.c  <t>
+     → fixtures/app-git/target/arm64/darwin/none/app-git  <t>
+
+ ✔ Built app-git in <t>  ·  1 installed  ·  2 compiled
+   → fixtures/app-git/target/arm64/darwin/none/app-git
+
+ ── running app-git ──
+ ── app-git exited with code 0 ──
 "
 ,
     "stdout": 
-"
-gitlib 100
+"gitlib 100
 "
 ,
   },

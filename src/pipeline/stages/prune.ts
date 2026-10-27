@@ -4,7 +4,7 @@ import type { ResolvedTarget } from "../../target/target";
 import type { Stage } from "../pipeline";
 
 /** Removes installed modules the graph no longer reaches. */
-export const prune: Stage<TargetGraph<ResolvedTarget>, void> = {
+export const prune: Stage<TargetGraph<ResolvedTarget>, string[]> = {
   name: "prune",
   run: (graph, ws) => new ModuleStore(ws.modulesDir).prune(graph.topoOrder().map(t => t.path)),
 };

@@ -1,47 +1,57 @@
 import { spawnSync } from "child_process";
 import chalk from "chalk";
 import { listToolchains } from "../../toolchain/registry";
-import { banner } from "../console/reporter";
+import { pad, shortVersion } from "../console/format";
 
 interface CheckResult {
   name: string;
-  ok: boolean;
-  version: string;
-  error?: string;
+  version: string | null;
+  path: string | null;
+  hint?: string;
 }
 
 export function doctorCommand(): void {
-  const toolchainChecks = listToolchains().map((provider): CheckResult => {
+  const toolchains = listToolchains().map((provider): CheckResult => {
     const tc = provider.detect();
-    return tc
-      ? { name: provider.name, ok: true, version: tc.version }
-      : { name: provider.name, ok: false, version: "not found", error: "not found" };
+    return {
+      name: provider.name,
+      version: tc ? shortVersion(tc.version) : null,
+      path: tc ? Bun.which(provider.name) : null,
+      hint: provider.installHint,
+    };
   });
 
   const git = spawnSync("git", ["--version"], { stdio: "pipe" });
-  const gitCheck: CheckResult = git.status !== 0
-    ? { name: "git", ok: false, version: "not found", error: "not found" }
-    : { name: "git", ok: true, version: (git.stdout?.toString() ?? "").trim() };
+  const gitCheck: CheckResult = {
+    name: "git",
+    version: git.status === 0 ? shortVersion(git.stdout?.toString() ?? "") : null,
+    path: git.status === 0 ? Bun.which("git") : null,
+    hint: "https://git-scm.com/downloads",
+  };
 
   const sections = [
-    { title: "[Toolchain]", results: toolchainChecks },
-    { title: "[Version Control]", results: [gitCheck] },
+    { title: "Toolchain", results: toolchains },
+    { title: "Version control", results: [gitCheck] },
   ];
+  const width = Math.max(...sections.flatMap(s => s.results.map(r => r.name.length)));
+  const lines: string[] = [];
 
   for (const section of sections) {
-    console.log(`\n ${chalk.bold(section.title)}`);
+    lines.push("", ` ${chalk.bold(section.title)}`);
     for (const check of section.results) {
-      const name = check.name.padEnd(6);
-      console.log(check.ok ? ` ${name}${check.version}` : ` ${name}${chalk.red("✗")} ${check.error}`);
+      const name = pad(check.name, width);
+      if (check.version) {
+        lines.push(`   ${chalk.green("✓")} ${name}  ${check.version}  ${chalk.dim(check.path ?? "")}`);
+      } else {
+        lines.push(`   ${chalk.red("✗")} ${name}  ${chalk.red("not found")}`);
+        if (check.hint) lines.push(`     ${chalk.dim("install: " + check.hint)}`);
+      }
     }
   }
 
   // Ready when at least one toolchain and git are available.
-  const allOk = toolchainChecks.some(r => r.ok) && gitCheck.ok;
-  if (!allOk) {
-    banner("NOT READY TO USE", false);
-    process.exit(1);
-  }
-  banner("READY TO USE", true);
-  console.log();
+  const ready = toolchains.some(r => r.version) && gitCheck.version !== null;
+  lines.push("", ready ? ` ${chalk.green("✔")} ${chalk.bold("Ready to use")}` : ` ${chalk.red("✘")} ${chalk.bold("Not ready to use")}`, "");
+  console.log(lines.join("\n"));
+  if (!ready) process.exit(1);
 }

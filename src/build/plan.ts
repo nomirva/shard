@@ -1,4 +1,5 @@
 import type { ShardError } from "../utils/errors";
+import type { LinkKind } from "../report/events";
 import type { CompileTask, Invocation } from "../toolchain/toolchain";
 import type { PreparedTarget } from "../target/target";
 import type { Layout } from "../workspace/layout";
@@ -27,10 +28,12 @@ export interface CompileUnit {
   readonly task: CompileTask;
   readonly invocation: Invocation;
   readonly cacheKey: string;
-  readonly label: string;
+  /** Source path relative to the module. */
+  readonly file: string;
 }
 
 /** A link/archive call, or an error surfaced when the step is reached. */
-export type LinkStep =
-  | { readonly dir: string; readonly invocation: Invocation }
-  | { readonly dir: string; readonly error: ShardError };
+export type LinkStep = { readonly dir: string; readonly kind: LinkKind; readonly output: string } & (
+  | { readonly invocation: Invocation }
+  | { readonly error: ShardError }
+);

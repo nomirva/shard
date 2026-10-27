@@ -77,6 +77,12 @@ describe("commands", () => {
     libGreet: sb.run(["info", sb.path("examples/lib-greet")]),
     diamond: sb.run(["info", sb.path("fixtures/diamond/app")]),
     sysdeps: sb.run(["info", sb.path("fixtures/sysdeps")]),
+    tree: sb.run(["info", sb.path("fixtures/diamond/app"), "--tree"]),
+  }));
+
+  scenario("verbose build", sb => ({
+    build: build(sb, "fixtures/diamond/app", "--verbose"),
+    cached: build(sb, "fixtures/diamond/app", "--verbose"),
   }));
 
   scenario("update and clean", sb => ({
@@ -104,8 +110,8 @@ describe("commands", () => {
     const sb = new Sandbox("doctor");
     const r = sb.run(["doctor"]);
     expect(r.status).toBe(0);
-    expect(r.stdout).toContain("[Toolchain]");
-    expect(r.stdout).toContain("READY TO USE");
+    expect(r.stdout).toContain("Toolchain");
+    expect(r.stdout).toContain("Ready to use");
   }, TIMEOUT);
 });
 

@@ -11,6 +11,7 @@ const KNOWN_ABIS = ["gnu", "musl", "msvc"] as const;
 
 export const clangProvider: ToolchainProvider = {
   name: "clang",
+  installHint: "macOS: brew install llvm · Debian/Ubuntu: sudo apt install clang",
 
   detect(): Toolchain | null {
     const r = spawnSync("clang", ["--version"], { stdio: "pipe" });

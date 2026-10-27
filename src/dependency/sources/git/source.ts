@@ -17,6 +17,7 @@ export const gitSource: DependencySource<GitDependency> = {
   prefixes: ["git"],
   examples: ["git:user/repo[@ref]"],
   parse: (_prefix, value, link) => parseGit(value, link),
+  spec: dep => (dep.subdir ? `${dep.subdir}@` : "") + describePin(dep.pin),
 
   decide(dep: GitDependency, env: ResolveEnv): Decision {
     const cleanRepo = dep.repo.replace(/\.git$/, "");
@@ -25,19 +26,26 @@ export const gitSource: DependencySource<GitDependency> = {
       : `${env.gitProtocol}://${cleanRepo}.git`;
 
     const installed = env.store.find(dep.name);
-    let stale: string | null = null;
+    let stale: { path: string; pin: GitPin } | null = null;
     if (installed) {
-      switch (reconcile(dep.pin, pinFromSuffix(dep.name, installed.dirName))) {
+      const installedPin = pinFromSuffix(dep.name, installed.dirName);
+      switch (reconcile(dep.pin, installedPin)) {
         case "reuse":
-          return { kind: "module", path: installed.path, name: dep.name };
+          return { kind: "module", path: installed.path, name: dep.name, action: "reused" };
         case "conflict":
           throw new ShardError(
             "conflict",
-            `Version conflict for "${dep.name}": installed ${describePin(pinFromSuffix(dep.name, installed.dirName))}, requested ${describePin(dep.pin)}`,
+            `Version conflict: ${dep.name}`,
             "one pinned state per module can be installed at a time",
+            {
+              details: [
+                ["installed", `${describePin(installedPin)}   ${installed.path}`],
+                ["requested", `${describePin(dep.pin)}   by ${env.requestedBy.join(" → ")}`],
+              ],
+            },
           );
         case "reinstall":
-          stale = installed.path;
+          stale = { path: installed.path, pin: installedPin };
       }
     }
 
@@ -46,8 +54,10 @@ export const gitSource: DependencySource<GitDependency> = {
       kind: "module",
       path: targetDir,
       name: dep.name,
+      action: stale ? "upgraded" : "installed",
+      previous: stale ? describePin(stale.pin) : undefined,
       install: async () => {
-        if (stale) rmSync(stale, { recursive: true, force: true });
+        if (stale) rmSync(stale.path, { recursive: true, force: true });
         rmSync(targetDir, { recursive: true, force: true });
         env.store.ensure();
         await installGit({ repoUrl, targetDir, pin: dep.pin, subdir: dep.subdir, onProgress: env.onProgress });

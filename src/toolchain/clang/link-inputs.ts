@@ -12,14 +12,14 @@ export function clangLinkInputs(target: TargetPlatform): LinkInputTranslator {
           }
           return {
             flags: [`-l${input.name}`],
-            warnings: [`"${input.name}" — -Bstatic unavailable on macOS, linking dynamically`],
+            warnings: ["-Bstatic unavailable on macOS, linking dynamically"],
           };
         }
         return { flags: [`-l${input.name}`], warnings: [] };
       }
 
       const warnings = input.link === LinkType.Static
-        ? [`"${input.name}" — framework cannot be linked statically, linking dynamically`]
+        ? ["frameworks cannot be linked statically, linking dynamically"]
         : [];
       return { flags: [`-Wl,-framework,${input.name}`], warnings };
     },
