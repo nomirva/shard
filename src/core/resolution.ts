@@ -8,6 +8,8 @@ export interface ResolutionServices {
   readonly schema: AttributeSchema;
   /** Undefined when no such module takes part in the build. */
   variantsOf(modulePath: string): readonly OutgoingVariant[] | undefined;
+  /** Edge attributes of every dependency on this module declared anywhere in the build. */
+  edgeRequests(modulePath: string): readonly AttributeContainer[];
 }
 
 /**
@@ -64,7 +66,10 @@ export class ResolutionResult {
 
     const visit = (dep: Dependency): ResolvedNode => {
       const owner = dep.kind === "module" ? dep.path : dep.name;
-      const requested = this.request.merge(dep.attributes);
+      const edge = this.request.merge(dep.attributes);
+      const requested = dep.kind === "module"
+        ? this.services.schema.unifyRequest(edge, this.services.edgeRequests(dep.path))
+        : edge;
       const variant = this.choose(owner, dep, requested);
       const key = `${owner}#${variant.name}`;
       const known = memo.get(key);

@@ -68,9 +68,17 @@ export type CompatibilityRule<T> = (requested: T, produced: T) => boolean;
  */
 export type DisambiguationRule<T> = (requested: T | undefined, candidates: readonly T[]) => readonly T[];
 
+/**
+ * Makes every edge to one module ask for the same value: given the values all
+ * edges in the build request explicitly, returns the one they all get
+ * (e.g. shared when anyone asks for shared).
+ */
+export type UnificationRule<T> = (requested: readonly T[]) => T;
+
 interface AttributeRules {
   compatible: CompatibilityRule<unknown>;
   disambiguate?: DisambiguationRule<unknown>;
+  unify?: UnificationRule<unknown>;
 }
 
 /**
@@ -80,12 +88,30 @@ interface AttributeRules {
 export class AttributeSchema {
   private readonly rules = new Map<string, AttributeRules>();
 
-  define<T>(attr: Attribute<T>, rules: { compatible?: CompatibilityRule<T>; disambiguate?: DisambiguationRule<T> } = {}): void {
+  define<T>(
+    attr: Attribute<T>,
+    rules: { compatible?: CompatibilityRule<T>; disambiguate?: DisambiguationRule<T>; unify?: UnificationRule<T> } = {},
+  ): void {
     if (this.rules.has(attr.name)) throw new ShardError("config", `Attribute "${attr.name}" is already defined`);
     this.rules.set(attr.name, {
       compatible: (rules.compatible ?? Object.is) as CompatibilityRule<unknown>,
       disambiguate: rules.disambiguate as DisambiguationRule<unknown> | undefined,
+      unify: rules.unify as UnificationRule<unknown> | undefined,
     });
+  }
+
+  /**
+   * The request for one edge after unification: for each attribute with a
+   * unify rule, the value every edge to this module in the build gets.
+   */
+  unifyRequest(requested: AttributeContainer, buildWide: readonly AttributeContainer[]): AttributeContainer {
+    let out = requested;
+    for (const [name, rules] of this.rules) {
+      if (!rules.unify) continue;
+      const values = buildWide.filter(r => r.has(name)).map(r => r.raw(name));
+      if (values.length > 0) out = out.with(attribute(name), rules.unify(values));
+    }
+    return out;
   }
 
   isDefined(attr: Attribute<unknown>): boolean {

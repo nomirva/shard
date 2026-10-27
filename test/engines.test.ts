@@ -1,6 +1,6 @@
 import { describe, expect, test } from "bun:test";
 import { spawnSync } from "child_process";
-import { mkdirSync, writeFileSync } from "fs";
+import { mkdirSync, rmSync, writeFileSync } from "fs";
 import { Sandbox, git, type RunSnapshot } from "./harness";
 
 /*
@@ -19,7 +19,8 @@ interface Outcome {
   logs: Record<string, string | null>;
 }
 
-type Engine = "old" | "core";
+/** core-json: the core reading only shard.json (every shard.ts removed). */
+type Engine = "old" | "core" | "core-json";
 
 function outcome(sb: Sandbox, rel: string, r: RunSnapshot): Outcome {
   const files = sb.tree(rel).filter(f => !/^\.shard\/(cache\.json|core\/)/.test(f));
@@ -34,8 +35,13 @@ function outcome(sb: Sandbox, rel: string, r: RunSnapshot): Outcome {
   };
 }
 
+function dropScripts(sb: Sandbox): void {
+  for (const f of sb.tree()) if (f === "shard.ts" || f.endsWith("/shard.ts")) rmSync(sb.path(f));
+}
+
 function buildWith(sb: Sandbox, engine: Engine, rel: string, flags: string[] = []): Outcome {
-  const env: Record<string, string> = engine === "core" ? { SHARD_ENGINE: "core" } : {};
+  if (engine === "core-json") dropScripts(sb);
+  const env: Record<string, string> = engine === "old" ? {} : { SHARD_ENGINE: "core" };
   return outcome(sb, rel, sb.run(["build", sb.path(rel), ...flags], sb.dir, env));
 }
 
@@ -57,15 +63,17 @@ function sameSteps(name: string, steps: (sb: Sandbox, build: (rel: string, ...fl
       return steps(sb, (rel, ...flags) => buildWith(sb, engine, rel, flags))
         .map(o => ({ ...o, invocations: o.invocations.filter(i => i.includes(" -c ")) }));
     };
-    expect(run("core")).toEqual(run("old"));
+    const old = run("old");
+    expect(run("core")).toEqual(old);
   }, TIMEOUT);
 }
 
 function same(name: string, rel: string, flags: string[] = [], setup?: (sb: Sandbox) => void): void {
   test(`${name}: ${[rel, ...flags].join(" ")}`, () => {
     const old = runEngine(name, "old", rel, flags, setup);
-    const core = runEngine(name, "core", rel, flags, setup);
-    expect(core).toEqual(old);
+    const files = (o: Outcome) => ({ ...o, files: o.files.filter(f => !f.endsWith("shard.ts")) });
+    expect(runEngine(name, "core", rel, flags, setup)).toEqual(old);
+    expect(files(runEngine(name, "core-json", rel, flags, setup))).toEqual(files(old));
   }, TIMEOUT);
 }
 
@@ -77,6 +85,7 @@ describe("core engine matches the old pipeline", () => {
   same("app-math", "examples/app", ["--def", "MATH,EXTRA=5", "--start"]);
   same("app-no-variant", "examples/app");
   same("app-std", "examples/app-std", ["--start"]);
+  same("app-std-c89", "examples/app-std", ["--def", "C89"]);
   same("lib-greet", "examples/lib-greet");
   same("lib-std", "examples/lib-std");
   same("lib-math", "examples/lib-math");
@@ -128,6 +137,28 @@ describe("core engine matches the old pipeline", () => {
     }
     return steps;
   });
+});
+
+describe("core engine changes", () => {
+  test("diamond: shared wins for leaf, leaf compiles with the newest standard of its users", () => {
+    const old = runEngine("diamond", "old", "fixtures/diamond/app", ["--start"]);
+    const core = runEngine("diamond", "core-json", "fixtures/diamond/app", ["--start"]);
+    expect(core.status).toBe(0);
+    expect({ stdout: core.stdout, logs: core.logs }).toEqual({ stdout: old.stdout, logs: old.logs });
+
+    const leafCompiles = core.invocations.filter(i => i.includes("/leaf/src/") && i.includes(" -c "));
+    expect(leafCompiles.length).toBe(2);
+    // mid-a asks for c99, mid-b inherits c11 from app: the ceiling is c11 (the old pipeline took c99).
+    expect(leafCompiles.every(i => i.includes(" -std=c11 "))).toBe(true);
+    // mid-b asks for leaf+shared, so everyone links the shared library (the old pipeline took mid-a's static).
+    expect(core.files.filter(f => /leaf\.(a|dylib)$/.test(f))).toEqual([
+      ".shard/leaf/target/arm64/darwin/none/leaf.dylib",
+      "target/arm64/darwin/none/variant/leaf.dylib",
+    ]);
+    // Everything else is what the old pipeline does.
+    const rest = (o: Outcome) => o.invocations.filter(i => !i.includes("leaf.") && !i.includes("/leaf/src/"));
+    expect(rest(core)).toEqual(rest(old));
+  }, TIMEOUT);
 });
 
 describe("core engine fixes", () => {

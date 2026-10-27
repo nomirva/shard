@@ -4,7 +4,7 @@ import {
 } from "../../core";
 import { cacheEnabled } from "../../cache/cache";
 import { processRunner } from "../../build/runner";
-import type { StandardOptions } from "../../lang/types";
+import type { CStandard, StandardOptions } from "../../lang/types";
 import type { CompileOptions } from "../../toolchain/toolchain";
 import { privateIncludes } from "../../target/content";
 import { PackageShape } from "../../target/shape";
@@ -12,10 +12,12 @@ import { sharedLibPath, staticLibPath } from "../../workspace/artifacts";
 import { C, CExtension } from "./extension";
 import { cModel, optional, type CModel } from "./model";
 import { ARTIFACT, C_PARAMETERS, C_RUNNER, C_TOOLCHAIN, DEFAULT_PARAMETERS, LINKAGE, type CParameters } from "./services";
+import { C_STANDARDS, CStandards } from "./standards";
 import { CArchive, CCompile, CLink, CopyHeaders, objectPath, type RuntimeLib } from "./tasks";
 
 export { C, CExtension, type CBlock } from "./extension";
 export * from "./services";
+export { C_STANDARDS, CStandards } from "./standards";
 export { CArchive, CCompile, CLink, CopyHeaders } from "./tasks";
 
 const LINKAGES = ["static", "shared"] as const;
@@ -32,7 +34,11 @@ export function cPlugin(): Plugin {
 
 function apply(module: Module): void {
   if (!module.schema.isDefined(LINKAGE)) {
-    module.schema.define(LINKAGE, { disambiguate: (requested, offered) => (requested ? [requested] : offered.filter(v => v === "static")) });
+    module.schema.define(LINKAGE, {
+      disambiguate: (requested, offered) => (requested ? [requested] : offered.filter(v => v === "static")),
+      // One module links one way in a build: shared as soon as any edge asks for it.
+      unify: requested => (requested.includes("shared") ? "shared" : "static"),
+    });
   }
 
   const ext = module.extensions.add(C, new CExtension(module.path));
@@ -43,6 +49,8 @@ function apply(module: Module): void {
 
   const implementation = module.configurations.scope("implementation");
   const classpath = module.configurations.resolvable("compileClasspath").extendsFrom(implementation);
+  const standards = module.services.getOrRegister(C_STANDARDS, () => new CStandards());
+  standards.add({ module, ext, classpath, model });
   /** Values of one artifact type from dependencies, depth-first in declaration order, each once. */
   const inherited = (type: string) =>
     classpath.incoming.artifacts(type, "declaration").map(list => [...new Set(list.map(a => a.value))]);
@@ -60,7 +68,7 @@ function apply(module: Module): void {
     t.sources.addAll(model.map(m => m.content.sources.map(u => u.path)));
     t.includeDirs.addAll(inherited(ARTIFACT.INCLUDE_DIR).zip(model, (dirs, m) =>
       [...dirs, ...privateIncludes(module.dir, { imports: optional(ext.imports) }, m.content)]));
-    t.options.set(model.map(() => compileSettings(ext, params())));
+    t.options.set(model.map(() => compileSettings(ext, params(), standards.effective(module))));
     t.objectDir.set(model.map(m => m.layout.objectDir));
     t.incremental.set(cacheEnabled(params().cacheMode, isRoot));
     t.objects.addAll(model.map(m => m.content.sources.map(u => objectPath(module.dir, m.layout.objectDir, u.path))));
@@ -125,10 +133,11 @@ function apply(module: Module): void {
 }
 
 /** Effective compile settings: command line over the c block over defaults. */
-function compileSettings(ext: CExtension, params: CParameters): Omit<CompileOptions, "includePaths"> {
+function compileSettings(ext: CExtension, params: CParameters, effective: CStandard | undefined): Omit<CompileOptions, "includePaths"> {
   const own = optional(ext.standard);
-  const standard: StandardOptions | undefined = own?.version !== undefined || own?.pedantic !== undefined
-    ? { version: own.version, pedantic: own.pedantic, support: own.support }
+  const version = effective ?? own?.version;
+  const standard: StandardOptions | undefined = version !== undefined || own?.pedantic !== undefined
+    ? { version, pedantic: own?.pedantic, support: own?.support }
     : undefined;
   return {
     profile: params.profile ?? optional(ext.profile),

@@ -4,6 +4,7 @@ import { clangPlugin } from "./clang";
 import { gitNotation } from "./git";
 import { localNotation } from "./local";
 import { scriptsPlugin } from "./scripts";
+export { jsonReader } from "./shard-json";
 import { frameworkNotation, sysNotation } from "./system";
 
 /** Plugins and dependency sources shipped with shard. */

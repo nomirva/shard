@@ -91,6 +91,11 @@ export class Configuration {
     return this;
   }
 
+  /** Dependencies declared on this configuration itself. */
+  declaredDependencies(): readonly Dependency[] {
+    return this.declared;
+  }
+
   /** Own and inherited dependencies, in declaration order. */
   allDependencies(): Dependency[] {
     const out: Dependency[] = [];
@@ -150,6 +155,10 @@ export class ConfigurationContainer {
 
   findByName(name: string): Configuration | undefined {
     return this.configurations.get(name);
+  }
+
+  all(): Configuration[] {
+    return [...this.configurations.values()];
   }
 
   /** Variants other modules can resolve against. */

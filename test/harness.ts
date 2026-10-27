@@ -21,7 +21,9 @@ function installShims(): void {
       [
         "#!/bin/sh",
         `if [ "$1" != "--version" ]; then`,
-        `  { printf '%s\\t%s' "${tool}" "$PWD"; for a in "$@"; do printf '\\t%s' "$a"; done; printf '\\n'; } >> "$SHIM_LOG"`,
+        // One write per line: parallel tool calls must not interleave in the log.
+        `  line="${tool}$(printf '\\t%s' "$PWD" "$@")"`,
+        `  printf '%s\\n' "$line" >> "$SHIM_LOG"`,
         "fi",
         `exec "${realTool(tool)}" "$@"`,
         "",

@@ -26,6 +26,10 @@ export class Build {
   private readonly resolution: ResolutionServices = {
     schema: this.schema,
     variantsOf: path => this.modules.get(path)?.configurations.consumableVariants(),
+    edgeRequests: path => [...this.modules.values()].flatMap(m => m.configurations.all())
+      .filter(c => c.role === "scope")
+      .flatMap(c => c.declaredDependencies())
+      .flatMap(d => (d.kind === "module" && d.path === path ? [d.attributes] : [])),
   };
 
   constructor(readonly rootDir: string) {}

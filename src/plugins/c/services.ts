@@ -22,7 +22,10 @@ export const C_PARAMETERS = service<CParameters>("c.parameters");
 
 export const DEFAULT_PARAMETERS: CParameters = { defines: [], cacheMode: 0 };
 
-/** How a library is linked: "static" or "shared". Consumers that do not ask get static. */
+/**
+ * How a library is linked: "static" or "shared". Consumers that do not ask
+ * get static; once any edge in the build asks for shared, every edge gets it.
+ */
 export const LINKAGE = attribute<string>("linkage");
 
 /** Artifact types published by C libraries. */

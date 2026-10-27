@@ -5,7 +5,7 @@
  */
 export {
   attribute, AttributeContainer, AttributeSchema,
-  type Attribute, type CompatibilityRule, type DisambiguationRule,
+  type Attribute, type CompatibilityRule, type DisambiguationRule, type UnificationRule,
 } from "./attributes";
 export { Build } from "./build";
 export {

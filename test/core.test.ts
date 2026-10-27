@@ -4,7 +4,7 @@ import { tmpdir } from "os";
 import { join } from "path";
 import type { CacheStore } from "../src/cache/store";
 import {
-  attribute, AttributeContainer, Build, extension, initialize, moduleDependency, Property, provider, scriptReader, Task,
+  attribute, AttributeContainer, AttributeSchema, Build, extension, initialize, moduleDependency, Property, provider, scriptReader, Task,
   type Dependency, type ExecutionListener, type Plugin, type TaskContext,
 } from "../src/core";
 import { builtinPlugins, DEFAULT_PLUGINS } from "../src/plugins";
@@ -331,6 +331,15 @@ describe("variant resolution", () => {
     ]);
     expect(classpath.incoming.nodes().map(n => `${n.owner} ${n.variant.name}`)).toEqual([":greet linkShared", ":math linkStatic"]);
     cleanup();
+  });
+
+  test("a unify rule gives every edge to a module the same value", () => {
+    const schema = new AttributeSchema();
+    schema.define(linkage, { unify: values => (values.includes("shared") ? "shared" : "static") });
+    const edge = (v: string) => AttributeContainer.empty().with(linkage, v);
+    expect(schema.unifyRequest(edge("static"), [edge("static"), edge("shared")]).get(linkage)).toBe("shared");
+    expect(schema.unifyRequest(AttributeContainer.empty(), [edge("static")]).get(linkage)).toBe("static");
+    expect(schema.unifyRequest(AttributeContainer.empty(), []).get(linkage)).toBeUndefined();
   });
 
   test("plugin-published variants resolve like modules", () => {

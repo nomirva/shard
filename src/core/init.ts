@@ -113,6 +113,8 @@ export interface InitOptions {
   readonly defines: readonly string[];
   readonly platform?: string;
   readonly arch?: string;
+  /** More values for configs, e.g. `compiler` once the CLI knows the toolchain. */
+  readonly context?: Readonly<Record<string, unknown>>;
 }
 
 /**
@@ -205,6 +207,7 @@ function configContext(options: InitOptions): ConfigContext {
   }));
   return {
     ...options.registry.helpers(),
+    ...options.context,
     platform: options.platform ?? process.platform,
     arch: options.arch ?? process.arch,
     defines: options.defines,
