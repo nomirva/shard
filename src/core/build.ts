@@ -2,47 +2,47 @@ import { ShardError } from "../utils/errors";
 import { AttributeSchema } from "./attributes";
 import { execute, type ExecuteOptions, type ExecutionResult } from "./executor";
 import { TaskGraph } from "./graph";
-import { Project, type ProjectInit } from "./project";
+import { Module, type ModuleInit } from "./module";
 import type { ResolutionServices } from "./resolution";
 import type { Task } from "./task";
 import type { TaskProvider } from "./tasks";
 
 /**
- * One invocation of shard: every project taking part and every task they
- * registered. Initialization creates projects and applies plugins,
+ * One invocation of shard: every module taking part and every task they
+ * registered. Initialization creates modules and applies plugins,
  * configuration builds the graph for the request, execution runs it.
  */
 export class Build {
   /** Attribute matching rules; plugins define the attributes they introduce. */
   readonly schema = new AttributeSchema();
-  private readonly projects = new Map<string, Project>();
+  private readonly modules = new Map<string, Module>();
   private readonly registry = new Map<string, TaskProvider<Task>>();
   private readonly resolution: ResolutionServices = {
     schema: this.schema,
-    variantsOf: path => this.projects.get(path)?.configurations.consumableVariants(),
+    variantsOf: path => this.modules.get(path)?.configurations.consumableVariants(),
   };
 
-  addProject(init: ProjectInit): Project {
-    if (this.projects.has(init.path)) throw new ShardError("config", `Project ${init.path} already exists`);
-    const project = new Project(init, {
+  addModule(init: ModuleInit): Module {
+    if (this.modules.has(init.path)) throw new ShardError("config", `Module ${init.path} already exists`);
+    const module = new Module(init, {
       onRegister: task => this.registry.set(task.path, task),
       resolution: this.resolution,
     });
-    this.projects.set(init.path, project);
-    return project;
+    this.modules.set(init.path, module);
+    return module;
   }
 
-  get root(): Project {
-    const root = this.projects.get(":");
-    if (!root) throw new ShardError("config", "Build has no root project");
+  get root(): Module {
+    const root = this.modules.get(":");
+    if (!root) throw new ShardError("config", "Build has no root module");
     return root;
   }
 
-  project(path: string): Project | undefined {
-    return this.projects.get(path);
+  module(path: string): Module | undefined {
+    return this.modules.get(path);
   }
 
-  /** "assemble" names a task of the root project, ":lib:assemble" a task anywhere. */
+  /** "assemble" names a task of the root module, ":lib:assemble" a task anywhere. */
   graph(requested: readonly string[]): TaskGraph {
     const providers = requested.map(request =>
       request.startsWith(":") ? this.lookup(request) : this.root.tasks.named(request));

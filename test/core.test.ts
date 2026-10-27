@@ -4,7 +4,7 @@ import { tmpdir } from "os";
 import { join } from "path";
 import type { CacheStore } from "../src/cache/store";
 import {
-  attribute, AttributeContainer, Build, extension, projectDependency, Property, provider, Task,
+  attribute, AttributeContainer, Build, extension, moduleDependency, Property, provider, Task,
   type Dependency, type ExecutionListener, type Plugin, type TaskContext,
 } from "../src/core";
 import type { ShardError } from "../src/utils/errors";
@@ -64,7 +64,7 @@ class Slow extends Task {
 function setup() {
   const dir = mkdtempSync(join(tmpdir(), "shard-core-"));
   const build = new Build();
-  const root = build.addProject({ name: "app", path: ":", dir, buildDir: join(dir, ".shard") });
+  const root = build.addModule({ name: "app", path: ":", dir, buildDir: join(dir, ".shard") });
   const cache = new MemoryCache();
   const events: string[] = [];
   const listener: ExecutionListener = { taskEnd: (task, outcome) => events.push(`${task.path} ${outcome.kind}`) };
@@ -148,9 +148,9 @@ describe("task graph", () => {
     const Greeting = extension<{ text: Property<string> }>("greeting");
     const plugin: Plugin = {
       id: "greeter",
-      apply: project => {
-        const ext = project.extensions.add(Greeting, { text: new Property<string>(":greeting.text").convention("hi") });
-        project.tasks.register("greet", WriteText, t => t.text.set(ext.text));
+      apply: module => {
+        const ext = module.extensions.add(Greeting, { text: new Property<string>(":greeting.text").convention("hi") });
+        module.tasks.register("greet", WriteText, t => t.text.set(ext.text));
       },
     };
     root.plugins.apply(plugin);
@@ -241,7 +241,7 @@ describe("variant resolution", () => {
   const standard = attribute<string>("shard.c.standard");
   const RANK = ["c89", "c99", "c11", "c17", "c23"];
 
-  /** Builds a .a for one project; its output is what the variant publishes. */
+  /** Builds a .a for one module; its output is what the variant publishes. */
   class Archive extends Task {
     readonly file = this.outputFile("file");
     run() { writeFileSync(this.file.get(), this.path); }
@@ -262,9 +262,9 @@ describe("variant resolution", () => {
     build.schema.define(standard, { compatible: (requested, produced) => RANK.indexOf(produced) <= RANK.indexOf(requested) });
 
     const library = (name: string, opts: { shared?: boolean; support?: string; api?: string[] } = {}) => {
-      const p = build.addProject({ name, path: `:${name}`, dir: join(dir, name), buildDir: join(dir, name) });
+      const p = build.addModule({ name, path: `:${name}`, dir: join(dir, name), buildDir: join(dir, name) });
       const api = p.configurations.scope("api");
-      for (const dep of opts.api ?? []) api.add(projectDependency(dep));
+      for (const dep of opts.api ?? []) api.add(moduleDependency(dep));
       const archive = p.tasks.register("archive", Archive, t => t.file.set(join(dir, `${name}.a`)));
       const linkStatic = p.configurations.consumable("linkStatic").attribute(linkage, "static").extendsFrom(api);
       linkStatic.artifacts.add(archive.flatMap(t => t.file).map(value => ({ type: "static-lib", value })));
@@ -293,7 +293,7 @@ describe("variant resolution", () => {
     library("leaf");
     library("mid-a", { api: [":leaf"] });
     library("mid-b", { api: [":leaf"] });
-    const classpath = consumer([projectDependency(":mid-a"), projectDependency(":mid-b")]);
+    const classpath = consumer([moduleDependency(":mid-a"), moduleDependency(":mid-b")]);
 
     expect(classpath.incoming.nodes().map(n => n.owner)).toEqual([":mid-a", ":mid-b", ":leaf"]);
     expect(build.graph(["link"]).describe()).toEqual([":leaf:archive", ":mid-a:archive", ":mid-b:archive", ":link ← :mid-a:archive, :mid-b:archive, :leaf:archive"]);
@@ -307,14 +307,14 @@ describe("variant resolution", () => {
     library("greet", { shared: true });
     library("math", { shared: true });
     const classpath = consumer([
-      projectDependency(":greet", AttributeContainer.empty().with(linkage, "shared")),
-      projectDependency(":math"),
+      moduleDependency(":greet", AttributeContainer.empty().with(linkage, "shared")),
+      moduleDependency(":math"),
     ]);
     expect(classpath.incoming.nodes().map(n => `${n.owner} ${n.variant.name}`)).toEqual([":greet linkShared", ":math linkStatic"]);
     cleanup();
   });
 
-  test("plugin-published variants resolve like projects", () => {
+  test("plugin-published variants resolve like modules", () => {
     const { consumer, cleanup } = cBuild();
     const m: Dependency = {
       kind: "variants", name: "sys:m", attributes: AttributeContainer.empty(),
@@ -328,7 +328,7 @@ describe("variant resolution", () => {
   test("an incompatible standard names the request and what is offered", () => {
     const { library, consumer, cleanup } = cBuild();
     library("lib-std", { support: "c99" });
-    const classpath = consumer([projectDependency(":lib-std")], "c89");
+    const classpath = consumer([moduleDependency(":lib-std")], "c89");
     let error: ShardError | null = null;
     try { classpath.incoming.nodes(); } catch (e) { error = e as ShardError; }
     expect(error?.message).toBe("No variant of :lib-std matches what :linkClasspath requests");
@@ -340,14 +340,14 @@ describe("variant resolution", () => {
     const { library, consumer, cleanup } = cBuild();
     library("a", { api: [":b"] });
     library("b", { api: [":a"] });
-    const classpath = consumer([projectDependency(":a")]);
+    const classpath = consumer([moduleDependency(":a")]);
     expect(() => classpath.incoming.nodes()).toThrow("Dependency cycle");
 
     const { library: lib2, consumer: consumer2, cleanup: cleanup2 } = cBuild();
     lib2("x");
-    const resolved = consumer2([projectDependency(":x")]);
+    const resolved = consumer2([moduleDependency(":x")]);
     resolved.incoming.nodes();
-    expect(() => resolved.add(projectDependency(":y"))).toThrow("already resolved");
+    expect(() => resolved.add(moduleDependency(":y"))).toThrow("already resolved");
     cleanup();
     cleanup2();
   });

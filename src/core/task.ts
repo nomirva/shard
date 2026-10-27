@@ -1,16 +1,16 @@
 import { ListProperty, Property, Provider, type Producer } from "./provider";
 
 /**
- * What a task knows about where it lives. Deliberately not the Project: an
- * action that cannot reach the project only depends on its own properties,
+ * What a task knows about where it lives. Deliberately not the Module: an
+ * action that cannot reach the module only depends on its own properties,
  * which is what makes the task graph cacheable and safe to run in parallel.
  */
 export interface TaskScope {
   readonly name: string;
   /** ":app:compile" — unique across the whole build. */
   readonly path: string;
-  readonly projectDir: string;
-  /** Per-project directory for outputs, e.g. "<module>/.shard". */
+  readonly moduleDir: string;
+  /** Per-module directory for outputs, e.g. "<module>/.shard". */
   readonly buildDir: string;
 }
 
@@ -54,7 +54,7 @@ export interface DeclaredOutput {
 export abstract class Task implements Producer {
   readonly name: string;
   readonly path: string;
-  readonly projectDir: string;
+  readonly moduleDir: string;
   readonly buildDir: string;
   description = "";
   /** A task without outputs, or with this set, runs every time. */
@@ -68,7 +68,7 @@ export abstract class Task implements Producer {
   constructor(scope: TaskScope) {
     this.name = scope.name;
     this.path = scope.path;
-    this.projectDir = scope.projectDir;
+    this.moduleDir = scope.moduleDir;
     this.buildDir = scope.buildDir;
   }
 

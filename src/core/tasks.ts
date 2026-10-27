@@ -53,24 +53,24 @@ interface TypeAction {
   readonly action: (task: Task) => void;
 }
 
-/** Tasks of one project. Only lazy registration: there is no eager `create`. */
+/** Tasks of one module. Only lazy registration: there is no eager `create`. */
 export class TaskContainer {
   private readonly tasks = new Map<string, TaskProvider<Task>>();
   private readonly typeActions: TypeAction[] = [];
 
   constructor(
-    private readonly projectPath: string,
-    private readonly projectDir: string,
+    private readonly modulePath: string,
+    private readonly moduleDir: string,
     private readonly buildDir: string,
     private readonly onRegister: (task: TaskProvider<Task>) => void,
   ) {}
 
   register<T extends Task>(name: string, type: TaskType<T>, configure?: (task: T) => void): TaskProvider<T> {
     if (this.tasks.has(name)) {
-      throw new ShardError("config", `Task "${name}" is already registered in ${this.projectPath}`);
+      throw new ShardError("config", `Task "${name}" is already registered in ${this.modulePath}`);
     }
-    const path = this.projectPath === ":" ? `:${name}` : `${this.projectPath}:${name}`;
-    const scope: TaskScope = { name, path, projectDir: this.projectDir, buildDir: this.buildDir };
+    const path = this.modulePath === ":" ? `:${name}` : `${this.modulePath}:${name}`;
+    const scope: TaskScope = { name, path, moduleDir: this.moduleDir, buildDir: this.buildDir };
     const provider = new TaskProvider<T>(name, path, type, () => {
       const task = new type(scope);
       for (const { type: wanted, action } of this.typeActions) {
@@ -87,7 +87,7 @@ export class TaskContainer {
   named(name: string): TaskProvider<Task> {
     const task = this.tasks.get(name);
     if (!task) {
-      throw new ShardError("config", `Task "${name}" not found in ${this.projectPath}`, undefined, {
+      throw new ShardError("config", `Task "${name}" not found in ${this.modulePath}`, undefined, {
         details: [["available", [...this.tasks.keys()].join(", ") || "(none)"]],
       });
     }

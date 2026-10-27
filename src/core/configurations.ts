@@ -16,21 +16,21 @@ export interface Artifact {
  */
 export type Dependency =
   | {
-      readonly kind: "project";
-      /** Project path in this build, e.g. ":lib". */
+      readonly kind: "module";
+      /** Module path in this build, e.g. ":lib". */
       readonly path: string;
       readonly attributes: AttributeContainer;
     }
   | {
-      /** Published by a plugin without a project behind it: a system library, a prebuilt file. */
+      /** Published by a plugin without a module behind it: a system library, a prebuilt file. */
       readonly kind: "variants";
       readonly name: string;
       readonly variants: readonly OutgoingVariant[];
       readonly attributes: AttributeContainer;
     };
 
-export function projectDependency(path: string, attributes = AttributeContainer.empty()): Dependency {
-  return { kind: "project", path, attributes };
+export function moduleDependency(path: string, attributes = AttributeContainer.empty()): Dependency {
+  return { kind: "module", path, attributes };
 }
 
 /** A variant a dependency can be satisfied with. */
@@ -45,12 +45,12 @@ export interface OutgoingVariant {
 /**
  * - `scope`: dependencies are declared here (`implementation`, `api`);
  * - `resolvable`: a consumer's view (`compileClasspath`), resolved against producers;
- * - `consumable`: a variant this project publishes (`linkElements`).
+ * - `consumable`: a variant this module publishes (`linkElements`).
  */
 export type ConfigurationRole = "scope" | "resolvable" | "consumable";
 
 export class Configuration {
-  /** ":app:linkClasspath", or ":linkClasspath" in the root project. */
+  /** ":app:linkClasspath", or ":linkClasspath" in the root module. */
   readonly path: string;
   readonly artifacts: ListProperty<Artifact>;
   private attrs = AttributeContainer.empty();
@@ -152,7 +152,7 @@ export class ConfigurationContainer {
     return this.configurations.get(name);
   }
 
-  /** Variants other projects can resolve against. */
+  /** Variants other modules can resolve against. */
   consumableVariants(): OutgoingVariant[] {
     return [...this.configurations.values()].filter(c => c.role === "consumable").map(c => c.asVariant());
   }

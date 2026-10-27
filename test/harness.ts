@@ -60,7 +60,7 @@ export class Sandbox {
     delete env.SHARD_GIT_PROTOCOL;
     Object.assign(env, { PATH: `${SHIM_DIR}:${env.PATH}`, SHIM_LOG, NO_COLOR: "1" }, extraEnv);
 
-    const r = spawnSync("bun", [join(REPO, "shard.ts"), ...args], { cwd, env, stdio: "pipe" });
+    const r = spawnSync("bun", [join(REPO, "index.ts"), ...args], { cwd, env, stdio: "pipe" });
     const log = existsSync(SHIM_LOG) ? readFileSync(SHIM_LOG, "utf-8") : "";
     return {
       args: args.map(a => this.normalize(a)),

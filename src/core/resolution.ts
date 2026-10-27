@@ -3,16 +3,16 @@ import type { AttributeContainer, AttributeSchema } from "./attributes";
 import type { Artifact, Dependency, OutgoingVariant } from "./configurations";
 import { Provider, type Producer } from "./provider";
 
-/** What resolution needs from the build: matching rules and the variants each project publishes. */
+/** What resolution needs from the build: matching rules and the variants each module publishes. */
 export interface ResolutionServices {
   readonly schema: AttributeSchema;
-  /** Undefined when no such project takes part in the build. */
-  variantsOf(projectPath: string): readonly OutgoingVariant[] | undefined;
+  /** Undefined when no such module takes part in the build. */
+  variantsOf(modulePath: string): readonly OutgoingVariant[] | undefined;
 }
 
 /** One chosen variant in the resolved graph. */
 export interface ResolvedNode {
-  /** Project path, or the dependency's name for plugin-published variants. */
+  /** Module path, or the dependency's name for plugin-published variants. */
   readonly owner: string;
   readonly variant: OutgoingVariant;
   readonly dependencies: readonly ResolvedNode[];
@@ -60,7 +60,7 @@ export class ResolutionResult {
     const stack: string[] = [];
 
     const visit = (dep: Dependency): ResolvedNode => {
-      const owner = dep.kind === "project" ? dep.path : dep.name;
+      const owner = dep.kind === "module" ? dep.path : dep.name;
       const requested = this.request.merge(dep.attributes);
       const variant = this.choose(owner, dep, requested);
       const key = `${owner}#${variant.name}`;
@@ -84,7 +84,7 @@ export class ResolutionResult {
   }
 
   private choose(owner: string, dep: Dependency, requested: AttributeContainer): OutgoingVariant {
-    const candidates = dep.kind === "project" ? this.services.variantsOf(dep.path) : dep.variants;
+    const candidates = dep.kind === "module" ? this.services.variantsOf(dep.path) : dep.variants;
     if (!candidates) {
       throw new ShardError("config", `${this.name} depends on ${owner}, which is not part of the build`);
     }

@@ -5,25 +5,25 @@ import { TaskContainer, type TaskProvider } from "./tasks";
 import type { Task } from "./task";
 
 /**
- * Extends a project: registers tasks, extensions and configurations.
- * `apply` runs once per project; reacting to other plugins goes through
- * `project.plugins.withId`, never through application order.
+ * Extends a module: registers tasks, extensions and configurations.
+ * `apply` runs once per module; reacting to other plugins goes through
+ * `module.plugins.withId`, never through application order.
  */
 export interface Plugin {
   readonly id: string;
-  apply(project: Project): void;
+  apply(module: Module): void;
 }
 
 export class PluginContainer {
   private readonly applied = new Map<string, Plugin>();
   private readonly waiting = new Map<string, ((plugin: Plugin) => void)[]>();
 
-  constructor(private readonly project: Project) {}
+  constructor(private readonly module: Module) {}
 
   apply(plugin: Plugin): void {
     if (this.applied.has(plugin.id)) return;
     this.applied.set(plugin.id, plugin);
-    plugin.apply(this.project);
+    plugin.apply(this.module);
     for (const action of this.waiting.get(plugin.id) ?? []) action(plugin);
     this.waiting.delete(plugin.id);
   }
@@ -55,11 +55,11 @@ export function extension<T>(name: string): ExtensionKey<T> {
 export class ExtensionContainer {
   private readonly values = new Map<string, unknown>();
 
-  constructor(private readonly projectPath: string) {}
+  constructor(private readonly modulePath: string) {}
 
   add<T>(key: ExtensionKey<T>, value: T): T {
     if (this.values.has(key.name)) {
-      throw new ShardError("config", `Extension "${key.name}" already exists in ${this.projectPath}`);
+      throw new ShardError("config", `Extension "${key.name}" already exists in ${this.modulePath}`);
     }
     this.values.set(key.name, value);
     return value;
@@ -67,7 +67,7 @@ export class ExtensionContainer {
 
   get<T>(key: ExtensionKey<T>): T {
     if (!this.values.has(key.name)) {
-      throw new ShardError("config", `Extension "${key.name}" is not available in ${this.projectPath}`,
+      throw new ShardError("config", `Extension "${key.name}" is not available in ${this.modulePath}`,
         "apply the plugin that provides it");
     }
     return this.values.get(key.name) as T;
@@ -82,7 +82,7 @@ export class ExtensionContainer {
   }
 }
 
-export interface ProjectInit {
+export interface ModuleInit {
   readonly name: string;
   /** ":" for the root, ":lib" for others. */
   readonly path: string;
@@ -90,18 +90,18 @@ export interface ProjectInit {
   readonly buildDir: string;
 }
 
-/** What a project gets from the build it belongs to. */
-export interface ProjectServices {
+/** What a module gets from the build it belongs to. */
+export interface ModuleServices {
   readonly onRegister: (task: TaskProvider<Task>) => void;
   readonly resolution: ResolutionServices;
 }
 
 /**
- * One module of the build. A project holds registries and nothing else; it
- * has no way to reach other projects, so they exchange data only through
+ * One module of the build. A module holds registries and nothing else; it
+ * has no way to reach other modules, so they exchange data only through
  * consumable configurations.
  */
-export class Project {
+export class Module {
   readonly name: string;
   readonly path: string;
   readonly dir: string;
@@ -111,7 +111,7 @@ export class Project {
   readonly plugins: PluginContainer;
   readonly configurations: ConfigurationContainer;
 
-  constructor(init: ProjectInit, services: ProjectServices) {
+  constructor(init: ModuleInit, services: ModuleServices) {
     this.name = init.name;
     this.path = init.path;
     this.dir = init.dir;
