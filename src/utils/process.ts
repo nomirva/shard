@@ -38,8 +38,8 @@ export function runAsync(
   });
 }
 
-export function shellSync(cwd: string, command: string, stdio: "pipe" | "inherit"): RunResult {
-  const r = spawnSync(command, [], { stdio, shell: true, cwd });
+export function shellSync(cwd: string, command: string, stdio: "pipe" | "inherit", env?: Record<string, string>): RunResult {
+  const r = spawnSync(command, [], { stdio, shell: true, cwd, env: env ? { ...process.env, ...env } : undefined });
   if (r.error) throw new ShardError("script", `Failed to run "${command}": ${r.error.message}`);
   return {
     status: r.status ?? -1,

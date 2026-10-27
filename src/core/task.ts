@@ -80,10 +80,11 @@ export abstract class Task implements Producer {
    */
   finalizeOnSuccessOnly = false;
 
-  private readonly inputs: DeclaredInput[] = [];
-  private readonly outputs: DeclaredOutput[] = [];
-  private readonly explicitDeps: (Producer | Provider<unknown>)[] = [];
-  private readonly finalizers: Producer[] = [];
+  // ES private fields: a task type may name its own properties `inputs` or `outputs`.
+  readonly #inputs: DeclaredInput[] = [];
+  readonly #outputs: DeclaredOutput[] = [];
+  readonly #explicitDeps: (Producer | Provider<unknown>)[] = [];
+  readonly #finalizers: Producer[] = [];
 
   constructor(scope: TaskScope) {
     this.name = scope.name;
@@ -97,22 +98,22 @@ export abstract class Task implements Producer {
 
   /** Orders this task after `deps` without passing data; prefer wiring outputs into inputs. */
   dependsOn(...deps: (Producer | Provider<unknown>)[]): this {
-    this.explicitDeps.push(...deps);
+    this.#explicitDeps.push(...deps);
     return this;
   }
 
   /** `finalizer` runs after this task whenever this task ran, even if it failed. */
   finalizedBy(...finalizer: Producer[]): this {
-    this.finalizers.push(...finalizer);
+    this.#finalizers.push(...finalizer);
     return this;
   }
 
   declaredInputs(): readonly DeclaredInput[] {
-    return this.inputs;
+    return this.#inputs;
   }
 
   declaredOutputs(): readonly DeclaredOutput[] {
-    return this.outputs;
+    return this.#outputs;
   }
 
   /** Every task this one must run after: explicit deps and producers of its inputs. */
@@ -121,53 +122,53 @@ export abstract class Task implements Producer {
     const add = (p: Producer): void => {
       if (p.path !== this.path && !out.some(x => x.path === p.path)) out.push(p);
     };
-    for (const dep of this.explicitDeps) {
+    for (const dep of this.#explicitDeps) {
       if (dep instanceof Provider) dep.producers().forEach(add);
       else add(dep);
     }
-    for (const input of this.inputs) input.value.producers().forEach(add);
+    for (const input of this.#inputs) input.value.producers().forEach(add);
     return out;
   }
 
   finalizedByTasks(): readonly Producer[] {
-    return this.finalizers;
+    return this.#finalizers;
   }
 
   /** Freezes every declared property; called once the task is in the graph. */
   finalizeProperties(): void {
-    for (const p of [...this.inputs.map(i => i.value), ...this.outputs.map(o => o.files)]) {
+    for (const p of [...this.#inputs.map(i => i.value), ...this.#outputs.map(o => o.files)]) {
       if (p instanceof Property || p instanceof ListProperty) p.finalizeValue();
     }
   }
 
   protected input<T>(name: string): Property<T> {
     const property = new Property<T>(`${this.path}.${name}`);
-    this.inputs.push({ name, kind: "value", value: property });
+    this.#inputs.push({ name, kind: "value", value: property });
     return property;
   }
 
   protected inputList<T>(name: string): ListProperty<T> {
     const property = new ListProperty<T>(`${this.path}.${name}`);
-    this.inputs.push({ name, kind: "value", value: property });
+    this.#inputs.push({ name, kind: "value", value: property });
     return property;
   }
 
   /** Files whose contents are inputs; directories are walked. */
   protected inputFiles(name: string): ListProperty<string> {
     const property = new ListProperty<string>(`${this.path}.${name}`);
-    this.inputs.push({ name, kind: "files", value: property });
+    this.#inputs.push({ name, kind: "files", value: property });
     return property;
   }
 
   protected outputFile(name: string): Property<string> {
     const property = new Property<string>(`${this.path}.${name}`, this);
-    this.outputs.push({ name, files: property });
+    this.#outputs.push({ name, files: property });
     return property;
   }
 
   protected outputFiles(name: string): ListProperty<string> {
     const property = new ListProperty<string>(`${this.path}.${name}`, this);
-    this.outputs.push({ name, files: property });
+    this.#outputs.push({ name, files: property });
     return property;
   }
 }

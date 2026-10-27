@@ -1,7 +1,8 @@
-import { join } from "path";
+import { dirname, join } from "path";
 import type { Module, Provider } from "../../core";
 import { lazy } from "../../core";
 import { scanContent, type ModuleContent } from "./content/content";
+import { Unit } from "./content/unit";
 import { deriveShape, PackageShape } from "./content/shape";
 import { tripleDir } from "./toolchain/target";
 import type { Toolchain } from "./toolchain/toolchain";
@@ -11,7 +12,10 @@ import type { CExtension } from "./extension";
 
 /** What a module is, worked out once configuration is over. */
 export interface CModel {
+  /** Scanned files plus generated `.c` files (which may not exist yet). */
   readonly content: ModuleContent;
+  /** Directories of generated headers. */
+  readonly generatedIncludes: readonly string[];
   readonly shape: PackageShape;
   readonly layout: Layout;
 }
@@ -26,11 +30,17 @@ export function optional<T>(p: Provider<T>): T | undefined {
  */
 export function cModel(module: Module, ext: CExtension, toolchain: () => Toolchain): Provider<CModel> {
   return lazy(() => {
-    const content = scanContent(module.dir, {
+    const scanned = scanContent(module.dir, {
       sources: optional(ext.sources),
       imports: optional(ext.imports),
       exports: optional(ext.exports),
     }, DIRS.TARGET);
+    const generated = ext.generated.get();
+    const content: ModuleContent = {
+      ...scanned,
+      sources: [...scanned.sources, ...generated.filter(f => f.endsWith(".c")).map(f => new Unit(f))],
+    };
+    const generatedIncludes = [...new Set(generated.filter(f => f.endsWith(".h")).map(f => dirname(f)))];
 
     const kind = optional(ext.kind);
     const shape = kind === "executable" ? PackageShape.Executable
@@ -41,6 +51,7 @@ export function cModel(module: Module, ext: CExtension, toolchain: () => Toolcha
     let layout: Layout | null = null;
     return {
       content,
+      generatedIncludes,
       shape,
       get layout(): Layout {
         return (layout ??= layoutOf(module, optional(ext.variant), tripleDir(toolchain().target)));

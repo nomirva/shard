@@ -66,8 +66,10 @@ function apply(module: Module): void {
   const compile = module.tasks.register("compile", CCompile, t => {
     tool(t);
     t.sources.addAll(model.map(m => m.content.sources.map(u => u.path)));
+    // Generated files come from other tasks: compile after them.
+    t.dependsOn(ext.generated);
     t.includeDirs.addAll(inherited(ARTIFACT.INCLUDE_DIR).zip(model, (dirs, m) =>
-      [...dirs, ...privateIncludes(module.dir, { imports: optional(ext.imports) }, m.content)]));
+      [...dirs, ...new Set([...privateIncludes(module.dir, { imports: optional(ext.imports) }, m.content), ...m.generatedIncludes])]));
     t.options.set(model.map(() => compileSettings(ext, params(), modules.effective(module))));
     t.objectDir.set(model.map(m => m.layout.objectDir));
     const useCache = cacheEnabled(params().cacheMode, isRoot);

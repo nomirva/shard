@@ -43,6 +43,12 @@ export class CExtension implements Configurable {
   readonly linkExtra: Property<string[]>;
   readonly subsystem: Property<Subsystem>;
   readonly variant: Property<string>;
+  /**
+   * Files other tasks produce: `.c` files are compiled with the module's own
+   * sources, directories of `.h` files are added to its includes. Wire task
+   * outputs here (not paths) so compiling waits for them.
+   */
+  readonly generated: ListProperty<string>;
 
   constructor(owner: string) {
     const name = (field: string) => `${owner} c.${field}`;
@@ -58,6 +64,7 @@ export class CExtension implements Configurable {
     this.linkExtra = new Property(name("linkExtra"));
     this.subsystem = new Property(name("subsystem"));
     this.variant = new Property(name("variant"));
+    this.generated = new ListProperty(name("generated"));
   }
 
   configure(raw: unknown): void {
