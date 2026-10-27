@@ -1,6 +1,6 @@
 import { ShardError } from "../utils/errors";
 import { Provider, type Producer } from "./provider";
-import type { Task, TaskScope, TaskType } from "./task";
+import type { Task, TaskClass, TaskScope, TaskType } from "./task";
 
 /**
  * A registered task that is not created until something needs it: the graph
@@ -49,7 +49,7 @@ export class TaskProvider<T extends Task> extends Provider<T> implements Produce
 }
 
 interface TypeAction {
-  readonly type: TaskType<Task>;
+  readonly type: TaskClass<Task>;
   readonly action: (task: Task) => void;
 }
 
@@ -103,7 +103,7 @@ export class TaskContainer {
   }
 
   /** Configures every task of `type`, registered now or later, when it is created. */
-  configureEach<T extends Task>(type: TaskType<T>, action: (task: T) => void): void {
+  configureEach<T extends Task>(type: TaskClass<T>, action: (task: T) => void): void {
     this.typeActions.push({ type, action: action as (task: Task) => void });
     for (const provider of this.tasks.values()) {
       if (provider.isRealized() && provider.get() instanceof type) action(provider.get() as T);

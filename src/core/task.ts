@@ -69,6 +69,11 @@ export abstract class Task implements Producer {
   description = "";
   /** A task without outputs, or with this set, runs every time. */
   alwaysRun = false;
+  /**
+   * As a finalizer: run only when every task it finalizes succeeded (a
+   * post-build hook), instead of whenever one of them ran (a cleanup).
+   */
+  finalizeOnSuccessOnly = false;
 
   private readonly inputs: DeclaredInput[] = [];
   private readonly outputs: DeclaredOutput[] = [];
@@ -162,3 +167,6 @@ export abstract class Task implements Producer {
 }
 
 export type TaskType<T extends Task> = new (scope: TaskScope) => T;
+
+/** Any task class, abstract ones included: what `configureEach` matches on. */
+export type TaskClass<T extends Task> = abstract new (scope: TaskScope) => T;

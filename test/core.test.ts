@@ -238,6 +238,23 @@ describe("execution", () => {
   });
 });
 
+describe("success-only finalizers", () => {
+  test("a post-build finalizer runs after success and is skipped after a failure", async () => {
+    const { root, run, cleanup } = setup();
+    const post = root.tasks.register("post", Note, t => { t.finalizeOnSuccessOnly = true; });
+    root.tasks.register("good", Note, t => t.finalizedBy(post));
+    root.tasks.register("bad", Fail, t => t.finalizedBy(post));
+    expect((await run(["good"], 1)).events).toEqual([":good executed", ":post executed"]);
+    cleanup();
+
+    const second = setup();
+    const post2 = second.root.tasks.register("post", Note, t => { t.finalizeOnSuccessOnly = true; });
+    second.root.tasks.register("bad", Fail, t => t.finalizedBy(post2));
+    expect((await second.run(["bad"], 1)).events).toEqual([":bad failed", ":post skipped"]);
+    second.cleanup();
+  });
+});
+
 describe("variant resolution", () => {
   const linkage = attribute<string>("shard.linkage");
   const standard = attribute<string>("shard.c.standard");

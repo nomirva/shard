@@ -6,6 +6,7 @@ import { Build, initialize, scriptReader, type ExecutionListener } from "../../c
 import { JsonCacheStore } from "../../cache/store";
 import { builtinPlugins, DEFAULT_PLUGINS } from "../../plugins";
 import { C_PARAMETERS, type CParameters } from "../../plugins/c";
+import { GIT_PARAMETERS } from "../../plugins/git";
 import type { CLink } from "../../plugins/c/tasks";
 import { DIRS } from "../../workspace/layout";
 import { ShardError } from "../../utils/errors";
@@ -22,6 +23,10 @@ export async function coreBuildCommand(path: string, flags: BuildFlags, params: 
 
   const build = new Build(rootDir);
   build.services.register(C_PARAMETERS, params);
+  build.services.register(GIT_PARAMETERS, {
+    protocol: flags.gitProtocol ?? process.env.SHARD_GIT_PROTOCOL ?? "https",
+  });
+  build.onWarning((_module, message) => process.stderr.write(`⚠ ${message}\n`));
   const root = await initialize(build, {
     registry: builtinPlugins(),
     readers: [scriptReader],

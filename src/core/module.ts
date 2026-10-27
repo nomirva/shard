@@ -99,6 +99,7 @@ export interface ModuleServices {
   readonly services: ServiceRegistry;
   /** Directory of the root module: where build-wide state lives. */
   readonly rootDir: string;
+  readonly warn: (module: Module, message: string) => void;
 }
 
 /**
@@ -120,6 +121,8 @@ export class Module {
   /** Build-wide attribute rules; a plugin defines the attributes it introduces once. */
   readonly schema: AttributeSchema;
   readonly rootDir: string;
+  private readonly configuredActions: (() => void)[] = [];
+  private readonly warnSink: (module: Module, message: string) => void;
 
   constructor(init: ModuleInit, services: ModuleServices) {
     this.name = init.name;
@@ -131,7 +134,28 @@ export class Module {
     this.extensions = new ExtensionContainer(init.path);
     this.services = services.services;
     this.schema = services.resolution.schema;
+    this.warnSink = services.warn;
     this.rootDir = services.rootDir;
     this.plugins = new PluginContainer(this);
+  }
+
+  /** A warning for the user, e.g. "static linking unavailable on macOS". */
+  warn(message: string): void {
+    this.warnSink(this, message);
+  }
+
+  /**
+   * Side effects that must happen once configuration is over and before the
+   * task graph is built, such as a `preload` hook generating sources. Runs
+   * for each module after the modules it depends on. Not a way to change
+   * configuration: properties may already have been read.
+   */
+  onConfigured(action: () => void): void {
+    this.configuredActions.push(action);
+  }
+
+  /** Called by the build once, in dependency order. */
+  runConfigured(): void {
+    for (const action of this.configuredActions.splice(0)) action();
   }
 }

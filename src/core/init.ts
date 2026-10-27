@@ -20,7 +20,8 @@ export interface DependencyNotation {
 
 /** What a notation points at once the module declaring it is known. */
 export type NotationTarget =
-  | { readonly kind: "module"; readonly dir: string }
+  /** `name` defaults to the directory name (a git checkout "lib@v1.2.0" is module "lib"). */
+  | { readonly kind: "module"; readonly dir: string; readonly name?: string }
   | { readonly kind: "variants"; readonly name: string; readonly variants: readonly OutgoingVariant[] };
 
 /** A dependency source contributed by a plugin package: `local(...)`, later `git(...)`, `sys(...)`. */
@@ -28,7 +29,8 @@ export interface NotationHandler {
   readonly source: string;
   /** The helper configs call, e.g. `local("../lib", { linkage: "shared" })`. */
   helper(...args: never[]): DependencyNotation;
-  resolve(notation: DependencyNotation, from: Module): NotationTarget | Promise<NotationTarget>;
+  /** `requestedBy`: module names from the root down to `from`. */
+  resolve(notation: DependencyNotation, from: Module, requestedBy: readonly string[]): NotationTarget | Promise<NotationTarget>;
 }
 
 /** One module's config after evaluation. Every other key is a block for the extension of that name. */
@@ -123,12 +125,12 @@ export async function initialize(build: Build, options: InitOptions): Promise<Mo
   const byDir = new Map<string, Module>();
   const names = new Map<string, string>();
 
-  const load = async (dir: string, isRoot: boolean): Promise<Module> => {
+  const load = async (dir: string, isRoot: boolean, chain: readonly string[], declaredName?: string): Promise<Module> => {
     const real = realpathSync(dir);
     const known = byDir.get(real);
     if (known) return known;
 
-    const name = basename(real);
+    const name = declaredName ?? basename(real);
     const path = isRoot ? ":" : `:${name}`;
     const other = names.get(path);
     if (other && other !== real) {
@@ -150,7 +152,7 @@ export async function initialize(build: Build, options: InitOptions): Promise<Mo
         throw new ShardError("config", `${module.path} declares dependencies in "${scope}", which no plugin provides`);
       }
       for (const notation of notations) {
-        configuration.add(await declare(notation, module));
+        configuration.add(await declare(notation, module, [...chain, name]));
       }
     }
 
@@ -163,22 +165,23 @@ export async function initialize(build: Build, options: InitOptions): Promise<Mo
       }
       ext.configure(block);
     }
+    build.markInitialized(module);
     return module;
   };
 
-  const declare = async (notation: DependencyNotation, from: Module): Promise<Dependency> => {
+  const declare = async (notation: DependencyNotation, from: Module, chain: readonly string[]): Promise<Dependency> => {
     const attributes = Object.entries(notation.attributes ?? {})
       .reduce((all, [name, value]) => all.with(attribute<string>(name), value), AttributeContainer.empty());
-    const target = await options.registry.handler(notation.source).resolve(notation, from);
+    const target = await options.registry.handler(notation.source).resolve(notation, from, chain);
     if (target.kind === "variants") return { kind: "variants", name: target.name, variants: target.variants, attributes };
     if (!existsSync(target.dir)) {
       throw new ShardError("config", `Module not found: ${target.dir}`, undefined, { details: [["declared in", from.dir]] });
     }
-    const child = await load(target.dir, false);
+    const child = await load(target.dir, false, chain, target.name);
     return moduleDependency(child.path, attributes);
   };
 
-  return load(build.rootDir, true);
+  return load(build.rootDir, true, []);
 }
 
 async function readConfig(dir: string, readers: readonly ConfigReader[], ctx: ConfigContext): Promise<ModuleConfig> {

@@ -68,6 +68,7 @@ export async function execute(graph: TaskGraph, options: ExecuteOptions): Promis
     }
     if (node.finalizes.length > 0) {
       if (node.finalizes.some(path => !outcomes.has(path))) return "wait";
+      if (task.finalizeOnSuccessOnly) return node.finalizes.every(succeeded) ? "run" : "skip";
       return node.finalizes.some(ran) ? "run" : "skip";
     }
     return failures.length > 0 ? "skip" : "run";

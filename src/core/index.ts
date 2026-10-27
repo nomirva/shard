@@ -25,5 +25,5 @@ export { lazy, ListProperty, Property, provider, Provider, type Producer, type V
 export { SCRIPT_FILE, scriptReader } from "./script";
 export { service, ServiceRegistry, type ServiceKey } from "./services";
 export { ResolutionResult, type ResolutionOrder, type ResolutionServices, type ResolvedNode } from "./resolution";
-export { Task, type TaskContext, type TaskScope, type TaskState, type TaskType } from "./task";
+export { Task, type TaskContext, type TaskScope, type TaskClass, type TaskState, type TaskType } from "./task";
 export { TaskContainer, TaskProvider } from "./tasks";

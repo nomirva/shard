@@ -1236,6 +1236,7 @@ exports[`examples codegen: preload and preclean hooks 1`] = `
     "clean.sh",
     "gen.sh",
     "shard.json",
+    "shard.ts",
     "src/generated.c",
     "src/generated.h",
     "src/main.c",
@@ -1246,6 +1247,7 @@ exports[`examples codegen: preload and preclean hooks 1`] = `
     "clean.sh",
     "gen.sh",
     "shard.json",
+    "shard.ts",
     "src/main.c",
   ],
 }
