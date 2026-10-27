@@ -1,7 +1,7 @@
 import { extension, ListProperty, Property, type Configurable } from "../../core";
 import type { PathPatterns } from "../shard-json/manifest";
 import { parseOptions } from "./options";
-import type { Profile, StandardOptions, Subsystem, WarningSet } from "./lang/types";
+import type { CStandard, Profile, StandardOptions, Subsystem, WarningSet } from "./lang/types";
 import { ShardError } from "../../utils/errors";
 import { isPlainObject } from "../../utils/object";
 
@@ -14,8 +14,8 @@ export interface CBlock {
   imports?: PathPatterns;
   /** Public headers, copied to the module's include directory. */
   exports?: PathPatterns;
-  standard?: string | { version?: string; support?: string; pedantic?: boolean | "error" };
-  profile?: string;
+  standard?: CStandard | { version?: CStandard; support?: CStandard; pedantic?: boolean | "error" };
+  profile?: Profile;
   warnings?: WarningSet;
   defines?: string[];
   compileExtra?: string[];

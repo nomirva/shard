@@ -1,4 +1,6 @@
-export default ({ defined, local }) => ({
+import type { ShardConfig } from "../../src/config";
+
+export default (({ defined, local }) => ({
   dependencies: [local("../lib-std")],
   c: { profile: "fast", standard: defined("C89") ? "c89" : "c17" },
-});
+})) satisfies ShardConfig;
