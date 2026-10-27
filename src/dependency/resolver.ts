@@ -1,78 +1,75 @@
-import { basename } from "path";
-import { loadManifest, type ConditionalContext } from "../module/manifest";
-import { Module } from "../module/module";
-import { withProgress, type InstallProgress, type ProgressSink } from "../utils/progress";
-import { ModuleGraph } from "../module/graph";
-import { installDependency, parseDependency } from "./dependency";
-import type { InstallEnvironment } from "./types";
+import type { LinkInput } from "../toolchain/toolchain";
+import { withProgress, type InstallProgress } from "../report/progress";
+import type { Workspace } from "../workspace/workspace";
+import { TargetGraph, type GraphBuilder } from "../target/graph";
+import type { DeclaredTarget, ResolvedTarget } from "../target/target";
+import { parseDependency } from "./parse";
+import { sourceFor } from "./registry";
+import type { ResolveEnv } from "./source";
+import { ModuleStore } from "./store";
 
-export interface ResolveOptions {
-  compiler: string;
-  defines: string[];
-  gitProtocol: string;
-  progress?: ProgressSink;
-}
-
+/**
+ * Walks `depend` declarations depth-first. The tree cannot be resolved ahead
+ * of installation: a fetched module's own dependencies are known only once its
+ * manifest is on disk, so decide → install → read manifest runs per edge.
+ */
 export class Resolver {
-  private readonly graph = new ModuleGraph();
-  private readonly visited = new Set<Module>();
-  private readonly env: InstallEnvironment;
+  private readonly graph: GraphBuilder<DeclaredTarget> = TargetGraph.builder();
+  private readonly flags = new Map<string, string[]>();
+  private readonly visited = new Set<string>();
+  private readonly store: ModuleStore;
 
-  constructor(
-    private readonly rootPath: string,
-    private readonly options: ResolveOptions,
-  ) {
-    this.env = { rootPath, gitProtocol: options.gitProtocol };
+  constructor(private readonly ws: Workspace) {
+    this.store = new ModuleStore(ws.modulesDir);
   }
 
-  async resolve(): Promise<ModuleGraph> {
-    const root = this.createModule(this.rootPath, basename(this.rootPath));
-    this.graph.setRoot(root);
-    await this.resolveDeps(root);
-    return this.graph;
+  async resolve(root: DeclaredTarget): Promise<TargetGraph<ResolvedTarget>> {
+    await this.visit(this.graph.setRoot(root));
+    return this.graph.build().map(target => ({ ...target, linkFlags: this.flags.get(target.path) ?? [] }));
   }
 
-  private createModule(path: string, name: string): Module {
-    const existing = this.graph.node(path);
-    if (existing) return existing;
-    return this.graph.addNode(new Module(path, name, loadManifest(path, this.context())));
-  }
+  private async visit(target: DeclaredTarget): Promise<void> {
+    if (this.visited.has(target.path)) return;
+    this.visited.add(target.path);
 
-  private async resolveDeps(module: Module): Promise<void> {
-    if (this.visited.has(module)) return;
-    this.visited.add(module);
-
-    const deps = module.declaredDeps;
+    const deps = target.manifest.depend;
     for (let i = 0; i < deps.length; i++) {
       const dep = parseDependency(deps[i]);
       const progress: InstallProgress = { name: dep.name, version: dep.version, percent: 0 };
+      const env: ResolveEnv = {
+        rootPath: this.ws.rootPath,
+        store: this.store,
+        gitProtocol: this.ws.settings.resolve.gitProtocol,
+        onProgress: (percent) => { progress.percent = percent; },
+      };
 
-      const result = await withProgress(
-        this.options.progress,
+      const decision = await withProgress(
+        this.ws.reporter.progress,
         { name: dep.name, version: dep.version, index: i + 1, total: deps.length },
         progress,
-        () => installDependency(dep, {
-          ...this.env,
-          onProgress: (percent) => { progress.percent = percent; },
-        }),
+        async () => {
+          const decision = sourceFor(dep.kind)!.decide(dep, env);
+          if (decision.kind === "link") this.addLinkFlags(target, decision.inputs);
+          else await decision.install?.();
+          return decision;
+        },
       );
 
-      if (result.kind === "module") {
-        const child = this.createModule(result.path, result.name);
-        this.graph.connect(module, child, dep.link);
-        await this.resolveDeps(child);
-      } else {
-        this.graph.addFlags(module, result.flags);
+      if (decision.kind === "module") {
+        const child = this.graph.get(decision.path) ?? this.graph.add(this.ws.declare(decision.path, decision.name));
+        this.graph.connect(target, child, dep.link);
+        await this.visit(child);
       }
     }
   }
 
-  private context(): ConditionalContext {
-    return {
-      compiler: this.options.compiler,
-      platform: process.platform,
-      arch: process.arch,
-      defines: this.options.defines,
-    };
+  private addLinkFlags(target: DeclaredTarget, inputs: readonly LinkInput[]): void {
+    const own = this.flags.get(target.path) ?? [];
+    for (const input of inputs) {
+      const { flags, warnings } = this.ws.toolchain.linkInputs.translate(input);
+      for (const warning of warnings) this.ws.reporter.warn(warning);
+      own.push(...flags);
+    }
+    this.flags.set(target.path, own);
   }
 }

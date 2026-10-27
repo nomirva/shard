@@ -1,9 +1,9 @@
 import { describe, expect, test } from "bun:test";
-import { resolveConditionals } from "../src/module/conditional";
-import { buildManifest } from "../src/module/manifest";
-import { parseDependency } from "../src/dependency/dependency";
-import { makePin, reconcile, type GitPin } from "../src/dependency/integrity";
-import { dominates, olderStandard, oldestStandard } from "../src/module/standards";
+import { resolveConditionals } from "../src/manifest/conditional";
+import { buildManifest } from "../src/manifest/manifest";
+import { parseDependency } from "../src/dependency/parse";
+import { makePin, reconcile, type GitPin } from "../src/dependency/sources/git/pin";
+import { dominates, olderStandard, oldestStandard } from "../src/lang/standards";
 
 const ctx = { compiler: "clang", platform: "darwin", arch: "arm64", defines: ["A", "B=2"] };
 
