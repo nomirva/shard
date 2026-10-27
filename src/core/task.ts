@@ -9,6 +9,8 @@ export interface TaskScope {
   readonly name: string;
   /** ":app:compile" — unique across the whole build. */
   readonly path: string;
+  /** ":app", or ":" for the root module. */
+  readonly modulePath: string;
   readonly moduleDir: string;
   /** Per-module directory for outputs, e.g. "<module>/.shard". */
   readonly buildDir: string;
@@ -28,6 +30,8 @@ export interface TaskContext {
    * task (which files of a compile task are still fresh).
    */
   readonly state: TaskState;
+  /** Something for the user's report (a file compiled, a hook's output); passed on as is. */
+  report(event: unknown): void;
 }
 
 export interface TaskState {
@@ -64,6 +68,7 @@ export interface DeclaredOutput {
 export abstract class Task implements Producer {
   readonly name: string;
   readonly path: string;
+  readonly modulePath: string;
   readonly moduleDir: string;
   readonly buildDir: string;
   description = "";
@@ -83,6 +88,7 @@ export abstract class Task implements Producer {
   constructor(scope: TaskScope) {
     this.name = scope.name;
     this.path = scope.path;
+    this.modulePath = scope.modulePath;
     this.moduleDir = scope.moduleDir;
     this.buildDir = scope.buildDir;
   }

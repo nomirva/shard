@@ -16,8 +16,9 @@ export { execute, type ExecuteOptions, type ExecutionListener, type ExecutionRes
 export { TaskGraph } from "./graph";
 export {
   initialize, PluginRegistry,
-  type ConfigContext, type Configurable, type ConfigReader, type DependencyNotation,
-  type InitOptions, type ModuleConfig, type NotationHandler, type NotationTarget,
+  type ConfigContext, type Configurable, type ConfigReader, type DeclaredEdge, type DependencyNotation,
+  type InitListener, type InitOptions, type ModuleConfig, type NotationHandler, type NotationInfo,
+  type NotationTarget, type ResolutionNote, type ResolvedEdge, type ResolveOptions,
 } from "./init";
 export { LifecycleTask } from "./lifecycle";
 export { extension, ExtensionContainer, PluginContainer, Module, type ExtensionKey, type Plugin, type ModuleInit, type ModuleServices } from "./module";

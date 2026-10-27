@@ -16,13 +16,18 @@ function build(sb: Sandbox, rel: string, ...flags: string[]): RunSnapshot {
   return sb.run(["build", sb.path(rel), ...flags]);
 }
 
+/** Task records with hashes masked: a linked .dylib carries a random UUID, so hashes over it vary. */
+function cache(sb: Sandbox, rel: string): string | null {
+  return sb.read(`${rel}/.shard/cache.json`)?.replace(/[0-9a-f]{64}/g, "<sha256>") ?? null;
+}
+
 describe("examples", () => {
   scenario("hello: build, cached rebuild, start", sb => ({
     first: build(sb, "examples/hello"),
     second: build(sb, "examples/hello"),
     start: build(sb, "examples/hello", "--start"),
     tree: sb.tree("examples/hello"),
-    cache: sb.read("examples/hello/.shard/cache.json"),
+    cache: cache(sb, "examples/hello"),
   }));
 
   scenario("app: variants and cache modes", sb => ({
@@ -33,7 +38,7 @@ describe("examples", () => {
     ignoreAll: build(sb, "examples/app", "--def", "GREET", "--ignore-cache", "2"),
     commaDefs: build(sb, "examples/app", "--def", "MATH,EXTRA=5"),
     tree: sb.tree("examples/app"),
-    cache: sb.read("examples/app/.shard/cache.json"),
+    cache: cache(sb, "examples/app"),
   }));
 
   scenario("app: no variant is a compile error", sb => ({
@@ -142,8 +147,25 @@ describe("fixtures", () => {
     preloadLog: sb.read("fixtures/diamond/mid-a/preload.log"),
     rebuild: build(sb, "fixtures/diamond/app", "--def", "EXTRA"),
     tree: sb.tree("fixtures/diamond/app"),
-    cache: sb.read("fixtures/diamond/app/.shard/cache.json"),
+    cache: cache(sb, "fixtures/diamond/app"),
   }));
+
+  scenario("incremental rebuild: nothing changed, then one exported header", sb => {
+    const first = build(sb, "examples/app-std");
+    const unchanged = build(sb, "examples/app-std");
+    sb.write("examples/lib-std/include/calc.h", sb.read("examples/lib-std/include/calc.h") + "\n/* touched */\n");
+    const header = build(sb, "examples/app-std");
+    return { first: first.status, unchanged: unchanged.invocations, header: header.invocations };
+  });
+
+  scenario("prebuild and postbuild hooks; postbuild skipped after a failed compile", sb => {
+    sb.write("hooks/shard.json", JSON.stringify({ scripts: { prebuild: "echo pre >> hook.log", postbuild: "echo post >> hook.log" } }));
+    sb.write("hooks/src/main.c", "int main(void) { return 0; }\n");
+    const ok = build(sb, "hooks");
+    sb.write("hooks/src/main.c", "int main(void) { return nope; }\n");
+    const broken = build(sb, "hooks");
+    return { ok: ok.status, broken: broken.status, log: sb.read("hooks/hook.log") };
+  });
 
   scenario("git dependencies", sb => {
     const remotes = sb.path("remotes");

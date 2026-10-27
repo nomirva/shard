@@ -90,6 +90,8 @@ export interface ModuleInit {
   readonly path: string;
   readonly dir: string;
   readonly buildDir: string;
+  /** The file the module's config was read from; undefined when it has none. */
+  readonly configFile?: string;
 }
 
 /** What a module gets from the build it belongs to. */
@@ -100,6 +102,7 @@ export interface ModuleServices {
   /** Directory of the root module: where build-wide state lives. */
   readonly rootDir: string;
   readonly warn: (module: Module, message: string) => void;
+  readonly report: (module: Module, event: unknown) => void;
 }
 
 /**
@@ -112,6 +115,7 @@ export class Module {
   readonly path: string;
   readonly dir: string;
   readonly buildDir: string;
+  readonly configFile: string | undefined;
   readonly tasks: TaskContainer;
   readonly extensions: ExtensionContainer;
   readonly plugins: PluginContainer;
@@ -123,18 +127,21 @@ export class Module {
   readonly rootDir: string;
   private readonly configuredActions: (() => void)[] = [];
   private readonly warnSink: (module: Module, message: string) => void;
+  private readonly reportSink: (module: Module, event: unknown) => void;
 
   constructor(init: ModuleInit, services: ModuleServices) {
     this.name = init.name;
     this.path = init.path;
     this.dir = init.dir;
     this.buildDir = init.buildDir;
+    this.configFile = init.configFile;
     this.tasks = new TaskContainer(init.path, init.dir, init.buildDir, services.onRegister);
     this.configurations = new ConfigurationContainer(init.path, services.resolution);
     this.extensions = new ExtensionContainer(init.path);
     this.services = services.services;
     this.schema = services.resolution.schema;
     this.warnSink = services.warn;
+    this.reportSink = services.report;
     this.rootDir = services.rootDir;
     this.plugins = new PluginContainer(this);
   }
@@ -142,6 +149,11 @@ export class Module {
   /** A warning for the user, e.g. "static linking unavailable on macOS". */
   warn(message: string): void {
     this.warnSink(this, message);
+  }
+
+  /** Something for the user's report outside any task, e.g. a preload hook's run. */
+  report(event: unknown): void {
+    this.reportSink(this, event);
   }
 
   /**

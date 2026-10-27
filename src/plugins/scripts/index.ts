@@ -1,4 +1,5 @@
-import { extension, LifecycleTask, Task, type Configurable, type Module, type Plugin, type TaskProvider } from "../../core";
+import { extension, LifecycleTask, Task, type Configurable, type Module, type Plugin, type TaskContext, type TaskProvider } from "../../core";
+import type { ReportEvent } from "../../report/events";
 import { ShardError } from "../../utils/errors";
 import { isPlainObject } from "../../utils/object";
 import { shellSync } from "../../utils/process";
@@ -25,8 +26,13 @@ export class Script extends Task {
     this.alwaysRun = true;
   }
 
-  run(): void {
-    this.output = runScript(this.moduleDir, this.label, this.script, this.command.get(), this.inheritOutput);
+  run(ctx: TaskContext): void {
+    const report = (event: ReportEvent) => ctx.report(event);
+    if (this.inheritOutput) {
+      runScript(this.moduleDir, this.label, this.script, this.command.get(), true);
+      return;
+    }
+    this.output = reportedRun(report, this.moduleDir, this.label, this.script, this.command.get());
   }
 }
 
@@ -78,7 +84,7 @@ export const SCRIPTS = extension<ScriptsExtension>("scripts");
 function bindHook(module: Module, hook: HookName, task: TaskProvider<Script>, command: string): void {
   const isOwnWork = (t: Task) => !(t instanceof Script) && !(t instanceof LifecycleTask);
   if (hook === "preload") {
-    module.onConfigured(() => { runScript(module.dir, module.name, hook, command, false); });
+    module.onConfigured(() => { reportedRun(event => module.report(event), module.dir, module.name, hook, command); });
   } else if (hook === "prebuild") {
     module.tasks.configureEach(Task, t => { if (isOwnWork(t)) t.dependsOn(task); });
   } else if (hook === "postbuild") {
@@ -94,6 +100,15 @@ export function scriptsPlugin(): Plugin {
       module.extensions.add(SCRIPTS, new ScriptsExtension(module));
     },
   };
+}
+
+/** Runs a hook with captured output, between hook.start and hook events. */
+function reportedRun(report: (event: ReportEvent) => void, cwd: string, module: string, hook: string, command: string): string {
+  report({ type: "hook.start", target: module, hook, command });
+  const startedAt = performance.now();
+  const output = runScript(cwd, module, hook, command, false);
+  report({ type: "hook", target: module, hook, command, duration: performance.now() - startedAt, output });
+  return output;
 }
 
 function runScript(cwd: string, module: string, name: string, command: string, inherit: boolean): string {

@@ -21,6 +21,7 @@ export class Build {
   /** Dependencies before dependents, as initialization finished them. */
   private readonly order: Module[] = [];
   private readonly warningListeners: ((module: Module, message: string) => void)[] = [];
+  private readonly reportListeners: ((module: Module, event: unknown) => void)[] = [];
   private configured = false;
   private readonly registry = new Map<string, TaskProvider<Task>>();
   private readonly resolution: ResolutionServices = {
@@ -42,6 +43,7 @@ export class Build {
       services: this.services,
       rootDir: this.rootDir,
       warn: (module, message) => this.warningListeners.forEach(l => l(module, message)),
+      report: (module, event) => this.reportListeners.forEach(l => l(module, event)),
     });
     this.modules.set(init.path, module);
     return module;
@@ -65,6 +67,10 @@ export class Build {
     this.warningListeners.push(listener);
   }
 
+  onReport(listener: (module: Module, event: unknown) => void): void {
+    this.reportListeners.push(listener);
+  }
+
   /** Initialization reports each module once its dependencies are done. */
   markInitialized(module: Module): void {
     if (!this.order.includes(module)) this.order.push(module);
@@ -82,7 +88,9 @@ export class Build {
   graph(requested: readonly string[]): TaskGraph {
     const providers = requested.map(request =>
       request.startsWith(":") ? this.lookup(request) : this.root.tasks.named(request));
-    return TaskGraph.build(providers, path => this.registry.get(path));
+    const rank = new Map<string, number>();
+    for (const m of [...this.order, ...this.modules.values()]) if (!rank.has(m.path)) rank.set(m.path, rank.size);
+    return TaskGraph.build(providers, path => this.registry.get(path), task => rank.get(task.modulePath) ?? 0);
   }
 
   async run(requested: readonly string[], options: ExecuteOptions): Promise<ExecutionResult> {

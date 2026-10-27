@@ -1,29 +1,69 @@
 import chalk from "chalk";
-import { declaredTree, type DepTreeNode } from "../../dependency/tree";
-import { privateIncludes, scanContent } from "../../target/content";
-import { deriveShape } from "../../target/shape";
-import { DIRS } from "../../workspace/layout";
+import type { DeclaredEdge, InitListener } from "../../core";
+import { C, C_MODULES } from "../../plugins/c";
+import { optional } from "../../plugins/c/model";
+import { privateIncludes } from "../../target/content";
 import { createConsole } from "../console/session";
 import { pad, rel } from "../console/format";
-import { openWorkspace } from "./workspace";
+import { openBuild } from "../engine";
 
-/** Module card on stdout; `--tree` expands the whole dependency tree found on disk. */
-export function infoCommand(path: string, flags: { tree?: boolean } = {}): void {
-  const ws = openWorkspace(path, createConsole(), false);
-  const target = ws.declareRoot();
-  const content = scanContent(target.path, target.manifest, DIRS.TARGET);
-  const deps = declaredTree(ws, target, flags.tree ? Infinity : 1);
-  const shape = deriveShape(content, target.name);
-  const { options } = target.manifest;
+interface DepTreeNode {
+  name: string;
+  source: string;
+  spec: string;
+  link: string | null;
+  /** missing: not on disk / not installed yet; repeat: shown earlier in the tree. */
+  status: "ok" | "missing" | "repeat" | "error";
+  error?: string;
+  children: DepTreeNode[];
+}
+
+/** Module card on stdout; `--tree` expands the whole dependency tree found on disk. Nothing is fetched. */
+export async function infoCommand(path: string, flags: { tree?: boolean } = {}): Promise<void> {
+  const roots: DepTreeNode[] = [];
+  const nodes = new Map<number, DepTreeNode>();
+  const listener: InitListener = {
+    declared: (_module, edges) => {
+      for (const edge of edges) {
+        const system = edge.info.source === "system" || edge.info.source === "framework";
+        const node: DepTreeNode = {
+          // System libraries are named by what they link ("m"), like in build output.
+          name: system ? edge.info.spec : edge.info.name,
+          source: edge.info.source,
+          spec: system ? "" : edge.info.spec,
+          link: edge.info.link,
+          status: "ok",
+          children: [],
+        };
+        nodes.set(edge.id, node);
+        (edge.parentId === null ? roots : nodes.get(edge.parentId)!.children).push(node);
+      }
+    },
+    done: (edge, result) => {
+      const node = nodeOf(nodes, edge);
+      if (result.target.kind === "missing") node.status = "missing";
+      else if (result.duplicate) node.status = "repeat";
+    },
+    failed: (edge, error) => {
+      const node = nodeOf(nodes, edge);
+      node.status = "error";
+      node.error = (error as Error).message;
+    },
+  };
+
+  const { root } = await openBuild(path, { reporter: createConsole(), dryRun: true, listener });
+  const ext = root.extensions.get(C);
+  const model = root.services.get(C_MODULES).modelOf(root);
 
   const rows: [string, string][] = [
-    ["path", rel(target.path)],
-    ["include", privateIncludes(target.path, target.manifest, content).map(rel)[0] ?? "(none)"],
-    ["standard", options.standard?.version ?? "—"],
-    ["profile", options.profile ?? "release (default)"],
+    ["path", rel(root.dir)],
+    ["include", privateIncludes(root.dir, { imports: optional(ext.imports) }, model.content).map(rel)[0] ?? "(none)"],
+    ["standard", optional(ext.standard)?.version ?? "—"],
+    ["profile", optional(ext.profile) ?? "release (default)"],
   ];
 
-  const out: string[] = ["", ` ${chalk.bold(target.manifest.name ?? target.name)} ${chalk.dim("· " + shape)}`];
+  const deps = flags.tree ? roots : roots.map(n => ({ ...n, children: [] }));
+  const out: string[] = ["", ` ${chalk.bold(root.name)} ${chalk.dim("· " + model.shape)}`];
   for (const [label, value] of rows) out.push(`   ${chalk.dim(pad(label, 12))}${value}`);
   out.push(`   ${chalk.dim(pad("dependencies", 12))}${deps.length === 0 ? "none" : ""}`);
   out.push(...treeLines(deps, "     "));
@@ -31,12 +71,16 @@ export function infoCommand(path: string, flags: { tree?: boolean } = {}): void 
   console.log(out.join("\n"));
 }
 
+function nodeOf(nodes: Map<number, DepTreeNode>, edge: DeclaredEdge): DepTreeNode {
+  return nodes.get(edge.id)!;
+}
+
 function treeLines(nodes: DepTreeNode[], prefix: string): string[] {
   return nodes.flatMap((node, i) => {
     const last = i === nodes.length - 1;
     const branch = chalk.dim(last ? "└─ " : "├─ ");
     const lines = [prefix + branch + nodeLabel(node)];
-    lines.push(...treeLines(node.children, prefix + chalk.dim(last ? "   " : "│  ")));
+    lines.push(...treeLines(node.status === "repeat" ? [] : node.children, prefix + chalk.dim(last ? "   " : "│  ")));
     return lines;
   });
 }

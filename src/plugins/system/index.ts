@@ -27,12 +27,16 @@ function systemNotation(source: "sys" | "framework", kind: LinkInput["kind"]): N
       return { source, kind, name, ...(options.linkage ? { linkage: options.linkage } : {}) };
     },
 
+    describe(notation) {
+      const { name, linkage } = notation as SystemNotation;
+      return { name: `${source}:${name}`, source: source === "sys" ? "system" : source, spec: name, link: linkage ?? null };
+    },
+
     resolve(notation, from) {
       const { name, linkage } = notation as SystemNotation;
       const toolchain = from.services.get(C_TOOLCHAIN, "apply a toolchain plugin, e.g. clang");
       const link = linkage === "static" ? LinkType.Static : linkage === "shared" ? LinkType.Shared : null;
       const { flags, warnings } = toolchain.linkInputs.translate({ kind, name, link });
-      for (const warning of warnings) from.warn(`${name}: ${warning}`);
       return {
         kind: "variants",
         name: `${source}:${name}`,
@@ -42,6 +46,7 @@ function systemNotation(source: "sys" | "framework", kind: LinkInput["kind"]): N
           artifacts: provider(flags.map(value => ({ type: ARTIFACT.LINK_FLAG, value }))),
           dependencies: [],
         }],
+        note: { action: "linked", flags, warnings },
       };
     },
   };

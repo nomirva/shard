@@ -70,7 +70,7 @@ export class TaskContainer {
       throw new ShardError("config", `Task "${name}" is already registered in ${this.modulePath}`);
     }
     const path = this.modulePath === ":" ? `:${name}` : `${this.modulePath}:${name}`;
-    const scope: TaskScope = { name, path, moduleDir: this.moduleDir, buildDir: this.buildDir };
+    const scope: TaskScope = { name, path, modulePath: this.modulePath, moduleDir: this.moduleDir, buildDir: this.buildDir };
     const provider = new TaskProvider<T>(name, path, type, () => {
       const task = new type(scope);
       for (const { type: wanted, action } of this.typeActions) {

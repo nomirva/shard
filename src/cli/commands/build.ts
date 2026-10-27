@@ -1,13 +1,14 @@
+import { spawnSync } from "child_process";
+import { basename } from "path";
 import pkg from "../../../package.json" with { type: "json" };
 import { ShardError } from "../../utils/errors";
 import type { Profile } from "../../lang/types";
 import type { CacheMode } from "../../cache/cache";
-import type { PlannedTarget } from "../../build/plan";
-import { buildPipeline } from "../../pipeline/pipelines";
-import { start } from "../../pipeline/stages/start";
+import { CArchive, CLink } from "../../plugins/c";
+import { selectToolchain } from "../../toolchain/registry";
 import { createConsole } from "../console/session";
-import { coreBuildCommand } from "./core-build";
-import { openWorkspace, toolchainFacts } from "./workspace";
+import { jobCount, openBuild, runTasks } from "../engine";
+import { toolchainFacts } from "./workspace";
 
 export interface BuildFlags {
   ignoreCache?: string;
@@ -16,36 +17,46 @@ export interface BuildFlags {
   gitProtocol?: string;
   profile?: Profile;
   verbose?: boolean;
+  jobs?: string;
 }
 
+/** `shard build`: resolves the module tree, then runs `assemble` of the root module. */
 export async function buildCommand(path: string, flags: BuildFlags = {}): Promise<void> {
   const ui = createConsole(flags.verbose);
   const cacheMode = parseCacheMode(flags.ignoreCache);
+  const jobs = jobCount(flags.jobs);
   const defines = (flags.def ?? []).flatMap(d => d.split(",")).filter(Boolean);
-  if (process.env.SHARD_ENGINE === "core") {
-    return coreBuildCommand(path, flags, { profile: flags.profile, defines, cacheMode });
-  }
-  const ws = openWorkspace(path, ui, true, {
-    cacheMode,
-    defines,
-    profile: flags.profile,
-    gitProtocol: flags.gitProtocol,
-  });
+  const toolchain = selectToolchain();
 
-  const details = [`shard ${pkg.version}`, ...toolchainFacts(ws.toolchain)];
+  const details = [`shard ${pkg.version}`, ...toolchainFacts(toolchain)];
   if (flags.profile) details.push(`profile ${flags.profile}`);
   if (cacheMode !== 0) details.push(cacheMode === 1 ? "root cache off" : "cache off");
   ui.emit({ type: "run.start", command: "build", details });
 
-  const graph = await buildPipeline.run(undefined, ws);
-  ui.emit({ type: "run.end", command: "build", subject: graph.root.name, artifacts: rootArtifacts(graph.root) });
+  const open = await openBuild(path, {
+    reporter: ui,
+    toolchain,
+    params: { profile: flags.profile, defines, cacheMode },
+    gitProtocol: flags.gitProtocol,
+  });
+  const graph = await runTasks(open, ["assemble"], { reporter: ui, jobs });
 
-  if (flags.start) await start.run(graph, ws);
-}
+  const outputs = graph.tasks()
+    .filter(t => t.modulePath === ":" && (t instanceof CArchive || t instanceof CLink))
+    .map(t => t as CArchive | CLink);
+  const executable = outputs.find(t => t instanceof CLink && t.kind.get() === "executable")?.file.get();
+  const artifacts = executable ? [executable] : outputs.map(t => t.file.get());
+  ui.emit({ type: "run.end", command: "build", subject: open.root.name, artifacts });
 
-function rootArtifacts(root: PlannedTarget): string[] {
-  if (root.build.executable) return [root.build.executable];
-  return root.build.link.filter(step => !("error" in step)).map(step => step.output);
+  if (flags.start) {
+    if (!executable) throw new ShardError("usage", `"${basename(open.build.rootDir)}" is not an executable module`);
+    const name = open.root.name;
+    ui.emit({ type: "program.start", name });
+    const proc = spawnSync(executable, [], { stdio: "inherit" });
+    if (proc.error) throw proc.error;
+    ui.emit({ type: "program.end", name, status: proc.status ?? 0 });
+    process.exit(proc.status ?? 0);
+  }
 }
 
 function parseCacheMode(raw: string | undefined): CacheMode {

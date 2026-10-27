@@ -1,4 +1,6 @@
 import { service, type Configuration, type Module, type Provider } from "../../core";
+import { DEFAULT_PROFILE } from "../../lang/profiles";
+import type { TargetSummary, TreeShape } from "../../report/events";
 import { dominates, isPureC, oldestStandard, rankOf } from "../../lang/standards";
 import type { CStandard } from "../../lang/types";
 import { ShardError } from "../../utils/errors";
@@ -13,7 +15,9 @@ interface Entry {
 }
 
 /**
- * C standards across the build, worked out on the resolved module graph:
+ * Every C module of the build and the graph between them, as resolved.
+ *
+ * C standards are worked out on that graph:
  * - a module without its own `standard.version` compiles with the newest
  *   standard among the modules that use it (C is backwards compatible, so
  *   code that builds as c99 builds as c11; a gnu dialect wins a tie);
@@ -21,7 +25,7 @@ interface Entry {
  *   export, judged by what those declare (`standard.version`, `support`),
  *   not by what they inherited.
  */
-export class CStandards {
+export class CModules {
   private readonly entries = new Map<string, Entry>();
   private effectiveMemo: Map<string, CStandard | undefined> | null = null;
   private checked = false;
@@ -39,10 +43,58 @@ export class CStandards {
     return this.effectiveAll().get(module.path);
   }
 
-  private deps(path: string): string[] {
+  /** Direct C module dependencies, in declaration order. */
+  deps(path: string): string[] {
     const entry = this.entries.get(path)!;
     const owners = entry.classpath.incoming.roots().map(n => n.owner).filter(p => this.entries.has(p));
     return [...new Set(owners)];
+  }
+
+  /** Dependencies before dependents, depth-first from the root in declaration order. */
+  topoOrder(): Module[] {
+    const out: string[] = [];
+    const seen = new Set<string>();
+    const walk = (path: string): void => {
+      if (seen.has(path)) return;
+      seen.add(path);
+      for (const dep of this.deps(path)) walk(dep);
+      out.push(path);
+    };
+    if (this.entries.has(":")) walk(":");
+    for (const path of this.entries.keys()) walk(path);
+    return out.map(p => this.entries.get(p)!.module);
+  }
+
+  /** The dependency tree from the root; a module reached again is a `repeat` leaf. */
+  tree(): TreeShape {
+    const seen = new Set<string>();
+    const walk = (path: string): TreeShape => {
+      const name = this.entries.get(path)!.module.name;
+      if (seen.has(path)) return { name, repeat: true, children: [] };
+      seen.add(path);
+      return { name, repeat: false, children: this.deps(path).map(walk) };
+    };
+    return walk(":");
+  }
+
+  summary(module: Module, profile: string | undefined): TargetSummary {
+    const entry = this.entries.get(module.path)!;
+    const model = entry.model.get();
+    return {
+      name: module.name,
+      shape: model.shape,
+      standard: this.effective(module) ?? optional(entry.ext.standard)?.version,
+      profile: profile ?? optional(entry.ext.profile) ?? DEFAULT_PROFILE,
+      files: model.content.sources.length,
+    };
+  }
+
+  modelOf(module: Module): CModel {
+    return this.entries.get(module.path)!.model.get();
+  }
+
+  has(module: Module): boolean {
+    return this.entries.has(module.path);
   }
 
   private effectiveAll(): Map<string, CStandard | undefined> {
@@ -107,7 +159,7 @@ export class CStandards {
   }
 }
 
-export const C_STANDARDS = service<CStandards>("c.standards");
+export const C_MODULES = service<CModules>("c.modules");
 
 export function newerStandard(a: CStandard | undefined, b: CStandard | undefined): CStandard | undefined {
   if (a === undefined) return b;

@@ -4,7 +4,9 @@ exports[`examples hello: build, cached rebuild, start 1`] = `
 {
   "cache": 
 "{
-  "_/src/main.o": "251aad96747279a5131904f38742436fa1fcfd9df60b96049f37b70f3c06351b"
+  "state::compile:src/main.c": "<sha256>",
+  "task::compile": "{\\"hash\\":\\"<sha256>\\",\\"discovered\\":[\\"/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/SDKSettings.json\\",\\"$SB/examples/hello/src/main.c\\"]}",
+  "task::link": "{\\"hash\\":\\"<sha256>\\",\\"discovered\\":[]}"
 }"
 ,
   "first": {
@@ -56,16 +58,7 @@ exports[`examples hello: build, cached rebuild, start 1`] = `
       "build",
       "$SB/examples/hello",
     ],
-    "invocations": [
-      [
-        "clang",
-        "$SB",
-        "$SB/examples/hello/.shard/_/src/main.o",
-        "-Wl,-rpath,@executable_path",
-        "-o",
-        "$SB/examples/hello/target/arm64/darwin/none/hello",
-      ],
-    ],
+    "invocations": [],
     "status": 0,
     "stderr": 
 " ≡ hello  cached
@@ -83,16 +76,7 @@ exports[`examples hello: build, cached rebuild, start 1`] = `
       "$SB/examples/hello",
       "--start",
     ],
-    "invocations": [
-      [
-        "clang",
-        "$SB",
-        "$SB/examples/hello/.shard/_/src/main.o",
-        "-Wl,-rpath,@executable_path",
-        "-o",
-        "$SB/examples/hello/target/arm64/darwin/none/hello",
-      ],
-    ],
+    "invocations": [],
     "status": 0,
     "stderr": 
 " ≡ hello  cached
@@ -126,9 +110,17 @@ exports[`examples app: variants and cache modes 1`] = `
 {
   "cache": 
 "{
-  "..__lib-greet/src/greet.o": "2e6e9bbab953eff43bb7b9dd92b36095d6e1caccda90e9ced56f3f4a265c2778",
-  "_/src/main.o": "d47f665c71952317e7b60ab559201f98325f124287ceee7ba74608e64e71d705",
-  "..__lib-math/src/math_util.o": "7ad2ed52f986402ac866be61a29023c533fef96a4d2ebf8fe2705f37971fa3ce"
+  "task::lib-greet:copyHeaders": "{\\"hash\\":\\"<sha256>\\",\\"discovered\\":[]}",
+  "state::lib-greet:compile:src/greet.c": "<sha256>",
+  "task::lib-greet:compile": "{\\"hash\\":\\"<sha256>\\",\\"discovered\\":[\\"/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/SDKSettings.json\\",\\"$SB/examples/lib-greet/src/greet.c\\",\\"$SB/examples/lib-greet/include/greet.h\\"]}",
+  "task::lib-greet:linkShared": "{\\"hash\\":\\"<sha256>\\",\\"discovered\\":[]}",
+  "state::compile:src/main.c": "<sha256>",
+  "task::compile": "{\\"hash\\":\\"<sha256>\\",\\"discovered\\":[\\"/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/SDKSettings.json\\",\\"$SB/examples/app/src/main.c\\",\\"$SB/examples/app/.shard/lib-math/target/arm64/darwin/none/include/math_util.h\\"]}",
+  "task::link": "{\\"hash\\":\\"<sha256>\\",\\"discovered\\":[]}",
+  "task::lib-math:copyHeaders": "{\\"hash\\":\\"<sha256>\\",\\"discovered\\":[]}",
+  "state::lib-math:compile:src/math_util.c": "<sha256>",
+  "task::lib-math:compile": "{\\"hash\\":\\"<sha256>\\",\\"discovered\\":[\\"/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/SDKSettings.json\\",\\"$SB/examples/lib-math/src/math_util.c\\",\\"$SB/examples/lib-math/src/math_util.h\\"]}",
+  "task::lib-math:archive": "{\\"hash\\":\\"<sha256>\\",\\"discovered\\":[]}"
 }"
 ,
   "commaDefs": {
@@ -156,13 +148,6 @@ exports[`examples app: variants and cache modes 1`] = `
         "-MMD",
         "-MF",
         "$SB/examples/app/.shard/..__lib-math/src/math_util.d",
-      ],
-      [
-        "ar",
-        "$SB",
-        "rcs",
-        "$SB/examples/app/.shard/lib-math/target/arm64/darwin/none/lib-math.a",
-        "$SB/examples/app/.shard/..__lib-math/src/math_util.o",
       ],
       [
         "clang",
@@ -321,14 +306,6 @@ exports[`examples app: variants and cache modes 1`] = `
       ],
       [
         "clang",
-        "$SB",
-        "-shared",
-        "$SB/examples/app/.shard/..__lib-greet/src/greet.o",
-        "-o",
-        "$SB/examples/app/.shard/lib-greet/target/arm64/darwin/none/lib-greet.dylib",
-      ],
-      [
-        "clang",
         "$SB/examples/app",
         "-c",
         "-fansi-escape-codes",
@@ -345,15 +322,6 @@ exports[`examples app: variants and cache modes 1`] = `
         "-MMD",
         "-MF",
         "$SB/examples/app/.shard/_/src/main.d",
-      ],
-      [
-        "clang",
-        "$SB",
-        "$SB/examples/app/.shard/_/src/main.o",
-        "$SB/examples/app/.shard/lib-greet/target/arm64/darwin/none/lib-greet.dylib",
-        "-Wl,-rpath,@executable_path",
-        "-o",
-        "$SB/examples/app/target/arm64/darwin/none/greet/app",
       ],
     ],
     "status": 0,
@@ -379,14 +347,6 @@ exports[`examples app: variants and cache modes 1`] = `
       "1",
     ],
     "invocations": [
-      [
-        "clang",
-        "$SB",
-        "-shared",
-        "$SB/examples/app/.shard/..__lib-greet/src/greet.o",
-        "-o",
-        "$SB/examples/app/.shard/lib-greet/target/arm64/darwin/none/lib-greet.dylib",
-      ],
       [
         "clang",
         "$SB/examples/app",
@@ -517,24 +477,7 @@ exports[`examples app: variants and cache modes 1`] = `
       "--def",
       "MATH",
     ],
-    "invocations": [
-      [
-        "ar",
-        "$SB",
-        "rcs",
-        "$SB/examples/app/.shard/lib-math/target/arm64/darwin/none/lib-math.a",
-        "$SB/examples/app/.shard/..__lib-math/src/math_util.o",
-      ],
-      [
-        "clang",
-        "$SB",
-        "$SB/examples/app/.shard/_/src/main.o",
-        "$SB/examples/app/.shard/lib-math/target/arm64/darwin/none/lib-math.a",
-        "-Wl,-rpath,@executable_path",
-        "-o",
-        "$SB/examples/app/target/arm64/darwin/none/math/app",
-      ],
-    ],
+    "invocations": [],
     "status": 0,
     "stderr": 
 " ≡ lib-math  cached
@@ -854,23 +797,7 @@ exports[`examples libraries as root 1`] = `
       "$SB/examples/lib-greet",
       "--start",
     ],
-    "invocations": [
-      [
-        "ar",
-        "$SB",
-        "rcs",
-        "$SB/examples/lib-greet/target/arm64/darwin/none/lib-greet.a",
-        "$SB/examples/lib-greet/.shard/_/src/greet.o",
-      ],
-      [
-        "clang",
-        "$SB",
-        "-shared",
-        "$SB/examples/lib-greet/.shard/_/src/greet.o",
-        "-o",
-        "$SB/examples/lib-greet/target/arm64/darwin/none/lib-greet.dylib",
-      ],
-    ],
+    "invocations": [],
     "status": 1,
     "stderr": 
 " ≡ lib-greet  cached
@@ -1385,7 +1312,7 @@ exports[`commands verbose build 1`] = `
         "-fansi-escape-codes",
         "-fcolor-diagnostics",
         "-O2",
-        "-std=c99",
+        "-std=c11",
         "-pedantic-errors",
         "-I",
         "$SB/fixtures/diamond/leaf/src",
@@ -1407,7 +1334,7 @@ exports[`commands verbose build 1`] = `
         "-fansi-escape-codes",
         "-fcolor-diagnostics",
         "-O2",
-        "-std=c99",
+        "-std=c11",
         "-pedantic-errors",
         "-I",
         "$SB/fixtures/diamond/leaf/src",
@@ -1423,12 +1350,13 @@ exports[`commands verbose build 1`] = `
         "$SB/fixtures/diamond/app/.shard/..__leaf/src/nested/nested.d",
       ],
       [
-        "ar",
+        "clang",
         "$SB",
-        "rcs",
-        "$SB/fixtures/diamond/app/.shard/leaf/target/arm64/darwin/none/leaf.a",
+        "-shared",
         "$SB/fixtures/diamond/app/.shard/..__leaf/src/leaf.o",
         "$SB/fixtures/diamond/app/.shard/..__leaf/src/nested/nested.o",
+        "-o",
+        "$SB/fixtures/diamond/app/.shard/leaf/target/arm64/darwin/none/leaf.dylib",
       ],
       [
         "clang",
@@ -1515,7 +1443,7 @@ exports[`commands verbose build 1`] = `
         "$SB",
         "$SB/fixtures/diamond/app/.shard/_/src/main.o",
         "$SB/fixtures/diamond/app/.shard/mid-a/target/arm64/darwin/none/mid-a.a",
-        "$SB/fixtures/diamond/app/.shard/leaf/target/arm64/darwin/none/leaf.a",
+        "$SB/fixtures/diamond/app/.shard/leaf/target/arm64/darwin/none/leaf.dylib",
         "$SB/fixtures/diamond/app/.shard/mid-b/target/arm64/darwin/none/mid-b.a",
         "-lm",
         "-Wl,-rpath,@executable_path",
@@ -1533,11 +1461,11 @@ exports[`commands verbose build 1`] = `
    · leaf  local  fixtures/diamond/leaf
    ▸ mid-a · preload  echo preload-mid-a > preload.log  <t>
    ✔ leaf/src/leaf.c  <t>
-     $ clang -c -fansi-escape-codes -fcolor-diagnostics -O2 -std=c99 -pedantic-errors -I fixtures/diamond/leaf/src -I fixtures/diamond/leaf/src/nested -I fixtures/diamond/leaf/api -o fixtures/diamond/app/.shard/..__leaf/src/leaf.o fixtures/diamond/leaf/src/leaf.c -MMD -MF fixtures/diamond/app/.shard/..__leaf/src/leaf.d
+     $ clang -c -fansi-escape-codes -fcolor-diagnostics -O2 -std=c11 -pedantic-errors -I fixtures/diamond/leaf/src -I fixtures/diamond/leaf/src/nested -I fixtures/diamond/leaf/api -o fixtures/diamond/app/.shard/..__leaf/src/leaf.o fixtures/diamond/leaf/src/leaf.c -MMD -MF fixtures/diamond/app/.shard/..__leaf/src/leaf.d
    ✔ leaf/src/nested/nested.c  <t>
-     $ clang -c -fansi-escape-codes -fcolor-diagnostics -O2 -std=c99 -pedantic-errors -I fixtures/diamond/leaf/src -I fixtures/diamond/leaf/src/nested -I fixtures/diamond/leaf/api -o fixtures/diamond/app/.shard/..__leaf/src/nested/nested.o fixtures/diamond/leaf/src/nested/nested.c -MMD -MF fixtures/diamond/app/.shard/..__leaf/src/nested/nested.d
-   → fixtures/diamond/app/.shard/leaf/target/arm64/darwin/none/leaf.a  <t>
-     $ ar rcs fixtures/diamond/app/.shard/leaf/target/arm64/darwin/none/leaf.a fixtures/diamond/app/.shard/..__leaf/src/leaf.o fixtures/diamond/app/.shard/..__leaf/src/nested/nested.o
+     $ clang -c -fansi-escape-codes -fcolor-diagnostics -O2 -std=c11 -pedantic-errors -I fixtures/diamond/leaf/src -I fixtures/diamond/leaf/src/nested -I fixtures/diamond/leaf/api -o fixtures/diamond/app/.shard/..__leaf/src/nested/nested.o fixtures/diamond/leaf/src/nested/nested.c -MMD -MF fixtures/diamond/app/.shard/..__leaf/src/nested/nested.d
+   → fixtures/diamond/app/.shard/leaf/target/arm64/darwin/none/leaf.dylib  <t>
+     $ clang -shared fixtures/diamond/app/.shard/..__leaf/src/leaf.o fixtures/diamond/app/.shard/..__leaf/src/nested/nested.o -o fixtures/diamond/app/.shard/leaf/target/arm64/darwin/none/leaf.dylib
    ✔ mid-a/src/mid_a.c  <t>
      $ clang -c -fansi-escape-codes -fcolor-diagnostics -O2 -std=c99 -I fixtures/diamond/app/.shard/leaf/target/arm64/darwin/none/include -I fixtures/diamond/mid-a/src -o fixtures/diamond/app/.shard/..__mid-a/src/mid_a.o fixtures/diamond/mid-a/src/mid_a.c -MMD -MF fixtures/diamond/app/.shard/..__mid-a/src/mid_a.d
    → fixtures/diamond/app/.shard/mid-a/target/arm64/darwin/none/mid-a.a  <t>
@@ -1550,7 +1478,7 @@ exports[`commands verbose build 1`] = `
    ✔ app/src/main.c  <t>
      $ clang -c -fansi-escape-codes -fcolor-diagnostics -O2 -std=c11 -Wall -Wextra -DAPP=1 -DON_DARWIN -DON_CLANG -I fixtures/diamond/app/.shard/mid-a/target/arm64/darwin/none/include -I fixtures/diamond/app/.shard/leaf/target/arm64/darwin/none/include -I fixtures/diamond/app/.shard/mid-b/target/arm64/darwin/none/include -I fixtures/diamond/app/src -o fixtures/diamond/app/.shard/_/src/main.o fixtures/diamond/app/src/main.c -MMD -MF fixtures/diamond/app/.shard/_/src/main.d
    → fixtures/diamond/app/target/arm64/darwin/none/variant/app  <t>
-     $ clang fixtures/diamond/app/.shard/_/src/main.o fixtures/diamond/app/.shard/mid-a/target/arm64/darwin/none/mid-a.a fixtures/diamond/app/.shard/leaf/target/arm64/darwin/none/leaf.a fixtures/diamond/app/.shard/mid-b/target/arm64/darwin/none/mid-b.a -lm -Wl,-rpath,@executable_path -o fixtures/diamond/app/target/arm64/darwin/none/variant/app
+     $ clang fixtures/diamond/app/.shard/_/src/main.o fixtures/diamond/app/.shard/mid-a/target/arm64/darwin/none/mid-a.a fixtures/diamond/app/.shard/leaf/target/arm64/darwin/none/leaf.dylib fixtures/diamond/app/.shard/mid-b/target/arm64/darwin/none/mid-b.a -lm -Wl,-rpath,@executable_path -o fixtures/diamond/app/target/arm64/darwin/none/variant/app
    ▸ app · postbuild  echo postbuild-app >> hook.log  <t>
 
  ✔ app built in <t>
@@ -1567,42 +1495,7 @@ exports[`commands verbose build 1`] = `
       "$SB/fixtures/diamond/app",
       "--verbose",
     ],
-    "invocations": [
-      [
-        "ar",
-        "$SB",
-        "rcs",
-        "$SB/fixtures/diamond/app/.shard/leaf/target/arm64/darwin/none/leaf.a",
-        "$SB/fixtures/diamond/app/.shard/..__leaf/src/leaf.o",
-        "$SB/fixtures/diamond/app/.shard/..__leaf/src/nested/nested.o",
-      ],
-      [
-        "ar",
-        "$SB",
-        "rcs",
-        "$SB/fixtures/diamond/app/.shard/mid-a/target/arm64/darwin/none/mid-a.a",
-        "$SB/fixtures/diamond/app/.shard/..__mid-a/src/mid_a.o",
-      ],
-      [
-        "ar",
-        "$SB",
-        "rcs",
-        "$SB/fixtures/diamond/app/.shard/mid-b/target/arm64/darwin/none/mid-b.a",
-        "$SB/fixtures/diamond/app/.shard/..__mid-b/src/mid_b.o",
-      ],
-      [
-        "clang",
-        "$SB",
-        "$SB/fixtures/diamond/app/.shard/_/src/main.o",
-        "$SB/fixtures/diamond/app/.shard/mid-a/target/arm64/darwin/none/mid-a.a",
-        "$SB/fixtures/diamond/app/.shard/leaf/target/arm64/darwin/none/leaf.a",
-        "$SB/fixtures/diamond/app/.shard/mid-b/target/arm64/darwin/none/mid-b.a",
-        "-lm",
-        "-Wl,-rpath,@executable_path",
-        "-o",
-        "$SB/fixtures/diamond/app/target/arm64/darwin/none/variant/app",
-      ],
-    ],
+    "invocations": [],
     "status": 0,
     "stderr": 
 " shard 0.1.0 · clang <ver> · arm64-darwin
@@ -1613,24 +1506,16 @@ exports[`commands verbose build 1`] = `
    · leaf  local  fixtures/diamond/leaf
    ▸ mid-a · preload  echo preload-mid-a > preload.log  <t>
    ≡ leaf/src/leaf.c  cached
-     $ clang -c -fansi-escape-codes -fcolor-diagnostics -O2 -std=c99 -pedantic-errors -I fixtures/diamond/leaf/src -I fixtures/diamond/leaf/src/nested -I fixtures/diamond/leaf/api -o fixtures/diamond/app/.shard/..__leaf/src/leaf.o fixtures/diamond/leaf/src/leaf.c -MMD -MF fixtures/diamond/app/.shard/..__leaf/src/leaf.d
+     $ clang -c -fansi-escape-codes -fcolor-diagnostics -O2 -std=c11 -pedantic-errors -I fixtures/diamond/leaf/src -I fixtures/diamond/leaf/src/nested -I fixtures/diamond/leaf/api -o fixtures/diamond/app/.shard/..__leaf/src/leaf.o fixtures/diamond/leaf/src/leaf.c -MMD -MF fixtures/diamond/app/.shard/..__leaf/src/leaf.d
    ≡ leaf/src/nested/nested.c  cached
-     $ clang -c -fansi-escape-codes -fcolor-diagnostics -O2 -std=c99 -pedantic-errors -I fixtures/diamond/leaf/src -I fixtures/diamond/leaf/src/nested -I fixtures/diamond/leaf/api -o fixtures/diamond/app/.shard/..__leaf/src/nested/nested.o fixtures/diamond/leaf/src/nested/nested.c -MMD -MF fixtures/diamond/app/.shard/..__leaf/src/nested/nested.d
-   → fixtures/diamond/app/.shard/leaf/target/arm64/darwin/none/leaf.a  <t>
-     $ ar rcs fixtures/diamond/app/.shard/leaf/target/arm64/darwin/none/leaf.a fixtures/diamond/app/.shard/..__leaf/src/leaf.o fixtures/diamond/app/.shard/..__leaf/src/nested/nested.o
+     $ clang -c -fansi-escape-codes -fcolor-diagnostics -O2 -std=c11 -pedantic-errors -I fixtures/diamond/leaf/src -I fixtures/diamond/leaf/src/nested -I fixtures/diamond/leaf/api -o fixtures/diamond/app/.shard/..__leaf/src/nested/nested.o fixtures/diamond/leaf/src/nested/nested.c -MMD -MF fixtures/diamond/app/.shard/..__leaf/src/nested/nested.d
    ≡ mid-a/src/mid_a.c  cached
      $ clang -c -fansi-escape-codes -fcolor-diagnostics -O2 -std=c99 -I fixtures/diamond/app/.shard/leaf/target/arm64/darwin/none/include -I fixtures/diamond/mid-a/src -o fixtures/diamond/app/.shard/..__mid-a/src/mid_a.o fixtures/diamond/mid-a/src/mid_a.c -MMD -MF fixtures/diamond/app/.shard/..__mid-a/src/mid_a.d
-   → fixtures/diamond/app/.shard/mid-a/target/arm64/darwin/none/mid-a.a  <t>
-     $ ar rcs fixtures/diamond/app/.shard/mid-a/target/arm64/darwin/none/mid-a.a fixtures/diamond/app/.shard/..__mid-a/src/mid_a.o
    ≡ mid-b/src/mid_b.c  cached
      $ clang -c -fansi-escape-codes -fcolor-diagnostics -Os -std=c11 -I fixtures/diamond/app/.shard/leaf/target/arm64/darwin/none/include -I fixtures/diamond/mid-b/src -o fixtures/diamond/app/.shard/..__mid-b/src/mid_b.o fixtures/diamond/mid-b/src/mid_b.c -MMD -MF fixtures/diamond/app/.shard/..__mid-b/src/mid_b.d
-   → fixtures/diamond/app/.shard/mid-b/target/arm64/darwin/none/mid-b.a  <t>
-     $ ar rcs fixtures/diamond/app/.shard/mid-b/target/arm64/darwin/none/mid-b.a fixtures/diamond/app/.shard/..__mid-b/src/mid_b.o
    ▸ app · prebuild  echo prebuild-app > hook.log  <t>
    ≡ app/src/main.c  cached
      $ clang -c -fansi-escape-codes -fcolor-diagnostics -O2 -std=c11 -Wall -Wextra -DAPP=1 -DON_DARWIN -DON_CLANG -I fixtures/diamond/app/.shard/mid-a/target/arm64/darwin/none/include -I fixtures/diamond/app/.shard/leaf/target/arm64/darwin/none/include -I fixtures/diamond/app/.shard/mid-b/target/arm64/darwin/none/include -I fixtures/diamond/app/src -o fixtures/diamond/app/.shard/_/src/main.o fixtures/diamond/app/src/main.c -MMD -MF fixtures/diamond/app/.shard/_/src/main.d
-   → fixtures/diamond/app/target/arm64/darwin/none/variant/app  <t>
-     $ clang fixtures/diamond/app/.shard/_/src/main.o fixtures/diamond/app/.shard/mid-a/target/arm64/darwin/none/mid-a.a fixtures/diamond/app/.shard/leaf/target/arm64/darwin/none/leaf.a fixtures/diamond/app/.shard/mid-b/target/arm64/darwin/none/mid-b.a -lm -Wl,-rpath,@executable_path -o fixtures/diamond/app/target/arm64/darwin/none/variant/app
    ▸ app · postbuild  echo postbuild-app >> hook.log  <t>
 
  ✔ app is up to date · 4 modules cached
@@ -1871,7 +1756,7 @@ exports[`commands usage errors 1`] = `
     "status": 1,
     "stderr": 
 "
- ✘ Module "does-not-exist" is empty: no sources, exports, or artifacts
+ ✘ Module directory not found: does-not-exist
 
 "
 ,
@@ -2031,21 +1916,62 @@ exports[`fixtures prebuilt dependency 1`] = `
       "$SB/fixtures/app-prebuilt",
       "--start",
     ],
-    "invocations": [],
-    "status": 1,
+    "invocations": [
+      [
+        "clang",
+        "$SB/fixtures/app-prebuilt",
+        "-c",
+        "-fansi-escape-codes",
+        "-fcolor-diagnostics",
+        "-O2",
+        "-I",
+        "$SB/fixtures/app-prebuilt/.shard/prebuilt/target/arm64/darwin/none/include",
+        "-I",
+        "$SB/fixtures/app-prebuilt/src",
+        "-o",
+        "$SB/fixtures/app-prebuilt/.shard/_/src/main.o",
+        "$SB/fixtures/app-prebuilt/src/main.c",
+        "-MMD",
+        "-MF",
+        "$SB/fixtures/app-prebuilt/.shard/_/src/main.d",
+      ],
+      [
+        "clang",
+        "$SB",
+        "$SB/fixtures/app-prebuilt/.shard/_/src/main.o",
+        "$SB/fixtures/prebuilt/target/libpb.a",
+        "-Wl,-rpath,@executable_path",
+        "-o",
+        "$SB/fixtures/app-prebuilt/target/arm64/darwin/none/app-prebuilt",
+      ],
+    ],
+    "status": 0,
     "stderr": 
-"
- ✘ Invalid prebuilt package "prebuilt": expected libraries at "fixtures/app-prebuilt/.shard/prebuilt/target/arm64/darwin/none"
-   check the module layout or exports field
+" ✔ prebuilt  <t>
+ ✔ app-prebuilt  <t>
 
+ ✔ app-prebuilt built in <t>
+   2 modules · 1 compiled
+   → fixtures/app-prebuilt/target/arm64/darwin/none/app-prebuilt
+
+ ── running app-prebuilt ──
+ ── app-prebuilt exited with code 0 ──
 "
 ,
-    "stdout": "",
+    "stdout": 
+"pb = 7
+"
+,
   },
   "tree": [
+    ".shard/_/src/main.d",
+    ".shard/_/src/main.o",
+    ".shard/cache.json",
+    ".shard/prebuilt/target/arm64/darwin/none/include/pb.h",
     "shard.json",
     "shard.ts",
     "src/main.c",
+    "target/arm64/darwin/none/app-prebuilt",
   ],
 }
 `;
@@ -2066,7 +1992,7 @@ exports[`fixtures diamond graph 1`] = `
         "-fansi-escape-codes",
         "-fcolor-diagnostics",
         "-O2",
-        "-std=c99",
+        "-std=c11",
         "-pedantic-errors",
         "-I",
         "$SB/fixtures/diamond/leaf/src",
@@ -2088,7 +2014,7 @@ exports[`fixtures diamond graph 1`] = `
         "-fansi-escape-codes",
         "-fcolor-diagnostics",
         "-O2",
-        "-std=c99",
+        "-std=c11",
         "-pedantic-errors",
         "-I",
         "$SB/fixtures/diamond/leaf/src",
@@ -2104,12 +2030,13 @@ exports[`fixtures diamond graph 1`] = `
         "$SB/fixtures/diamond/app/.shard/..__leaf/src/nested/nested.d",
       ],
       [
-        "ar",
+        "clang",
         "$SB",
-        "rcs",
-        "$SB/fixtures/diamond/app/.shard/leaf/target/arm64/darwin/none/leaf.a",
+        "-shared",
         "$SB/fixtures/diamond/app/.shard/..__leaf/src/leaf.o",
         "$SB/fixtures/diamond/app/.shard/..__leaf/src/nested/nested.o",
+        "-o",
+        "$SB/fixtures/diamond/app/.shard/leaf/target/arm64/darwin/none/leaf.dylib",
       ],
       [
         "clang",
@@ -2196,7 +2123,7 @@ exports[`fixtures diamond graph 1`] = `
         "$SB",
         "$SB/fixtures/diamond/app/.shard/_/src/main.o",
         "$SB/fixtures/diamond/app/.shard/mid-a/target/arm64/darwin/none/mid-a.a",
-        "$SB/fixtures/diamond/app/.shard/leaf/target/arm64/darwin/none/leaf.a",
+        "$SB/fixtures/diamond/app/.shard/leaf/target/arm64/darwin/none/leaf.dylib",
         "$SB/fixtures/diamond/app/.shard/mid-b/target/arm64/darwin/none/mid-b.a",
         "-lm",
         "-Wl,-rpath,@executable_path",
@@ -2229,11 +2156,22 @@ exports[`fixtures diamond graph 1`] = `
   },
   "cache": 
 "{
-  "..__leaf/src/leaf.o": "66efe89d32adf430d9fc55efdf63a53f5aac769b977698246e646bdae6cdc7b1",
-  "..__leaf/src/nested/nested.o": "0c634a813df18ce411041929791bcb72bb41f792c33258add06e49fd2b5c4e33",
-  "..__mid-a/src/mid_a.o": "707ba1cc676e5e540f35ce3eaaf7a91358aca1d48675a75daebaccfe5a3eb3c9",
-  "..__mid-b/src/mid_b.o": "4dd090e95b98a19f1b00470baba7f151f5cb200644cb067cf4b408654b12c62a",
-  "_/src/main.o": "8e0ebd4e6b83c6f0510616183b91de67507f938fa802bed2e522d267685b377a"
+  "task::leaf:copyHeaders": "{\\"hash\\":\\"<sha256>\\",\\"discovered\\":[]}",
+  "state::leaf:compile:src/leaf.c": "<sha256>",
+  "state::leaf:compile:src/nested/nested.c": "<sha256>",
+  "task::leaf:compile": "{\\"hash\\":\\"<sha256>\\",\\"discovered\\":[\\"/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/SDKSettings.json\\",\\"$SB/fixtures/diamond/leaf/src/leaf.c\\",\\"$SB/fixtures/diamond/leaf/api/leaf/leaf.h\\",\\"$SB/fixtures/diamond/leaf/src/nested/nested.c\\"]}",
+  "task::leaf:linkShared": "{\\"hash\\":\\"<sha256>\\",\\"discovered\\":[]}",
+  "task::mid-a:copyHeaders": "{\\"hash\\":\\"<sha256>\\",\\"discovered\\":[]}",
+  "state::mid-a:compile:src/mid_a.c": "<sha256>",
+  "task::mid-a:compile": "{\\"hash\\":\\"<sha256>\\",\\"discovered\\":[\\"/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/SDKSettings.json\\",\\"$SB/fixtures/diamond/mid-a/src/mid_a.c\\",\\"$SB/fixtures/diamond/mid-a/src/mid_a.h\\",\\"$SB/fixtures/diamond/app/.shard/leaf/target/arm64/darwin/none/include/leaf/leaf.h\\"]}",
+  "task::mid-a:archive": "{\\"hash\\":\\"<sha256>\\",\\"discovered\\":[]}",
+  "task::mid-b:copyHeaders": "{\\"hash\\":\\"<sha256>\\",\\"discovered\\":[]}",
+  "state::mid-b:compile:src/mid_b.c": "<sha256>",
+  "task::mid-b:compile": "{\\"hash\\":\\"<sha256>\\",\\"discovered\\":[\\"/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/SDKSettings.json\\",\\"$SB/fixtures/diamond/mid-b/src/mid_b.c\\",\\"$SB/fixtures/diamond/mid-b/src/mid_b.h\\",\\"$SB/fixtures/diamond/app/.shard/leaf/target/arm64/darwin/none/include/leaf/leaf.h\\"]}",
+  "task::mid-b:archive": "{\\"hash\\":\\"<sha256>\\",\\"discovered\\":[]}",
+  "state::compile:src/main.c": "<sha256>",
+  "task::compile": "{\\"hash\\":\\"<sha256>\\",\\"discovered\\":[\\"/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/SDKSettings.json\\",\\"$SB/fixtures/diamond/app/src/main.c\\",\\"$SB/fixtures/diamond/app/.shard/mid-a/target/arm64/darwin/none/include/mid_a.h\\",\\"$SB/fixtures/diamond/app/.shard/mid-b/target/arm64/darwin/none/include/mid_b.h\\"]}",
+  "task::link": "{\\"hash\\":\\"<sha256>\\",\\"discovered\\":[]}"
 }"
 ,
   "hookLog": 
@@ -2260,7 +2198,7 @@ postbuild-app
         "-fansi-escape-codes",
         "-fcolor-diagnostics",
         "-O2",
-        "-std=c99",
+        "-std=c11",
         "-pedantic-errors",
         "-DEXTRA",
         "-I",
@@ -2283,7 +2221,7 @@ postbuild-app
         "-fansi-escape-codes",
         "-fcolor-diagnostics",
         "-O2",
-        "-std=c99",
+        "-std=c11",
         "-pedantic-errors",
         "-DEXTRA",
         "-I",
@@ -2298,14 +2236,6 @@ postbuild-app
         "-MMD",
         "-MF",
         "$SB/fixtures/diamond/app/.shard/..__leaf/src/nested/nested.d",
-      ],
-      [
-        "ar",
-        "$SB",
-        "rcs",
-        "$SB/fixtures/diamond/app/.shard/leaf/target/arm64/darwin/none/leaf.a",
-        "$SB/fixtures/diamond/app/.shard/..__leaf/src/leaf.o",
-        "$SB/fixtures/diamond/app/.shard/..__leaf/src/nested/nested.o",
       ],
       [
         "clang",
@@ -2328,13 +2258,6 @@ postbuild-app
         "$SB/fixtures/diamond/app/.shard/..__mid-a/src/mid_a.d",
       ],
       [
-        "ar",
-        "$SB",
-        "rcs",
-        "$SB/fixtures/diamond/app/.shard/mid-a/target/arm64/darwin/none/mid-a.a",
-        "$SB/fixtures/diamond/app/.shard/..__mid-a/src/mid_a.o",
-      ],
-      [
         "clang",
         "$SB/fixtures/diamond/mid-b",
         "-c",
@@ -2353,13 +2276,6 @@ postbuild-app
         "-MMD",
         "-MF",
         "$SB/fixtures/diamond/app/.shard/..__mid-b/src/mid_b.d",
-      ],
-      [
-        "ar",
-        "$SB",
-        "rcs",
-        "$SB/fixtures/diamond/app/.shard/mid-b/target/arm64/darwin/none/mid-b.a",
-        "$SB/fixtures/diamond/app/.shard/..__mid-b/src/mid_b.o",
       ],
       [
         "clang",
@@ -2390,18 +2306,6 @@ postbuild-app
         "-MMD",
         "-MF",
         "$SB/fixtures/diamond/app/.shard/_/src/main.d",
-      ],
-      [
-        "clang",
-        "$SB",
-        "$SB/fixtures/diamond/app/.shard/_/src/main.o",
-        "$SB/fixtures/diamond/app/.shard/mid-a/target/arm64/darwin/none/mid-a.a",
-        "$SB/fixtures/diamond/app/.shard/leaf/target/arm64/darwin/none/leaf.a",
-        "$SB/fixtures/diamond/app/.shard/mid-b/target/arm64/darwin/none/mid-b.a",
-        "-lm",
-        "-Wl,-rpath,@executable_path",
-        "-o",
-        "$SB/fixtures/diamond/app/target/arm64/darwin/none/variant/app",
       ],
     ],
     "status": 0,
@@ -2435,7 +2339,7 @@ postbuild-app
     ".shard/_/src/main.o",
     ".shard/cache.json",
     ".shard/leaf/target/arm64/darwin/none/include/leaf/leaf.h",
-    ".shard/leaf/target/arm64/darwin/none/leaf.a",
+    ".shard/leaf/target/arm64/darwin/none/leaf.dylib",
     ".shard/mid-a/target/arm64/darwin/none/include/mid_a.h",
     ".shard/mid-a/target/arm64/darwin/none/mid-a.a",
     ".shard/mid-b/target/arm64/darwin/none/include/mid_b.h",
@@ -2444,7 +2348,70 @@ postbuild-app
     "shard.json",
     "src/main.c",
     "target/arm64/darwin/none/variant/app",
+    "target/arm64/darwin/none/variant/leaf.dylib",
   ],
+}
+`;
+
+exports[`fixtures incremental rebuild: nothing changed, then one exported header 1`] = `
+{
+  "first": 0,
+  "header": [
+    [
+      "clang",
+      "$SB/examples/lib-std",
+      "-c",
+      "-fansi-escape-codes",
+      "-fcolor-diagnostics",
+      "-O2",
+      "-g",
+      "-std=c11",
+      "-Wpedantic",
+      "-I",
+      "$SB/examples/lib-std/src",
+      "-I",
+      "$SB/examples/lib-std/include",
+      "-o",
+      "$SB/examples/app-std/.shard/..__lib-std/src/calc.o",
+      "$SB/examples/lib-std/src/calc.c",
+      "-MMD",
+      "-MF",
+      "$SB/examples/app-std/.shard/..__lib-std/src/calc.d",
+    ],
+    [
+      "clang",
+      "$SB/examples/app-std",
+      "-c",
+      "-fansi-escape-codes",
+      "-fcolor-diagnostics",
+      "-O3",
+      "-std=c17",
+      "-I",
+      "$SB/examples/app-std/.shard/lib-std/target/arm64/darwin/none/include",
+      "-I",
+      "$SB/examples/app-std/src",
+      "-o",
+      "$SB/examples/app-std/.shard/_/src/main.o",
+      "$SB/examples/app-std/src/main.c",
+      "-MMD",
+      "-MF",
+      "$SB/examples/app-std/.shard/_/src/main.d",
+    ],
+  ],
+  "unchanged": [],
+}
+`;
+
+exports[`fixtures prebuild and postbuild hooks; postbuild skipped after a failed compile 1`] = `
+{
+  "broken": 1,
+  "log": 
+"pre
+post
+pre
+"
+,
+  "ok": 0,
 }
 `;
 
@@ -2678,35 +2645,29 @@ exports[`fixtures git dependencies 1`] = `
     "sub@v1.0.0/README",
     "sub@v1.0.0/include/gitlib.h",
     "sub@v1.0.0/shard.json",
-    "sub@v1.0.0/shard.ts",
     "sub@v1.0.0/src/gitlib.c",
   ],
   "modulesAfterUpgrade": [
     "gitlib@v1.2.0/include/gitlib.h",
     "gitlib@v1.2.0/shard.json",
-    "gitlib@v1.2.0/shard.ts",
     "gitlib@v1.2.0/src/gitlib.c",
   ],
   "modulesWithHead": [
     "gitlib/include/gitlib.h",
     "gitlib/shard.json",
-    "gitlib/shard.ts",
     "gitlib/src/gitlib.c",
     "sub@v1.0.0/README",
     "sub@v1.0.0/include/gitlib.h",
     "sub@v1.0.0/shard.json",
-    "sub@v1.0.0/shard.ts",
     "sub@v1.0.0/src/gitlib.c",
   ],
   "modulesWithMono": [
     "gitlib@v1.2.0/include/gitlib.h",
     "gitlib@v1.2.0/shard.json",
-    "gitlib@v1.2.0/shard.ts",
     "gitlib@v1.2.0/src/gitlib.c",
     "sub@v1.0.0/README",
     "sub@v1.0.0/include/gitlib.h",
     "sub@v1.0.0/shard.json",
-    "sub@v1.0.0/shard.ts",
     "sub@v1.0.0/src/gitlib.c",
   ],
   "olderReuse": {
@@ -2717,24 +2678,7 @@ exports[`fixtures git dependencies 1`] = `
       "file",
       "--start",
     ],
-    "invocations": [
-      [
-        "ar",
-        "$SB",
-        "rcs",
-        "$SB/fixtures/app-git/.shard/gitlib/target/arm64/darwin/none/gitlib.a",
-        "$SB/fixtures/app-git/.shard/modules__gitlib@v1.2.0/src/gitlib.o",
-      ],
-      [
-        "clang",
-        "$SB",
-        "$SB/fixtures/app-git/.shard/_/src/main.o",
-        "$SB/fixtures/app-git/.shard/gitlib/target/arm64/darwin/none/gitlib.a",
-        "-Wl,-rpath,@executable_path",
-        "-o",
-        "$SB/fixtures/app-git/target/arm64/darwin/none/app-git",
-      ],
-    ],
+    "invocations": [],
     "status": 0,
     "stderr": 
 " ≡ gitlib  cached
@@ -2778,24 +2722,7 @@ exports[`fixtures git dependencies 1`] = `
       "file",
       "--start",
     ],
-    "invocations": [
-      [
-        "ar",
-        "$SB",
-        "rcs",
-        "$SB/fixtures/app-git/.shard/gitlib/target/arm64/darwin/none/gitlib.a",
-        "$SB/fixtures/app-git/.shard/modules__gitlib@v1.0.0/src/gitlib.o",
-      ],
-      [
-        "clang",
-        "$SB",
-        "$SB/fixtures/app-git/.shard/_/src/main.o",
-        "$SB/fixtures/app-git/.shard/gitlib/target/arm64/darwin/none/gitlib.a",
-        "-Wl,-rpath,@executable_path",
-        "-o",
-        "$SB/fixtures/app-git/target/arm64/darwin/none/app-git",
-      ],
-    ],
+    "invocations": [],
     "status": 0,
     "stderr": 
 " ≡ gitlib  cached

@@ -49,18 +49,37 @@ export const gitNotation: NotationHandler = {
     };
   },
 
-  async resolve(notation, from, requestedBy) {
-    const { spec, linkage } = notation as GitNotation;
-    const dep = parseGit(spec, linkage === "shared" ? LinkType.Shared : linkage === "static" ? LinkType.Static : null);
+  describe(notation) {
+    const dep = parse(notation as GitNotation);
+    return { name: dep.name, source: "git", spec: gitSource.spec(dep), link: dep.link };
+  },
+
+  async resolve(notation, from, { requestedBy, dryRun, onProgress }) {
+    const dep = parse(notation as GitNotation);
+    const spec = (notation as GitNotation).spec;
     const protocol = from.services.find(GIT_PARAMETERS)?.protocol ?? process.env.SHARD_GIT_PROTOCOL ?? "https";
     const decision = gitSource.decide(dep, {
       rootPath: from.rootDir,
       store: new ModuleStore(join(from.rootDir, DIRS.MODULES)),
       gitProtocol: protocol,
       requestedBy,
+      onProgress,
     });
     if (decision.kind !== "module") throw new ShardError("git", `${spec} is not a module`);
-    await decision.install?.();
-    return { kind: "module", dir: decision.path, name: decision.name };
+    if (decision.install) {
+      if (dryRun) return { kind: "missing" };
+      await decision.install();
+    }
+    return {
+      kind: "module",
+      dir: decision.path,
+      name: decision.name,
+      note: { action: decision.action, previous: decision.previous },
+    };
   },
 };
+
+function parse(notation: GitNotation) {
+  const { spec, linkage } = notation;
+  return parseGit(spec, linkage === "shared" ? LinkType.Shared : linkage === "static" ? LinkType.Static : null);
+}

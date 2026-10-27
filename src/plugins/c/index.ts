@@ -12,12 +12,12 @@ import { sharedLibPath, staticLibPath } from "../../workspace/artifacts";
 import { C, CExtension } from "./extension";
 import { cModel, optional, type CModel } from "./model";
 import { ARTIFACT, C_PARAMETERS, C_RUNNER, C_TOOLCHAIN, DEFAULT_PARAMETERS, LINKAGE, type CParameters } from "./services";
-import { C_STANDARDS, CStandards } from "./standards";
+import { C_MODULES, CModules } from "./modules";
 import { CArchive, CCompile, CLink, CopyHeaders, objectPath, type RuntimeLib } from "./tasks";
 
 export { C, CExtension, type CBlock } from "./extension";
 export * from "./services";
-export { C_STANDARDS, CStandards } from "./standards";
+export { C_MODULES, CModules } from "./modules";
 export { CArchive, CCompile, CLink, CopyHeaders } from "./tasks";
 
 const LINKAGES = ["static", "shared"] as const;
@@ -49,8 +49,8 @@ function apply(module: Module): void {
 
   const implementation = module.configurations.scope("implementation");
   const classpath = module.configurations.resolvable("compileClasspath").extendsFrom(implementation);
-  const standards = module.services.getOrRegister(C_STANDARDS, () => new CStandards());
-  standards.add({ module, ext, classpath, model });
+  const modules = module.services.getOrRegister(C_MODULES, () => new CModules());
+  modules.add({ module, ext, classpath, model });
   /** Values of one artifact type from dependencies, depth-first in declaration order, each once. */
   const inherited = (type: string) =>
     classpath.incoming.artifacts(type, "declaration").map(list => [...new Set(list.map(a => a.value))]);
@@ -68,9 +68,12 @@ function apply(module: Module): void {
     t.sources.addAll(model.map(m => m.content.sources.map(u => u.path)));
     t.includeDirs.addAll(inherited(ARTIFACT.INCLUDE_DIR).zip(model, (dirs, m) =>
       [...dirs, ...privateIncludes(module.dir, { imports: optional(ext.imports) }, m.content)]));
-    t.options.set(model.map(() => compileSettings(ext, params(), standards.effective(module))));
+    t.options.set(model.map(() => compileSettings(ext, params(), modules.effective(module))));
     t.objectDir.set(model.map(m => m.layout.objectDir));
-    t.incremental.set(cacheEnabled(params().cacheMode, isRoot));
+    const useCache = cacheEnabled(params().cacheMode, isRoot);
+    t.incremental.set(useCache);
+    // --ignore-cache recompiles every file, even when the task as a whole looks up to date.
+    t.alwaysRun = !useCache;
     t.objects.addAll(model.map(m => m.content.sources.map(u => objectPath(module.dir, m.layout.objectDir, u.path))));
   });
   const objects = compile.flatMap(t => t.objects);

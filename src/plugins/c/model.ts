@@ -36,19 +36,28 @@ export function cModel(module: Module, ext: CExtension, toolchain: () => Toolcha
       : kind === "library" ? PackageShape.Library
       : deriveShape(content, module.name);
 
-    const isRoot = module.dir === module.rootDir;
-    const id = moduleId(module.rootDir, module.dir);
-    const moduleDir = isRoot ? module.dir : join(module.rootDir, DIRS.SHARD, module.name);
-    const triple = tripleDir(toolchain().target);
-    const variant = optional(ext.variant);
-    const outDir = join(moduleDir, DIRS.TARGET, variant ? join(triple, variant) : triple);
-    const layout: Layout = {
-      id,
-      moduleDir,
-      outDir,
-      objectDir: join(module.rootDir, DIRS.SHARD, id),
-      includeDir: join(outDir, DIRS.INCLUDE),
+    // The layout needs the toolchain's target; `shard info` reads content and shape without one.
+    let layout: Layout | null = null;
+    return {
+      content,
+      shape,
+      get layout(): Layout {
+        return (layout ??= layoutOf(module, optional(ext.variant), tripleDir(toolchain().target)));
+      },
     };
-    return { content, shape, layout };
   });
+}
+
+function layoutOf(module: Module, variant: string | undefined, triple: string): Layout {
+  const isRoot = module.dir === module.rootDir;
+  const id = moduleId(module.rootDir, module.dir);
+  const moduleDir = isRoot ? module.dir : join(module.rootDir, DIRS.SHARD, module.name);
+  const outDir = join(moduleDir, DIRS.TARGET, variant ? join(triple, variant) : triple);
+  return {
+    id,
+    moduleDir,
+    outDir,
+    objectDir: join(module.rootDir, DIRS.SHARD, id),
+    includeDir: join(outDir, DIRS.INCLUDE),
+  };
 }

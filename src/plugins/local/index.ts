@@ -1,4 +1,4 @@
-import { resolve } from "path";
+import { basename, resolve } from "path";
 import type { DependencyNotation, NotationHandler } from "../../core";
 import { ShardError } from "../../utils/errors";
 
@@ -21,7 +21,12 @@ export const localNotation: NotationHandler = {
     return { source: "local", path, ...(options.linkage ? { attributes: { linkage: options.linkage } } : {}) };
   },
 
+  describe(notation) {
+    const { path } = notation as LocalNotation;
+    return { name: basename(path.replace(/[/\\]+$/, "")) || "local", source: "local", spec: path, link: notation.attributes?.linkage ?? null };
+  },
+
   resolve(notation, from) {
-    return { kind: "module", dir: resolve(from.dir, (notation as LocalNotation).path) };
+    return { kind: "module", dir: resolve(from.dir, (notation as LocalNotation).path), note: { action: "local" } };
   },
 };

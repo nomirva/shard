@@ -37,6 +37,7 @@ export function createProgram(): Command {
     .addOption(new Option("--profile <name>", "Compilation profile (overrides manifest)").choices([...PROFILE_NAMES]))
     .option("--git-protocol <protocol>", "Git protocol: https (default), ssh, or http")
     .option("--verbose", "Show every file, command line and hook output")
+    .option("-j, --jobs <n>", "How many tasks run at once (default: one per CPU, or SHARD_JOBS)")
     .action(act(buildCommand));
 
   program

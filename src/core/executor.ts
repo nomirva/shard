@@ -15,6 +15,8 @@ export type TaskOutcome =
 export interface ExecutionListener {
   taskStart?(task: Task): void;
   taskProgress?(task: Task, done: number, total: number, current?: string): void;
+  /** What a running task passed to `ctx.report`. */
+  taskReport?(task: Task, event: unknown): void;
   taskEnd?(task: Task, outcome: TaskOutcome, duration: number): void;
 }
 
@@ -128,8 +130,9 @@ async function runTask(task: Task, options: ExecuteOptions): Promise<"executed" 
 
   const discovered: string[] = [];
   const ctx: TaskContext = {
-    discovered: files => discovered.push(...files),
+    discovered: files => { for (const f of files) if (!discovered.includes(f)) discovered.push(f); },
     progress: (done, total, current) => options.listener?.taskProgress?.(task, done, total, current),
+    report: event => options.listener?.taskReport?.(task, event),
     state: {
       get: k => options.cache.get(`state:${task.path}:${k}`),
       set: (k, v) => options.cache.set(`state:${task.path}:${k}`, v),
