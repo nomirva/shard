@@ -6,6 +6,7 @@ import type { PlannedTarget } from "../../build/plan";
 import { buildPipeline } from "../../pipeline/pipelines";
 import { start } from "../../pipeline/stages/start";
 import { createConsole } from "../console/session";
+import { coreBuildCommand } from "./core-build";
 import { openWorkspace, toolchainFacts } from "./workspace";
 
 export interface BuildFlags {
@@ -20,9 +21,13 @@ export interface BuildFlags {
 export async function buildCommand(path: string, flags: BuildFlags = {}): Promise<void> {
   const ui = createConsole(flags.verbose);
   const cacheMode = parseCacheMode(flags.ignoreCache);
+  const defines = (flags.def ?? []).flatMap(d => d.split(",")).filter(Boolean);
+  if (process.env.SHARD_ENGINE === "core") {
+    return coreBuildCommand(path, flags, { profile: flags.profile, defines, cacheMode });
+  }
   const ws = openWorkspace(path, ui, true, {
     cacheMode,
-    defines: (flags.def ?? []).flatMap(d => d.split(",")).filter(Boolean),
+    defines,
     profile: flags.profile,
     gitProtocol: flags.gitProtocol,
   });

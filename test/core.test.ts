@@ -1,12 +1,14 @@
 import { describe, expect, test } from "bun:test";
-import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "fs";
+import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "fs";
 import { tmpdir } from "os";
 import { join } from "path";
 import type { CacheStore } from "../src/cache/store";
 import {
-  attribute, AttributeContainer, Build, extension, moduleDependency, Property, provider, Task,
+  attribute, AttributeContainer, Build, extension, initialize, moduleDependency, Property, provider, scriptReader, Task,
   type Dependency, type ExecutionListener, type Plugin, type TaskContext,
 } from "../src/core";
+import { builtinPlugins, DEFAULT_PLUGINS } from "../src/plugins";
+import { C } from "../src/plugins/c";
 import type { ShardError } from "../src/utils/errors";
 
 class MemoryCache implements CacheStore {
@@ -63,7 +65,7 @@ class Slow extends Task {
 
 function setup() {
   const dir = mkdtempSync(join(tmpdir(), "shard-core-"));
-  const build = new Build();
+  const build = new Build(dir);
   const root = build.addModule({ name: "app", path: ":", dir, buildDir: join(dir, ".shard") });
   const cache = new MemoryCache();
   const events: string[] = [];
@@ -350,5 +352,52 @@ describe("variant resolution", () => {
     expect(() => resolved.add(moduleDependency(":y"))).toThrow("already resolved");
     cleanup();
     cleanup2();
+  });
+});
+
+describe("initialization", () => {
+  async function init(files: Record<string, string>, root = "app") {
+    const dir = mkdtempSync(join(tmpdir(), "shard-init-"));
+    for (const [rel, text] of Object.entries(files)) {
+      mkdirSync(join(dir, rel, ".."), { recursive: true });
+      writeFileSync(join(dir, rel), text);
+    }
+    const build = new Build(join(dir, root));
+    try {
+      await initialize(build, { registry: builtinPlugins(), readers: [scriptReader], defaultPlugins: DEFAULT_PLUGINS, defines: ["GREET"] });
+      return { build, error: null as ShardError | null };
+    } catch (e) {
+      return { build, error: e as ShardError };
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
+  }
+
+  test("a module reached twice is loaded once", async () => {
+    const { build, error } = await init({
+      "app/shard.ts": `export default ({ local }) => ({ dependencies: [local("../a"), local("../b")] });`,
+      "a/shard.ts": `export default ({ local }) => ({ dependencies: [local("../leaf")] });`,
+      "b/shard.ts": `export default ({ local }) => ({ dependencies: [local("../leaf", { linkage: "shared" })] });`,
+      "leaf/shard.ts": `export default {};`,
+    });
+    expect(error).toBeNull();
+    expect(build.allModules().map(m => m.path)).toEqual([":", ":a", ":leaf", ":b"]);
+  });
+
+  test("config functions see --def values", async () => {
+    const { build, error } = await init({
+      "app/shard.ts": `export default ({ defined }) => ({ c: { variant: defined("GREET") ? "greet" : "none" } });`,
+    });
+    expect(error).toBeNull();
+    expect(build.root.extensions.get(C).variant.get()).toBe("greet");
+  });
+
+  test("unknown blocks, plugins and sources are config errors", async () => {
+    expect((await init({ "app/shard.ts": `export default { cpp: {} };` })).error?.message).toContain('Unknown block "cpp"');
+    expect((await init({ "app/shard.ts": `export default { plugins: ["rust"] };` })).error?.message).toBe('Unknown plugin "rust"');
+    expect((await init({ "app/shard.ts": `export default { dependencies: [{ source: "svn" }] };` })).error?.message)
+      .toBe('Unknown dependency source "svn"');
+    expect((await init({ "app/shard.ts": `export default { c: { standard: "c++17" } };` })).error?.message)
+      .toBe("Unknown standard 'c++17'");
   });
 });

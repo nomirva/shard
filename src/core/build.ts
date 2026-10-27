@@ -4,6 +4,7 @@ import { execute, type ExecuteOptions, type ExecutionResult } from "./executor";
 import { TaskGraph } from "./graph";
 import { Module, type ModuleInit } from "./module";
 import type { ResolutionServices } from "./resolution";
+import { ServiceRegistry } from "./services";
 import type { Task } from "./task";
 import type { TaskProvider } from "./tasks";
 
@@ -15,6 +16,7 @@ import type { TaskProvider } from "./tasks";
 export class Build {
   /** Attribute matching rules; plugins define the attributes they introduce. */
   readonly schema = new AttributeSchema();
+  readonly services = new ServiceRegistry();
   private readonly modules = new Map<string, Module>();
   private readonly registry = new Map<string, TaskProvider<Task>>();
   private readonly resolution: ResolutionServices = {
@@ -22,11 +24,15 @@ export class Build {
     variantsOf: path => this.modules.get(path)?.configurations.consumableVariants(),
   };
 
+  constructor(readonly rootDir: string) {}
+
   addModule(init: ModuleInit): Module {
     if (this.modules.has(init.path)) throw new ShardError("config", `Module ${init.path} already exists`);
     const module = new Module(init, {
       onRegister: task => this.registry.set(task.path, task),
       resolution: this.resolution,
+      services: this.services,
+      rootDir: this.rootDir,
     });
     this.modules.set(init.path, module);
     return module;
@@ -40,6 +46,10 @@ export class Build {
 
   module(path: string): Module | undefined {
     return this.modules.get(path);
+  }
+
+  allModules(): Module[] {
+    return [...this.modules.values()];
   }
 
   /** "assemble" names a task of the root module, ":lib:assemble" a task anywhere. */

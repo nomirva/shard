@@ -11,6 +11,9 @@ export interface ExportEntry {
   dest: string;
 }
 
+/** The manifest fields that decide what a module contains. */
+export type ContentFields = Pick<Manifest, "sources" | "imports" | "exports">;
+
 export interface ModuleContent {
   sources: Unit[];
   exports: ExportEntry[];
@@ -18,7 +21,7 @@ export interface ModuleContent {
 }
 
 /** `artifactsDir` is the directory (relative to the module) scanned for prebuilt libraries. */
-export function scanContent(modulePath: string, manifest: Manifest, artifactsDir: string): ModuleContent {
+export function scanContent(modulePath: string, manifest: ContentFields, artifactsDir: string): ModuleContent {
   return {
     sources: collectSources(modulePath, manifest),
     exports: resolveExports(modulePath, manifest),
@@ -28,7 +31,7 @@ export function scanContent(modulePath: string, manifest: Manifest, artifactsDir
 
 export function privateIncludes(
   modulePath: string,
-  manifest: Manifest,
+  manifest: ContentFields,
   content: ModuleContent,
 ): string[] {
   const dirs: string[] = [];
@@ -47,7 +50,7 @@ export function privateIncludes(
   return dirs;
 }
 
-function collectSources(modulePath: string, manifest: Manifest): Unit[] {
+function collectSources(modulePath: string, manifest: ContentFields): Unit[] {
   const patterns = manifest.sources ?? ["./src/**/*.c"];
   return expandField(modulePath, patterns)
     .map(p => new Unit(p))
@@ -61,7 +64,7 @@ function collectArtifacts(targetDir: string): Unit[] {
     .filter(u => u.isArtifact);
 }
 
-function resolveExports(modulePath: string, manifest: Manifest): ExportEntry[] {
+function resolveExports(modulePath: string, manifest: ContentFields): ExportEntry[] {
   const field = manifest.exports;
   if (!field) return [];
 

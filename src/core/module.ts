@@ -1,6 +1,8 @@
 import { ShardError } from "../utils/errors";
+import type { AttributeSchema } from "./attributes";
 import { ConfigurationContainer } from "./configurations";
 import type { ResolutionServices } from "./resolution";
+import type { ServiceRegistry } from "./services";
 import { TaskContainer, type TaskProvider } from "./tasks";
 import type { Task } from "./task";
 
@@ -94,6 +96,9 @@ export interface ModuleInit {
 export interface ModuleServices {
   readonly onRegister: (task: TaskProvider<Task>) => void;
   readonly resolution: ResolutionServices;
+  readonly services: ServiceRegistry;
+  /** Directory of the root module: where build-wide state lives. */
+  readonly rootDir: string;
 }
 
 /**
@@ -110,6 +115,11 @@ export class Module {
   readonly extensions: ExtensionContainer;
   readonly plugins: PluginContainer;
   readonly configurations: ConfigurationContainer;
+  /** Build-wide services: the toolchain, run parameters. */
+  readonly services: ServiceRegistry;
+  /** Build-wide attribute rules; a plugin defines the attributes it introduces once. */
+  readonly schema: AttributeSchema;
+  readonly rootDir: string;
 
   constructor(init: ModuleInit, services: ModuleServices) {
     this.name = init.name;
@@ -119,6 +129,9 @@ export class Module {
     this.tasks = new TaskContainer(init.path, init.dir, init.buildDir, services.onRegister);
     this.configurations = new ConfigurationContainer(init.path, services.resolution);
     this.extensions = new ExtensionContainer(init.path);
+    this.services = services.services;
+    this.schema = services.resolution.schema;
+    this.rootDir = services.rootDir;
     this.plugins = new PluginContainer(this);
   }
 }

@@ -10,6 +10,12 @@ export interface ResolutionServices {
   variantsOf(modulePath: string): readonly OutgoingVariant[] | undefined;
 }
 
+/**
+ * - `link`: every variant before the variants it depends on (static linking);
+ * - `declaration`: depth-first in declaration order, each variant once.
+ */
+export type ResolutionOrder = "link" | "declaration";
+
 /** One chosen variant in the resolved graph. */
 export interface ResolvedNode {
   /** Module path, or the dependency's name for plugin-published variants. */
@@ -23,7 +29,7 @@ export interface ResolvedNode {
  * first use, so dependencies declared at any point during configuration count.
  */
 export class ResolutionResult {
-  private resolved: { roots: ResolvedNode[]; order: ResolvedNode[] } | null = null;
+  private resolved: { roots: ResolvedNode[]; order: Record<ResolutionOrder, ResolvedNode[]> } | null = null;
 
   constructor(
     private readonly name: string,
@@ -41,20 +47,17 @@ export class ResolutionResult {
     return this.resolve().roots;
   }
 
-  /**
-   * Every chosen variant once, each before the variants it depends on — the
-   * order a static linker needs.
-   */
-  nodes(): readonly ResolvedNode[] {
-    return this.resolve().order;
+  /** Every chosen variant once; by default each before the variants it depends on. */
+  nodes(order: ResolutionOrder = "link"): readonly ResolvedNode[] {
+    return this.resolve().order[order];
   }
 
-  /** Artifacts of all chosen variants in `nodes()` order, optionally of one type; tracks their producers. */
-  artifacts(type?: string): Provider<Artifact[]> {
-    return new ArtifactsProvider(() => this.nodes(), type);
+  /** Artifacts of all chosen variants in `nodes(order)` order, optionally of one type; tracks their producers. */
+  artifacts(type?: string, order: ResolutionOrder = "link"): Provider<Artifact[]> {
+    return new ArtifactsProvider(() => this.nodes(order), type);
   }
 
-  private resolve(): { roots: ResolvedNode[]; order: ResolvedNode[] } {
+  private resolve(): { roots: ResolvedNode[]; order: Record<ResolutionOrder, ResolvedNode[]> } {
     if (this.resolved) return this.resolved;
     const memo = new Map<string, ResolvedNode>();
     const stack: string[] = [];
@@ -79,7 +82,7 @@ export class ResolutionResult {
     };
 
     const roots = this.dependencies.map(visit);
-    this.resolved = { roots, order: consumerFirst(roots) };
+    this.resolved = { roots, order: { link: consumerFirst(roots), declaration: declarationOrder(roots) } };
     return this.resolved;
   }
 
@@ -119,6 +122,17 @@ function consumerFirst(roots: readonly ResolvedNode[]): ResolvedNode[] {
   };
   [...roots].reverse().forEach(walk);
   return post.reverse();
+}
+
+function declarationOrder(roots: readonly ResolvedNode[]): ResolvedNode[] {
+  const out: ResolvedNode[] = [];
+  const walk = (node: ResolvedNode): void => {
+    if (out.includes(node)) return;
+    out.push(node);
+    node.dependencies.forEach(walk);
+  };
+  roots.forEach(walk);
+  return out;
 }
 
 class ArtifactsProvider extends Provider<Artifact[]> {

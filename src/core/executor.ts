@@ -129,6 +129,10 @@ async function runTask(task: Task, options: ExecuteOptions): Promise<"executed" 
   const ctx: TaskContext = {
     discovered: files => discovered.push(...files),
     progress: (done, total, current) => options.listener?.taskProgress?.(task, done, total, current),
+    state: {
+      get: k => options.cache.get(`state:${task.path}:${k}`),
+      set: (k, v) => options.cache.set(`state:${task.path}:${k}`, v),
+    },
   };
   try {
     await task.run(ctx);

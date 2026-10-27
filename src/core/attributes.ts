@@ -88,6 +88,10 @@ export class AttributeSchema {
     });
   }
 
+  isDefined(attr: Attribute<unknown>): boolean {
+    return this.rules.has(attr.name);
+  }
+
   /** Every requested attribute the producer also has must be compatible; missing ones do not matter. */
   matches(requested: AttributeContainer, produced: AttributeContainer): boolean {
     return requested.names().every(name => {

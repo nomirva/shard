@@ -23,6 +23,16 @@ export interface TaskContext {
   discovered(files: readonly string[]): void;
   /** Progress within the task, e.g. files compiled out of total. */
   progress(done: number, total: number, current?: string): void;
+  /**
+   * State kept between runs of this task, for incremental work inside one
+   * task (which files of a compile task are still fresh).
+   */
+  readonly state: TaskState;
+}
+
+export interface TaskState {
+  get(key: string): string | undefined;
+  set(key: string, value: string): void;
 }
 
 export type InputKind = "value" | "files";
