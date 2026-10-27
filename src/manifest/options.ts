@@ -1,8 +1,8 @@
 import type { CStandard, Profile, StandardOptions, Subsystem, WarningSet } from "../lang/types";
 import { parseStandardName } from "../lang/standards";
 import { parseProfile } from "../lang/profiles";
-import { isPlainObject } from "../core/object";
-import { ShardError } from "../core/errors";
+import { isPlainObject } from "../utils/object";
+import { ShardError } from "../utils/errors";
 
 export interface ManifestOptions {
   profile?: Profile;

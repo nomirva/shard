@@ -1,5 +1,5 @@
 import chalk from "chalk";
-import { viewError } from "../../core/errors";
+import { viewError } from "../../utils/errors";
 import type { CompileStatus, Reporter } from "../../report/reporter";
 import { createProgressSink } from "./progress";
 

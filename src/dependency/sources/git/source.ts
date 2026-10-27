@@ -1,7 +1,7 @@
 import { rmSync } from "fs";
 import { basename } from "path";
 import type { LinkType } from "../../../lang/types";
-import { ShardError } from "../../../core/errors";
+import { ShardError } from "../../../utils/errors";
 import type { Decision, Dependency, DependencySource, ResolveEnv } from "../../source";
 import { installGit } from "./installer";
 import { describePin, dirName, makePin, pinFromSuffix, pinVersion, reconcile, type GitPin } from "./pin";

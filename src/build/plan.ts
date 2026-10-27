@@ -1,4 +1,4 @@
-import type { ShardError } from "../core/errors";
+import type { ShardError } from "../utils/errors";
 import type { CompileTask, Invocation } from "../toolchain/toolchain";
 import type { PreparedTarget } from "../target/target";
 import type { Layout } from "../workspace/layout";

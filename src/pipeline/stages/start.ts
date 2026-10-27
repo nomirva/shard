@@ -1,6 +1,6 @@
 import { spawnSync } from "child_process";
 import { basename } from "path";
-import { ShardError } from "../../core/errors";
+import { ShardError } from "../../utils/errors";
 import type { PlannedTarget } from "../../build/plan";
 import type { TargetGraph } from "../../target/graph";
 import type { Stage } from "../pipeline";

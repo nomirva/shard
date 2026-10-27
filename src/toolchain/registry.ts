@@ -1,4 +1,4 @@
-import { ShardError } from "../core/errors";
+import { ShardError } from "../utils/errors";
 import type { Toolchain, ToolchainProvider } from "./toolchain";
 import { clangProvider } from "./clang";
 

@@ -1,5 +1,5 @@
 import type { Profile } from "./types";
-import { ShardError } from "../core/errors";
+import { ShardError } from "../utils/errors";
 
 export const PROFILE_NAMES = [
   "debug",

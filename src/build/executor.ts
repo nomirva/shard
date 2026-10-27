@@ -1,6 +1,6 @@
 import { copyFileSync, existsSync, mkdirSync } from "fs";
 import { dirname, join } from "path";
-import { ShardError } from "../core/errors";
+import { ShardError } from "../utils/errors";
 import type { CompileCache } from "../cache/cache";
 import type { TargetGraph } from "../target/graph";
 import type { Workspace } from "../workspace/workspace";

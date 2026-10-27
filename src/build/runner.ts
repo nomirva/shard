@@ -1,5 +1,5 @@
-import { ShardError } from "../core/errors";
-import { runAsync, runSync } from "../core/process";
+import { ShardError } from "../utils/errors";
+import { runAsync, runSync } from "../utils/process";
 import type { Invocation } from "../toolchain/toolchain";
 
 /** Executes invocations described by the toolchain; the seam for parallel or dry-run execution. */

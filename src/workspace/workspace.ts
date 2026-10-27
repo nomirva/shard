@@ -1,7 +1,6 @@
 import { existsSync, rmSync } from "fs";
 import { basename, join } from "path";
-import { DIRS } from "../core/dirs";
-import { ShardError } from "../core/errors";
+import { ShardError } from "../utils/errors";
 import type { Reporter } from "../report/reporter";
 import type { ConditionalContext } from "../manifest/conditional";
 import { loadManifest } from "../manifest/manifest";
@@ -9,7 +8,7 @@ import type { Toolchain } from "../toolchain/toolchain";
 import { selectToolchain } from "../toolchain/registry";
 import type { DeclaredTarget } from "../target/target";
 import { HookRunner } from "./hooks";
-import { layoutOf, type Layout } from "./layout";
+import { DIRS, layoutOf, type Layout } from "./layout";
 import type { WorkspaceSettings } from "./settings";
 
 export interface WorkspaceOptions {

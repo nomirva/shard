@@ -1,4 +1,4 @@
-import { ShardError } from "../core/errors";
+import { ShardError } from "../utils/errors";
 import type { ModuleContent } from "./content";
 
 export enum PackageShape {

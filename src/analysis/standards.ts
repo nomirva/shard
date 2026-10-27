@@ -1,6 +1,6 @@
 import type { CStandard } from "../lang/types";
 import { dominates, isPureC, oldestStandard, olderStandard, rankOf } from "../lang/standards";
-import { ShardError } from "../core/errors";
+import { ShardError } from "../utils/errors";
 import type { TargetGraph } from "../target/graph";
 import { propagateDown, type DownRule } from "../target/propagate";
 import type { DeclaredTarget, ScannedTarget } from "../target/target";

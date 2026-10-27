@@ -1,4 +1,4 @@
-import { ShardError } from "../core/errors";
+import { ShardError } from "../utils/errors";
 import type { CStandard } from "./types";
 
 export const C_STANDARDS: readonly CStandard[] = [

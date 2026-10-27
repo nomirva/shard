@@ -1,5 +1,5 @@
 import type { LinkType } from "../lang/types";
-import { ShardError } from "../core/errors";
+import { ShardError } from "../utils/errors";
 
 export interface GraphNode {
   readonly path: string;

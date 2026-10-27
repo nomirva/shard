@@ -1,7 +1,14 @@
 import { join, relative } from "path";
-import { DIRS } from "../core/dirs";
 import { tripleDir, type TargetPlatform } from "../toolchain/target";
 import type { DeclaredTarget } from "../target/target";
+
+/** Fixed directory names of the on-disk layout. */
+export const DIRS = {
+  SHARD: ".shard",
+  MODULES: "modules",
+  TARGET: "target",
+  INCLUDE: "include",
+} as const;
 
 /** Where one target's objects, outputs and public headers live. */
 export interface Layout {

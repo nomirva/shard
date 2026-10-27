@@ -1,5 +1,5 @@
-import { ShardError } from "../core/errors";
-import { shellSync } from "../core/process";
+import { ShardError } from "../utils/errors";
+import { shellSync } from "../utils/process";
 import type { DeclaredTarget } from "../target/target";
 
 /** Reserved script names run by the pipeline itself. */

@@ -1,5 +1,5 @@
 import { semver } from "bun";
-import { ShardError } from "../../../core/errors";
+import { ShardError } from "../../../utils/errors";
 
 export type GitPin =
   | { kind: "version"; value: string }

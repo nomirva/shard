@@ -1,4 +1,4 @@
-import { isPlainObject } from "../core/object";
+import { isPlainObject } from "../utils/object";
 
 export interface ConditionalContext {
   compiler: string;

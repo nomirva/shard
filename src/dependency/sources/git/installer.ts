@@ -1,8 +1,8 @@
 import { spawn } from "child_process";
 import { existsSync, readdirSync, renameSync, rmSync } from "fs";
 import { join } from "path";
-import { runSync } from "../../../core/process";
-import { ShardError } from "../../../core/errors";
+import { runSync } from "../../../utils/process";
+import { ShardError } from "../../../utils/errors";
 import { altVersionRef, cloneRef, type GitPin } from "./pin";
 
 export interface GitInstall {

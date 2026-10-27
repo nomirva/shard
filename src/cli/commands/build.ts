@@ -1,4 +1,4 @@
-import { ShardError } from "../../core/errors";
+import { ShardError } from "../../utils/errors";
 import type { Profile } from "../../lang/types";
 import type { CacheMode } from "../../cache/cache";
 import { buildPipeline } from "../../pipeline/pipelines";

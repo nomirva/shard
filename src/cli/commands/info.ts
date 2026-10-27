@@ -1,12 +1,13 @@
 import { describeDependency, parseDependencies } from "../../dependency/parse";
 import { privateIncludes, scanContent } from "../../target/content";
 import { deriveShape } from "../../target/shape";
+import { DIRS } from "../../workspace/layout";
 import { openWorkspace } from "./workspace";
 
 export function infoCommand(path: string): void {
   const ws = openWorkspace(path, false);
   const target = ws.declareRoot();
-  const content = scanContent(target.path, target.manifest);
+  const content = scanContent(target.path, target.manifest, DIRS.TARGET);
   const deps = parseDependencies(target.manifest.depend);
 
   console.log(`\n  Name: ${target.manifest.name ?? target.name}`);

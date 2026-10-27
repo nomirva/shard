@@ -1,6 +1,7 @@
 import { checkCompatibility, resolveStandards } from "../../analysis/standards";
 import { scanContent } from "../../target/content";
 import type { TargetGraph } from "../../target/graph";
+import { DIRS } from "../../workspace/layout";
 import { resolveTargetSettings } from "../../target/settings";
 import { deriveShape } from "../../target/shape";
 import type { PreparedTarget, ResolvedTarget, ScannedTarget } from "../../target/target";
@@ -15,7 +16,7 @@ export const prepare: Stage<TargetGraph<ResolvedTarget>, TargetGraph<PreparedTar
   run(graph, ws) {
     const scanned = graph.map((target): ScannedTarget => {
       ws.hooks.run(target, "preload");
-      return { ...target, content: scanContent(target.path, target.manifest) };
+      return { ...target, content: scanContent(target.path, target.manifest, DIRS.TARGET) };
     });
 
     const standards = resolveStandards(scanned);

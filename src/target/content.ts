@@ -3,8 +3,7 @@ import { dirname, join } from "path";
 import { Glob } from "bun";
 import type { Manifest } from "../manifest/manifest";
 import { expandField, expandPaths } from "./glob";
-import { relativeTo } from "../core/fs";
-import { DIRS } from "../core/dirs";
+import { relativeTo } from "../utils/fs";
 import { Unit } from "./unit";
 
 export interface ExportEntry {
@@ -18,11 +17,12 @@ export interface ModuleContent {
   artifacts: Unit[];
 }
 
-export function scanContent(modulePath: string, manifest: Manifest): ModuleContent {
+/** `artifactsDir` is the directory (relative to the module) scanned for prebuilt libraries. */
+export function scanContent(modulePath: string, manifest: Manifest, artifactsDir: string): ModuleContent {
   return {
     sources: collectSources(modulePath, manifest),
     exports: resolveExports(modulePath, manifest),
-    artifacts: collectArtifacts(modulePath),
+    artifacts: collectArtifacts(join(modulePath, artifactsDir)),
   };
 }
 
@@ -54,8 +54,7 @@ function collectSources(modulePath: string, manifest: Manifest): Unit[] {
     .filter(u => u.isC);
 }
 
-function collectArtifacts(modulePath: string): Unit[] {
-  const targetDir = join(modulePath, DIRS.TARGET);
+function collectArtifacts(targetDir: string): Unit[] {
   if (!existsSync(targetDir)) return [];
   return Array.from(new Glob("**/*").scanSync({ cwd: targetDir }))
     .map(rel => new Unit(join(targetDir, rel)))

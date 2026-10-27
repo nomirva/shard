@@ -1,4 +1,4 @@
-import { pushUnique } from "../core/object";
+import { pushUnique } from "../utils/object";
 
 /** Usage requirements: what a dependency passes up to everything that depends on it. */
 export interface Usage {

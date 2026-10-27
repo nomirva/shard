@@ -1,7 +1,7 @@
 import { dirname, join } from "path";
 import { LinkType } from "../lang/types";
-import { ShardError } from "../core/errors";
-import { relativeTo } from "../core/fs";
+import { ShardError } from "../utils/errors";
+import { relativeTo } from "../utils/fs";
 import type { Toolchain } from "../toolchain/toolchain";
 import { cacheEnabled } from "../cache/cache";
 import { privateIncludes } from "../target/content";

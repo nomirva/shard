@@ -1,5 +1,5 @@
 import { LinkType } from "../lang/types";
-import { ShardError } from "../core/errors";
+import { ShardError } from "../utils/errors";
 import type { Dependency } from "./source";
 import { knownExamples, knownPrefixes, sourceFor } from "./registry";
 
