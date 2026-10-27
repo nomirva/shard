@@ -2,13 +2,13 @@ import { join } from "path";
 import {
   LifecycleTask, provider, type Artifact, type Module, type Plugin, type Provider, type TaskProvider,
 } from "../../core";
-import { cacheEnabled } from "../../cache/cache";
-import { processRunner } from "../../build/runner";
-import type { CStandard, StandardOptions } from "../../lang/types";
-import type { CompileOptions } from "../../toolchain/toolchain";
-import { privateIncludes } from "../../target/content";
-import { PackageShape } from "../../target/shape";
-import { sharedLibPath, staticLibPath } from "../../workspace/artifacts";
+import { cacheEnabled } from "./cache";
+import { processRunner } from "./runner";
+import type { CStandard, StandardOptions } from "./lang/types";
+import type { CompileOptions } from "./toolchain/toolchain";
+import { privateIncludes } from "./content/content";
+import { PackageShape } from "./content/shape";
+import { sharedLibPath, staticLibPath } from "./artifacts";
 import { C, CExtension } from "./extension";
 import { cModel, optional, type CModel } from "./model";
 import { ARTIFACT, C_PARAMETERS, C_RUNNER, C_TOOLCHAIN, DEFAULT_PARAMETERS, LINKAGE, type CParameters } from "./services";

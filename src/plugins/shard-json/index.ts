@@ -1,8 +1,7 @@
 import { existsSync } from "fs";
 import { join } from "path";
 import type { ConfigContext, ConfigReader, DependencyNotation, ModuleConfig } from "../../core";
-import { parseDependency } from "../../dependency/parse";
-import { buildManifest, readManifest, type Manifest } from "../../manifest/manifest";
+import { buildManifest, readManifest, type Manifest } from "./manifest";
 import { ShardError } from "../../utils/errors";
 
 export const JSON_FILE = "shard.json";
@@ -60,20 +59,40 @@ function toConfig(manifest: Manifest, ctx: ConfigContext, file: string): ModuleC
   return config;
 }
 
+/** `depend` prefixes and the helper each one maps to, with an example for error hints. */
+const PREFIXES: Record<string, { helper: string; example: string }> = {
+  git: { helper: "git", example: "git:user/repo[@ref]" },
+  local: { helper: "local", example: "local:../path" },
+  sys: { helper: "sys", example: "sys:z" },
+  framework: { helper: "framework", example: "framework:Cocoa" },
+};
+
+/** "<prefix>:<value>[+static|+shared|+dynamic]", split up; throws the shard.json error messages. */
+export function parseDepend(spec: string): { prefix: string; value: string; linkage?: "static" | "shared" } {
+  const link = /\+(static|shared|dynamic)$/.exec(spec);
+  const linkage = link ? (link[1] === "static" ? "static" : "shared") : undefined;
+  const rest = link ? spec.slice(0, -link[0].length) : spec;
+  const colon = rest.indexOf(":");
+  if (colon === -1) {
+    throw new ShardError("config", `Invalid dependency format: "${spec}"`,
+      `expected one of: ${Object.values(PREFIXES).map(p => p.example).join(", ")}`);
+  }
+  const prefix = rest.slice(0, colon);
+  if (!PREFIXES[prefix]) {
+    throw new ShardError("config", `Unknown dependency prefix "${prefix}"`, `supported prefixes: ${Object.keys(PREFIXES).join(", ")}`);
+  }
+  return { prefix, value: rest.slice(colon + 1), ...(linkage ? { linkage } : {}) };
+}
+
 /** "git:host/user/repo@v1+shared" → git("host/user/repo@v1", { linkage: "shared" }). */
 function notation(spec: string, ctx: ConfigContext, file: string): DependencyNotation {
+  let parsed;
   try {
-    parseDependency(spec);
+    parsed = parseDepend(spec);
   } catch (err) {
     if (err instanceof ShardError) err.details.push(["declared in", file]);
     throw err;
   }
-  const link = /\+(static|shared|dynamic)$/.exec(spec);
-  const linkage = link ? (link[1] === "static" ? "static" : "shared") : undefined;
-  const value = link ? spec.slice(0, -link[0].length) : spec;
-  const colon = value.indexOf(":");
-  const prefix = value.slice(0, colon);
-  const helper = ctx[prefix === "sys" ? "sys" : prefix] as Helper | undefined;
-  if (!helper) throw new ShardError("config", `Unknown dependency prefix "${prefix}"`, undefined, { details: [["declared in", file]] });
-  return helper(value.slice(colon + 1), linkage ? { linkage } : {});
+  const helper = ctx[PREFIXES[parsed.prefix]!.helper] as Helper;
+  return helper(parsed.value, parsed.linkage ? { linkage: parsed.linkage } : {});
 }

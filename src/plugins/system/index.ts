@@ -1,6 +1,6 @@
 import { AttributeContainer, provider, type DependencyNotation, type NotationHandler } from "../../core";
-import { LinkType } from "../../lang/types";
-import type { LinkInput } from "../../toolchain/toolchain";
+import { LinkType } from "../c/lang/types";
+import type { LinkInput } from "../c/toolchain/toolchain";
 import { ShardError } from "../../utils/errors";
 import { ARTIFACT, C_TOOLCHAIN } from "../c";
 

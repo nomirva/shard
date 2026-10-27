@@ -1,10 +1,10 @@
 import { join } from "path";
 import { service, type DependencyNotation, type NotationHandler } from "../../core";
-import { parseGit, gitSource } from "../../dependency/sources/git/source";
-import { ModuleStore } from "../../dependency/store";
-import { LinkType } from "../../lang/types";
+import { parseGit, gitSource } from "./source";
+import { ModuleStore } from "./store";
+import { LinkType } from "../c/lang/types";
 import { ShardError } from "../../utils/errors";
-import { DIRS } from "../../workspace/layout";
+import { DIRS } from "../../utils/dirs";
 
 export interface GitParameters {
   /** https (default), ssh, http or file. */
@@ -56,7 +56,6 @@ export const gitNotation: NotationHandler = {
 
   async resolve(notation, from, { requestedBy, dryRun, onProgress }) {
     const dep = parse(notation as GitNotation);
-    const spec = (notation as GitNotation).spec;
     const protocol = from.services.find(GIT_PARAMETERS)?.protocol ?? process.env.SHARD_GIT_PROTOCOL ?? "https";
     const decision = gitSource.decide(dep, {
       rootPath: from.rootDir,
@@ -65,7 +64,6 @@ export const gitNotation: NotationHandler = {
       requestedBy,
       onProgress,
     });
-    if (decision.kind !== "module") throw new ShardError("git", `${spec} is not a module`);
     if (decision.install) {
       if (dryRun) return { kind: "missing" };
       await decision.install();

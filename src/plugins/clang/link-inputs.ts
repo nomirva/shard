@@ -1,0 +1,27 @@
+import { LinkType } from "../c/lang/types";
+import type { TargetPlatform } from "../c/toolchain/target";
+import type { LinkFlags, LinkInput, LinkInputTranslator } from "../c/toolchain/toolchain";
+
+export function clangLinkInputs(target: TargetPlatform): LinkInputTranslator {
+  return {
+    translate(input: LinkInput): LinkFlags {
+      if (input.kind === "library") {
+        if (input.link === LinkType.Static) {
+          if (target.platform !== "darwin") {
+            return { flags: ["-Wl,-Bstatic", `-l${input.name}`, "-Wl,-Bdynamic"], warnings: [] };
+          }
+          return {
+            flags: [`-l${input.name}`],
+            warnings: ["static linking unavailable on macOS, linking dynamically"],
+          };
+        }
+        return { flags: [`-l${input.name}`], warnings: [] };
+      }
+
+      const warnings = input.link === LinkType.Static
+        ? ["frameworks cannot be linked statically, linking dynamically"]
+        : [];
+      return { flags: [`-Wl,-framework,${input.name}`], warnings };
+    },
+  };
+}

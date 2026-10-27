@@ -1,11 +1,10 @@
 import { join } from "path";
 import pkg from "../../../package.json" with { type: "json" };
-import { ModuleStore } from "../../dependency/store";
-import { selectToolchain } from "../../toolchain/registry";
-import { DIRS } from "../../workspace/layout";
+import { ModuleStore } from "../../plugins/git/store";
+import { selectToolchain } from "../../plugins/toolchains";
+import { DIRS } from "../../utils/dirs";
 import { createConsole } from "../console/session";
-import { openBuild } from "../engine";
-import { toolchainFacts } from "./workspace";
+import { openBuild, toolchainFacts } from "../engine";
 
 /** `shard update`: installs what the module tree declares and removes modules it no longer reaches. */
 export async function updateCommand(path: string, flags: { gitProtocol?: string; verbose?: boolean } = {}): Promise<void> {

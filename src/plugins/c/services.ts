@@ -1,8 +1,8 @@
 import { attribute, service } from "../../core";
-import type { CacheMode } from "../../cache/cache";
-import type { Profile } from "../../lang/types";
-import type { Runner } from "../../build/runner";
-import type { Toolchain } from "../../toolchain/toolchain";
+import type { CacheMode } from "./cache";
+import type { Profile } from "./lang/types";
+import type { Runner } from "./runner";
+import type { Toolchain } from "./toolchain/toolchain";
 
 /** The C toolchain of this build; registered by a toolchain plugin such as `clang`. */
 export const C_TOOLCHAIN = service<Toolchain>("c.toolchain");

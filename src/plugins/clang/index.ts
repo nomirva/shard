@@ -1,5 +1,5 @@
 import type { Plugin } from "../../core";
-import { clangProvider } from "../../toolchain/clang";
+import { clangProvider } from "./provider";
 import { ShardError } from "../../utils/errors";
 import { C_TOOLCHAIN } from "../c";
 

@@ -1,6 +1,6 @@
 import { spawnSync } from "child_process";
 import chalk from "chalk";
-import { listToolchains } from "../../toolchain/registry";
+import { listToolchains } from "../../plugins/toolchains";
 import { pad, shortVersion } from "../console/format";
 
 interface CheckResult {

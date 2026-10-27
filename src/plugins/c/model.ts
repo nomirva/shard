@@ -1,11 +1,12 @@
 import { join } from "path";
 import type { Module, Provider } from "../../core";
 import { lazy } from "../../core";
-import { scanContent, type ModuleContent } from "../../target/content";
-import { deriveShape, PackageShape } from "../../target/shape";
-import { tripleDir } from "../../toolchain/target";
-import type { Toolchain } from "../../toolchain/toolchain";
-import { DIRS, moduleId, type Layout } from "../../workspace/layout";
+import { scanContent, type ModuleContent } from "./content/content";
+import { deriveShape, PackageShape } from "./content/shape";
+import { tripleDir } from "./toolchain/target";
+import type { Toolchain } from "./toolchain/toolchain";
+import { moduleId, type Layout } from "./layout";
+import { DIRS } from "../../utils/dirs";
 import type { CExtension } from "./extension";
 
 /** What a module is, worked out once configuration is over. */

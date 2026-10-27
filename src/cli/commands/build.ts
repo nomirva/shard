@@ -2,13 +2,12 @@ import { spawnSync } from "child_process";
 import { basename } from "path";
 import pkg from "../../../package.json" with { type: "json" };
 import { ShardError } from "../../utils/errors";
-import type { Profile } from "../../lang/types";
-import type { CacheMode } from "../../cache/cache";
+import type { Profile } from "../../plugins/c/lang/types";
+import type { CacheMode } from "../../plugins/c/cache";
 import { CArchive, CLink } from "../../plugins/c";
-import { selectToolchain } from "../../toolchain/registry";
+import { selectToolchain } from "../../plugins/toolchains";
 import { createConsole } from "../console/session";
-import { jobCount, openBuild, runTasks } from "../engine";
-import { toolchainFacts } from "./workspace";
+import { jobCount, openBuild, runTasks, toolchainFacts } from "../engine";
 
 export interface BuildFlags {
   ignoreCache?: string;

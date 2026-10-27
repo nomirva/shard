@@ -3,7 +3,7 @@ import { basename, join } from "path";
 import chalk from "chalk";
 import { SCRIPTS } from "../../plugins/scripts";
 import { diskUsage } from "../../utils/fs";
-import { DIRS } from "../../workspace/layout";
+import { DIRS } from "../../utils/dirs";
 import { createConsole } from "../console/session";
 import { size } from "../console/format";
 import { openBuild, runTasks } from "../engine";

@@ -2,7 +2,7 @@ import chalk from "chalk";
 import type { DeclaredEdge, InitListener } from "../../core";
 import { C, C_MODULES } from "../../plugins/c";
 import { optional } from "../../plugins/c/model";
-import { privateIncludes } from "../../target/content";
+import { privateIncludes } from "../../plugins/c/content/content";
 import { createConsole } from "../console/session";
 import { pad, rel } from "../console/format";
 import { openBuild } from "../engine";

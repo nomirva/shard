@@ -1,6 +1,6 @@
 import { Command, Option } from "commander";
 import pkg from "../../package.json" with { type: "json" };
-import { PROFILE_NAMES } from "../lang/profiles";
+import { PROFILE_NAMES } from "../plugins/c/lang/profiles";
 import { activeConsole } from "./console/session";
 import { buildCommand } from "./commands/build";
 import { infoCommand } from "./commands/info";

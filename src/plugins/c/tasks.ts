@@ -1,10 +1,10 @@
 import { copyFileSync, existsSync, mkdirSync } from "fs";
 import { basename, dirname, join } from "path";
 import { Task, type TaskContext } from "../../core";
-import { fingerprint } from "../../cache/fingerprint";
-import { commandLine, type Runner } from "../../build/runner";
+import { fingerprint } from "./fingerprint";
+import { commandLine, type Runner } from "./runner";
 import type { LinkKind, ReportEvent } from "../../report/events";
-import type { CompileOptions, Toolchain } from "../../toolchain/toolchain";
+import type { CompileOptions, Toolchain } from "./toolchain/toolchain";
 import { ShardError } from "../../utils/errors";
 import { relativeTo } from "../../utils/fs";
 import { countDiagnostics } from "../../utils/text";

@@ -5,15 +5,16 @@ import {
   Build, execute, initialize, scriptReader,
   type DeclaredEdge, type ExecutionListener, type InitListener, type Module, type Task, type TaskGraph,
 } from "../core";
-import { JsonCacheStore } from "../cache/store";
+import { JsonCacheStore } from "../core/store";
 import { builtinPlugins, DEFAULT_PLUGINS, jsonReader } from "../plugins";
 import { C_MODULES, C_PARAMETERS, C_TOOLCHAIN, CArchive, CCompile, CLink, type CModules, type CParameters } from "../plugins/c";
 import { GIT_PARAMETERS } from "../plugins/git";
 import type { DepAction, DepInfo, ReportEvent } from "../report/events";
 import type { Reporter } from "../report/reporter";
-import type { Toolchain } from "../toolchain/toolchain";
+import type { Toolchain } from "../plugins/c/toolchain/toolchain";
 import { ShardError } from "../utils/errors";
-import { DIRS } from "../workspace/layout";
+import { shortVersion } from "./console/format";
+import { DIRS } from "../utils/dirs";
 
 export interface OpenOptions {
   readonly reporter: Reporter;
@@ -203,4 +204,10 @@ function buildEvents(open: OpenBuild, graph: TaskGraph, reporter: Reporter): Exe
 
 export function cModules(open: OpenBuild): CModules | undefined {
   return open.build.services.find(C_MODULES);
+}
+
+/** "clang 21.0.0", "arm64-darwin" — the header facts of a run. */
+export function toolchainFacts(tc: Toolchain): string[] {
+  const { arch, platform, abi } = tc.target;
+  return [`${tc.name} ${shortVersion(tc.version)}`, `${arch}-${platform}${abi === "none" ? "" : `-${abi}`}`];
 }

@@ -1,5 +1,5 @@
 import { existsSync } from "fs";
-import type { CacheStore } from "../cache/store";
+import type { CacheStore } from "./store";
 import type { TaskGraph } from "./graph";
 import { fingerprintTask, outputPaths } from "./fingerprint";
 import type { Task, TaskContext } from "./task";

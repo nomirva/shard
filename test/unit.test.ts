@@ -1,9 +1,12 @@
 import { describe, expect, test } from "bun:test";
-import { resolveConditionals } from "../src/manifest/conditional";
-import { buildManifest } from "../src/manifest/manifest";
-import { parseDependency } from "../src/dependency/parse";
-import { makePin, reconcile, type GitPin } from "../src/dependency/sources/git/pin";
-import { dominates, olderStandard, oldestStandard } from "../src/lang/standards";
+import { resolveConditionals } from "../src/plugins/shard-json/conditional";
+import { buildManifest } from "../src/plugins/shard-json/manifest";
+import { parseDepend } from "../src/plugins/shard-json";
+import { newerStandard } from "../src/plugins/c/modules";
+import { makePin, reconcile, type GitPin } from "../src/plugins/git/pin";
+import { parseGit } from "../src/plugins/git/source";
+import { LinkType } from "../src/plugins/c/lang/types";
+import { dominates, olderStandard, oldestStandard } from "../src/plugins/c/lang/standards";
 
 const ctx = { compiler: "clang", platform: "darwin", arch: "arm64", defines: ["A", "B=2"] };
 
@@ -72,7 +75,11 @@ describe("dependency parsing", () => {
       "framework:Cocoa",
       "nope",
       "foo:bar",
-    ].map(s => capture(() => parseDependency(s)))).toMatchSnapshot();
+    ].map(s => capture(() => {
+      const parsed = parseDepend(s);
+      const link = parsed.linkage === "static" ? LinkType.Static : parsed.linkage === "shared" ? LinkType.Shared : null;
+      return parsed.prefix === "git" ? { ...parsed, git: parseGit(parsed.value, link) } : parsed;
+    }))).toMatchSnapshot();
   });
 });
 
@@ -99,5 +106,15 @@ describe("standards", () => {
       dominates("gnu11", "gnu99"),
       dominates("gnu11", "c11"),
     ]).toMatchSnapshot();
+  });
+
+  test("an inherited standard is the newest of the users'", () => {
+    expect([
+      newerStandard(undefined, "c99"),
+      newerStandard("c99", "c11"),
+      newerStandard("c17", "c11"),
+      newerStandard("c11", "gnu11"),
+      newerStandard("gnu11", "c11"),
+    ]).toEqual(["c99", "c11", "c17", "gnu11", "gnu11"]);
   });
 });

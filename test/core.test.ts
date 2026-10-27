@@ -2,7 +2,7 @@ import { describe, expect, test } from "bun:test";
 import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "fs";
 import { tmpdir } from "os";
 import { join } from "path";
-import type { CacheStore } from "../src/cache/store";
+import type { CacheStore } from "../src/core/store";
 import {
   attribute, AttributeContainer, AttributeSchema, Build, extension, initialize, moduleDependency, Property, provider, scriptReader, Task,
   type Dependency, type ExecutionListener, type Plugin, type TaskContext,

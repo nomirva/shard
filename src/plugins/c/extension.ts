@@ -1,7 +1,7 @@
 import { extension, ListProperty, Property, type Configurable } from "../../core";
-import type { PathPatterns } from "../../manifest/manifest";
-import { parseOptions } from "../../manifest/options";
-import type { Profile, StandardOptions, Subsystem, WarningSet } from "../../lang/types";
+import type { PathPatterns } from "../shard-json/manifest";
+import { parseOptions } from "./options";
+import type { Profile, StandardOptions, Subsystem, WarningSet } from "./lang/types";
 import { ShardError } from "../../utils/errors";
 import { isPlainObject } from "../../utils/object";
 

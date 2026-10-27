@@ -1,8 +1,8 @@
 import { service, type Configuration, type Module, type Provider } from "../../core";
-import { DEFAULT_PROFILE } from "../../lang/profiles";
+import { DEFAULT_PROFILE } from "./lang/profiles";
 import type { TargetSummary, TreeShape } from "../../report/events";
-import { dominates, isPureC, oldestStandard, rankOf } from "../../lang/standards";
-import type { CStandard } from "../../lang/types";
+import { dominates, isPureC, oldestStandard, rankOf } from "./lang/standards";
+import type { CStandard } from "./lang/types";
 import { ShardError } from "../../utils/errors";
 import type { CExtension } from "./extension";
 import { optional, type CModel } from "./model";
