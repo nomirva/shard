@@ -12,8 +12,8 @@ export type DepAction = "local" | "linked" | "installed" | "upgraded" | "reused"
 export interface DepInfo {
   /** Unique per edge within one run. */
   readonly id: number;
-  /** 0 for direct dependencies of the root. */
-  readonly depth: number;
+  /** Edge that led to the declaring module; null for the root's own dependencies. */
+  readonly parentId: number | null;
   readonly name: string;
   readonly source: string;
   readonly spec: string;
@@ -28,12 +28,20 @@ export interface TargetSummary {
   readonly files: number;
 }
 
+/** Dependency tree of the build, root first; a module reached again is a `repeat` leaf. */
+export interface TreeShape {
+  readonly name: string;
+  readonly repeat: boolean;
+  readonly children: readonly TreeShape[];
+}
+
 export type LinkKind = "executable" | "static" | "shared";
 
 export type ReportEvent =
-  | { type: "run.start"; noun: string; title: string; details: string[] }
-  | { type: "run.end"; label: string; artifacts: string[]; stats?: string[] }
-  | { type: "dep.start"; dep: DepInfo }
+  | { type: "run.start"; command: "build" | "update"; details: string[] }
+  | { type: "run.end"; command: "build" | "update"; subject: string; artifacts: string[]; removed?: string[] }
+  | { type: "deps.declared"; parent: string; parentId: number | null; deps: DepInfo[] }
+  | { type: "dep.start"; id: number }
   | { type: "dep.progress"; id: number; percent: number }
   | {
       type: "dep.done";
@@ -48,8 +56,10 @@ export type ReportEvent =
       flags?: string[];
       warnings: string[];
     }
+  | { type: "resolve.end" }
+  | { type: "hook.start"; target: string; hook: string; command: string }
   | { type: "hook"; target: string; hook: string; command: string; duration: number; output: string }
-  | { type: "build.start"; targets: TargetSummary[] }
+  | { type: "build.start"; targets: TargetSummary[]; tree: TreeShape }
   | { type: "target.start"; target: TargetSummary }
   | { type: "compile.start"; target: string; file: string }
   | {

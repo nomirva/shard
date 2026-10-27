@@ -8,6 +8,7 @@ export function createConsole(verbose = false): ConsoleReporter {
     live: Boolean(process.stderr.isTTY) && !process.env.CI,
     verbose,
     columns: () => process.stderr.columns ?? 80,
+    rows: () => process.stderr.rows ?? 24,
   });
   return active;
 }

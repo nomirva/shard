@@ -41,15 +41,10 @@ exports[`examples hello: build, cached rebuild, start 1`] = `
     ],
     "status": 0,
     "stderr": 
-"
- shard 0.1.0 · clang <ver> · arm64-darwin
+" ✔ hello  <t>
 
- Building 1 module
-   hello (executable · — · debug)
-     ✔ src/main.c  <t>
-     → examples/hello/target/arm64/darwin/none/hello  <t>
-
- ✔ Built hello in <t>  ·  1 compiled
+ ✔ hello built in <t>
+   1 module · 1 compiled
    → examples/hello/target/arm64/darwin/none/hello
 
 "
@@ -73,15 +68,9 @@ exports[`examples hello: build, cached rebuild, start 1`] = `
     ],
     "status": 0,
     "stderr": 
-"
- shard 0.1.0 · clang <ver> · arm64-darwin
+" ≡ hello  cached
 
- Building 1 module
-   hello (executable · — · debug)
-     ≡ src/main.c  cached
-     → examples/hello/target/arm64/darwin/none/hello  <t>
-
- ✔ Built hello in <t>  ·  1 cached
+ ✔ hello is up to date · 1 module cached
    → examples/hello/target/arm64/darwin/none/hello
 
 "
@@ -106,15 +95,9 @@ exports[`examples hello: build, cached rebuild, start 1`] = `
     ],
     "status": 0,
     "stderr": 
-"
- shard 0.1.0 · clang <ver> · arm64-darwin
+" ≡ hello  cached
 
- Building 1 module
-   hello (executable · — · debug)
-     ≡ src/main.c  cached
-     → examples/hello/target/arm64/darwin/none/hello  <t>
-
- ✔ Built hello in <t>  ·  1 cached
+ ✔ hello is up to date · 1 module cached
    → examples/hello/target/arm64/darwin/none/hello
 
  ── running hello ──
@@ -212,21 +195,11 @@ exports[`examples app: variants and cache modes 1`] = `
     ],
     "status": 0,
     "stderr": 
-"
- shard 0.1.0 · clang <ver> · arm64-darwin
+" ✔ lib-math  <t>
+ ✔ app  <t>
 
- Dependencies
-   ✓ lib-math    local      ../lib-math
-
- Building 2 modules
-   lib-math (library · — · release)
-     ✔ src/math_util.c  <t>
-     → examples/app/.shard/lib-math/target/arm64/darwin/none/lib-math.a  <t>
-   app (executable · — · release)
-     ✔ src/main.c  <t>
-     → examples/app/target/arm64/darwin/none/math/app  <t>
-
- ✔ Built app in <t>  ·  2 compiled
+ ✔ app built in <t>
+   2 modules · 2 compiled
    → examples/app/target/arm64/darwin/none/math/app
 
 "
@@ -300,21 +273,11 @@ exports[`examples app: variants and cache modes 1`] = `
     ],
     "status": 0,
     "stderr": 
-"
- shard 0.1.0 · clang <ver> · arm64-darwin
+" ✔ lib-greet  <t>
+ ✔ app  <t>
 
- Dependencies
-   ✓ lib-greet   local      ../lib-greet  shared
-
- Building 2 modules
-   lib-greet (library · — · release)
-     ✔ src/greet.c  <t>
-     → examples/app/.shard/lib-greet/target/arm64/darwin/none/lib-greet.dylib  <t>
-   app (executable · — · release)
-     ✔ src/main.c  <t>
-     → examples/app/target/arm64/darwin/none/greet/app  <t>
-
- ✔ Built app in <t>  ·  2 compiled
+ ✔ app built in <t>
+   2 modules · 2 compiled
    → examples/app/target/arm64/darwin/none/greet/app
 
  ── running app ──
@@ -394,21 +357,11 @@ exports[`examples app: variants and cache modes 1`] = `
     ],
     "status": 0,
     "stderr": 
-"
- shard 0.1.0 · clang <ver> · arm64-darwin · cache off
+" ✔ lib-greet  <t>
+ ✔ app  <t>
 
- Dependencies
-   ✓ lib-greet   local      ../lib-greet  shared
-
- Building 2 modules
-   lib-greet (library · — · release)
-     ✔ src/greet.c  <t>
-     → examples/app/.shard/lib-greet/target/arm64/darwin/none/lib-greet.dylib  <t>
-   app (executable · — · release)
-     ✔ src/main.c  <t>
-     → examples/app/target/arm64/darwin/none/greet/app  <t>
-
- ✔ Built app in <t>  ·  2 compiled
+ ✔ app built in <t>
+   2 modules · 2 compiled
    → examples/app/target/arm64/darwin/none/greet/app
 
 "
@@ -464,21 +417,11 @@ exports[`examples app: variants and cache modes 1`] = `
     ],
     "status": 0,
     "stderr": 
-"
- shard 0.1.0 · clang <ver> · arm64-darwin · root cache off
+" ≡ lib-greet  cached
+ ✔ app  <t>
 
- Dependencies
-   ✓ lib-greet   local      ../lib-greet  shared
-
- Building 2 modules
-   lib-greet (library · — · release)
-     ≡ src/greet.c  cached
-     → examples/app/.shard/lib-greet/target/arm64/darwin/none/lib-greet.dylib  <t>
-   app (executable · — · release)
-     ✔ src/main.c  <t>
-     → examples/app/target/arm64/darwin/none/greet/app  <t>
-
- ✔ Built app in <t>  ·  1 compiled  ·  1 cached
+ ✔ app built in <t>
+   2 modules · 1 compiled · 1 cached
    → examples/app/target/arm64/darwin/none/greet/app
 
 "
@@ -549,21 +492,11 @@ exports[`examples app: variants and cache modes 1`] = `
     ],
     "status": 0,
     "stderr": 
-"
- shard 0.1.0 · clang <ver> · arm64-darwin
+" ✔ lib-math  <t>
+ ✔ app  <t>
 
- Dependencies
-   ✓ lib-math    local      ../lib-math
-
- Building 2 modules
-   lib-math (library · — · release)
-     ✔ src/math_util.c  <t>
-     → examples/app/.shard/lib-math/target/arm64/darwin/none/lib-math.a  <t>
-   app (executable · — · release)
-     ✔ src/main.c  <t>
-     → examples/app/target/arm64/darwin/none/math/app  <t>
-
- ✔ Built app in <t>  ·  2 compiled
+ ✔ app built in <t>
+   2 modules · 2 compiled
    → examples/app/target/arm64/darwin/none/math/app
 
  ── running app ──
@@ -603,21 +536,10 @@ exports[`examples app: variants and cache modes 1`] = `
     ],
     "status": 0,
     "stderr": 
-"
- shard 0.1.0 · clang <ver> · arm64-darwin
+" ≡ lib-math  cached
+ ≡ app  cached
 
- Dependencies
-   ✓ lib-math    local      ../lib-math
-
- Building 2 modules
-   lib-math (library · — · release)
-     ≡ src/math_util.c  cached
-     → examples/app/.shard/lib-math/target/arm64/darwin/none/lib-math.a  <t>
-   app (executable · — · release)
-     ≡ src/main.c  cached
-     → examples/app/target/arm64/darwin/none/math/app  <t>
-
- ✔ Built app in <t>  ·  2 cached
+ ✔ app is up to date · 2 modules cached
    → examples/app/target/arm64/darwin/none/math/app
 
 "
@@ -673,21 +595,11 @@ exports[`examples app: no variant is a compile error 1`] = `
     ],
     "status": 1,
     "stderr": 
-"
- shard 0.1.0 · clang <ver> · arm64-darwin
+" examples/app/src/main.c:17:2: error: "No variant selected. Build with: --def GREET | --def MATH"
+    17 | #error "No variant selected. Build with: --def GREET | --def MATH"
+       |  ^
 
- Building 1 module
-   app (executable · — · release)
-     ✘ src/main.c  <t>
-       examples/app/src/main.c:17:2: error: "No variant selected. Build with: --def GREET | --def MATH"
-          17 | #error "No variant selected. Build with: --def GREET | --def MATH"
-             |  ^
-       1 error generated.
-
- ✘ Compilation failed: app
-   file  examples/app/src/main.c
-
- ✘ Build failed after <t>
+ ✘ app: 1 error
 
 "
 ,
@@ -709,15 +621,8 @@ exports[`examples app-std: standards and compatibility 1`] = `
     "status": 1,
     "stderr": 
 "
- shard 0.1.0 · clang <ver> · arm64-darwin
-
- Dependencies
-   ✓ lib-std     local      ../lib-std
-
  ✘ Module 'lib-std' exports headers requiring at least c99, but 'app-std' uses c89.
-   hint  Lower 'lib-std'.standard.support to 'c89' if the headers are compatible.
-
- ✘ Build failed after <t>
+   Lower 'lib-std'.standard.support to 'c89' if the headers are compatible.
 
 "
 ,
@@ -789,21 +694,11 @@ exports[`examples app-std: standards and compatibility 1`] = `
     ],
     "status": 0,
     "stderr": 
-"
- shard 0.1.0 · clang <ver> · arm64-darwin
+" ✔ lib-std  <t>
+ ✔ app-std  <t>
 
- Dependencies
-   ✓ lib-std     local      ../lib-std
-
- Building 2 modules
-   lib-std (library · c11 · debug-opt)
-     ✔ src/calc.c  <t>
-     → examples/app-std/.shard/lib-std/target/arm64/darwin/none/lib-std.a  <t>
-   app-std (executable · c17 · fast)
-     ✔ src/main.c  <t>
-     → examples/app-std/target/arm64/darwin/none/app-std  <t>
-
- ✔ Built app-std in <t>  ·  2 compiled
+ ✔ app-std built in <t>
+   2 modules · 2 compiled
    → examples/app-std/target/arm64/darwin/none/app-std
 
  ── running app-std ──
@@ -875,16 +770,10 @@ exports[`examples libraries as root 1`] = `
     ],
     "status": 0,
     "stderr": 
-"
- shard 0.1.0 · clang <ver> · arm64-darwin
+" ✔ lib-greet  <t>
 
- Building 1 module
-   lib-greet (library · — · release)
-     ✔ src/greet.c  <t>
-     → examples/lib-greet/target/arm64/darwin/none/lib-greet.a  <t>
-     → examples/lib-greet/target/arm64/darwin/none/lib-greet.dylib  <t>
-
- ✔ Built lib-greet in <t>  ·  1 compiled
+ ✔ lib-greet built in <t>
+   1 module · 1 compiled
    → examples/lib-greet/target/arm64/darwin/none/lib-greet.a
    → examples/lib-greet/target/arm64/darwin/none/lib-greet.dylib
 
@@ -944,16 +833,10 @@ exports[`examples libraries as root 1`] = `
     ],
     "status": 0,
     "stderr": 
-"
- shard 0.1.0 · clang <ver> · arm64-darwin
+" ✔ lib-math  <t>
 
- Building 1 module
-   lib-math (library · — · release)
-     ✔ src/math_util.c  <t>
-     → examples/lib-math/target/arm64/darwin/none/lib-math.a  <t>
-     → examples/lib-math/target/arm64/darwin/none/lib-math.dylib  <t>
-
- ✔ Built lib-math in <t>  ·  1 compiled
+ ✔ lib-math built in <t>
+   1 module · 1 compiled
    → examples/lib-math/target/arm64/darwin/none/lib-math.a
    → examples/lib-math/target/arm64/darwin/none/lib-math.dylib
 
@@ -986,23 +869,14 @@ exports[`examples libraries as root 1`] = `
     ],
     "status": 1,
     "stderr": 
-"
- shard 0.1.0 · clang <ver> · arm64-darwin
+" ≡ lib-greet  cached
 
- Building 1 module
-   lib-greet (library · — · release)
-     ≡ src/greet.c  cached
-     → examples/lib-greet/target/arm64/darwin/none/lib-greet.a  <t>
-     → examples/lib-greet/target/arm64/darwin/none/lib-greet.dylib  <t>
-
- ✔ Built lib-greet in <t>  ·  1 cached
+ ✔ lib-greet is up to date · 1 module cached
    → examples/lib-greet/target/arm64/darwin/none/lib-greet.a
    → examples/lib-greet/target/arm64/darwin/none/lib-greet.dylib
 
 
  ✘ "lib-greet" is not an executable module
-
- ✘ Build failed after <t>
 
 "
 ,
@@ -1053,16 +927,10 @@ exports[`examples libraries as root 1`] = `
     ],
     "status": 0,
     "stderr": 
-"
- shard 0.1.0 · clang <ver> · arm64-darwin
+" ✔ lib-std  <t>
 
- Building 1 module
-   lib-std (library · c11 · debug-opt)
-     ✔ src/calc.c  <t>
-     → examples/lib-std/target/arm64/darwin/none/lib-std.a  <t>
-     → examples/lib-std/target/arm64/darwin/none/lib-std.dylib  <t>
-
- ✔ Built lib-std in <t>  ·  1 compiled
+ ✔ lib-std built in <t>
+   1 module · 1 compiled
    → examples/lib-std/target/arm64/darwin/none/lib-std.a
    → examples/lib-std/target/arm64/darwin/none/lib-std.dylib
 
@@ -1123,15 +991,10 @@ exports[`examples profiles override 1`] = `
     ],
     "status": 0,
     "stderr": 
-"
- shard 0.1.0 · clang <ver> · arm64-darwin · profile fast
+" ✔ profiles  <t>
 
- Building 1 module
-   profiles (executable · — · fast)
-     ✔ src/main.c  <t>
-     → examples/profiles/target/arm64/darwin/none/profiles  <t>
-
- ✔ Built profiles in <t>  ·  1 compiled
+ ✔ profiles built in <t>
+   1 module · 1 compiled
    → examples/profiles/target/arm64/darwin/none/profiles
 
  ── running profiles ──
@@ -1193,15 +1056,10 @@ exports[`examples profiles override 1`] = `
     ],
     "status": 0,
     "stderr": 
-"
- shard 0.1.0 · clang <ver> · arm64-darwin
+" ✔ profiles  <t>
 
- Building 1 module
-   profiles (executable · — · debug)
-     ✔ src/main.c  <t>
-     → examples/profiles/target/arm64/darwin/none/profiles  <t>
-
- ✔ Built profiles in <t>  ·  1 compiled
+ ✔ profiles built in <t>
+   1 module · 1 compiled
    → examples/profiles/target/arm64/darwin/none/profiles
 
  ── running profiles ──
@@ -1249,15 +1107,10 @@ exports[`examples profiles override 1`] = `
     ],
     "status": 0,
     "stderr": 
-"
- shard 0.1.0 · clang <ver> · arm64-darwin · profile tiny
+" ✔ profiles  <t>
 
- Building 1 module
-   profiles (executable · — · tiny)
-     ✔ src/main.c  <t>
-     → examples/profiles/target/arm64/darwin/none/profiles  <t>
-
- ✔ Built profiles in <t>  ·  1 compiled
+ ✔ profiles built in <t>
+   1 module · 1 compiled
    → examples/profiles/target/arm64/darwin/none/profiles
 
  ── running profiles ──
@@ -1325,19 +1178,10 @@ exports[`examples codegen: preload and preclean hooks 1`] = `
     ],
     "status": 0,
     "stderr": 
-"
- shard 0.1.0 · clang <ver> · arm64-darwin
+" ✔ codegen  <t>
 
- Preparing
-   ▸ codegen · preload  sh gen.sh  <t>
-
- Building 1 module
-   codegen (executable · — · release)
-     ✔ src/generated.c  <t>
-     ✔ src/main.c  <t>
-     → examples/codegen/target/arm64/darwin/none/codegen  <t>
-
- ✔ Built codegen in <t>  ·  2 compiled
+ ✔ codegen built in <t>
+   1 module · 2 compiled
    → examples/codegen/target/arm64/darwin/none/codegen
 
  ── running codegen ──
@@ -1357,12 +1201,8 @@ exports[`examples codegen: preload and preclean hooks 1`] = `
     "invocations": [],
     "status": 0,
     "stderr": 
-"   ▸ codegen · preclean  sh clean.sh  <t>
-
-   − examples/codegen/.shard  <size>
-   − examples/codegen/target  <size>
-
- ✔ Cleaned codegen  ·  <size> freed
+"
+ ✔ removed .shard, target · <size> freed
 
 "
 ,
@@ -1676,50 +1516,36 @@ exports[`commands verbose build 1`] = `
     ],
     "status": 0,
     "stderr": 
-"
- shard 0.1.0 · clang <ver> · arm64-darwin
-
- Dependencies
-   ✓ mid-a       local      ../mid-a
-     fixtures/diamond/mid-a
-     ✓ leaf        local      ../leaf  static
-       fixtures/diamond/leaf
-     ⚙ m           system     -lm
-   ✓ mid-b       local      ../mid-b
-     fixtures/diamond/mid-b
-     · leaf  (already resolved)
-       fixtures/diamond/leaf
-
- Preparing
+" shard 0.1.0 · clang <ver> · arm64-darwin
+   ✓ mid-a  local  fixtures/diamond/mid-a
+   ✓ leaf  local  fixtures/diamond/leaf
+   ✓ m  system  -lm
+   ✓ mid-b  local  fixtures/diamond/mid-b
+   · leaf  local  fixtures/diamond/leaf
    ▸ mid-a · preload  echo preload-mid-a > preload.log  <t>
+   ✔ leaf/src/leaf.c  <t>
+     $ clang -c -fansi-escape-codes -fcolor-diagnostics -O2 -std=c99 -pedantic-errors -I fixtures/diamond/leaf/src -I fixtures/diamond/leaf/src/nested -I fixtures/diamond/leaf/api -o fixtures/diamond/app/.shard/..__leaf/src/leaf.o fixtures/diamond/leaf/src/leaf.c -MMD -MF fixtures/diamond/app/.shard/..__leaf/src/leaf.d
+   ✔ leaf/src/nested/nested.c  <t>
+     $ clang -c -fansi-escape-codes -fcolor-diagnostics -O2 -std=c99 -pedantic-errors -I fixtures/diamond/leaf/src -I fixtures/diamond/leaf/src/nested -I fixtures/diamond/leaf/api -o fixtures/diamond/app/.shard/..__leaf/src/nested/nested.o fixtures/diamond/leaf/src/nested/nested.c -MMD -MF fixtures/diamond/app/.shard/..__leaf/src/nested/nested.d
+   → fixtures/diamond/app/.shard/leaf/target/arm64/darwin/none/leaf.a  <t>
+     $ ar rcs fixtures/diamond/app/.shard/leaf/target/arm64/darwin/none/leaf.a fixtures/diamond/app/.shard/..__leaf/src/leaf.o fixtures/diamond/app/.shard/..__leaf/src/nested/nested.o
+   ✔ mid-a/src/mid_a.c  <t>
+     $ clang -c -fansi-escape-codes -fcolor-diagnostics -O2 -std=c99 -I fixtures/diamond/app/.shard/leaf/target/arm64/darwin/none/include -I fixtures/diamond/mid-a/src -o fixtures/diamond/app/.shard/..__mid-a/src/mid_a.o fixtures/diamond/mid-a/src/mid_a.c -MMD -MF fixtures/diamond/app/.shard/..__mid-a/src/mid_a.d
+   → fixtures/diamond/app/.shard/mid-a/target/arm64/darwin/none/mid-a.a  <t>
+     $ ar rcs fixtures/diamond/app/.shard/mid-a/target/arm64/darwin/none/mid-a.a fixtures/diamond/app/.shard/..__mid-a/src/mid_a.o
+   ✔ mid-b/src/mid_b.c  <t>
+     $ clang -c -fansi-escape-codes -fcolor-diagnostics -Os -std=c11 -I fixtures/diamond/app/.shard/leaf/target/arm64/darwin/none/include -I fixtures/diamond/mid-b/src -o fixtures/diamond/app/.shard/..__mid-b/src/mid_b.o fixtures/diamond/mid-b/src/mid_b.c -MMD -MF fixtures/diamond/app/.shard/..__mid-b/src/mid_b.d
+   → fixtures/diamond/app/.shard/mid-b/target/arm64/darwin/none/mid-b.a  <t>
+     $ ar rcs fixtures/diamond/app/.shard/mid-b/target/arm64/darwin/none/mid-b.a fixtures/diamond/app/.shard/..__mid-b/src/mid_b.o
+   ▸ app · prebuild  echo prebuild-app > hook.log  <t>
+   ✔ app/src/main.c  <t>
+     $ clang -c -fansi-escape-codes -fcolor-diagnostics -O2 -std=c11 -Wall -Wextra -DAPP=1 -DON_DARWIN -DON_CLANG -I fixtures/diamond/app/.shard/mid-a/target/arm64/darwin/none/include -I fixtures/diamond/app/.shard/leaf/target/arm64/darwin/none/include -I fixtures/diamond/app/.shard/mid-b/target/arm64/darwin/none/include -I fixtures/diamond/app/src -o fixtures/diamond/app/.shard/_/src/main.o fixtures/diamond/app/src/main.c -MMD -MF fixtures/diamond/app/.shard/_/src/main.d
+   → fixtures/diamond/app/target/arm64/darwin/none/variant/app  <t>
+     $ clang fixtures/diamond/app/.shard/_/src/main.o fixtures/diamond/app/.shard/mid-a/target/arm64/darwin/none/mid-a.a fixtures/diamond/app/.shard/leaf/target/arm64/darwin/none/leaf.a fixtures/diamond/app/.shard/mid-b/target/arm64/darwin/none/mid-b.a -lm -Wl,-rpath,@executable_path -o fixtures/diamond/app/target/arm64/darwin/none/variant/app
+   ▸ app · postbuild  echo postbuild-app >> hook.log  <t>
 
- Building 4 modules
-   leaf (library · c99 · release)
-     ✔ src/leaf.c  <t>
-       $ clang -c -fansi-escape-codes -fcolor-diagnostics -O2 -std=c99 -pedantic-errors -I fixtures/diamond/leaf/src -I fixtures/diamond/leaf/src/nested -I fixtures/diamond/leaf/api -o fixtures/diamond/app/.shard/..__leaf/src/leaf.o fixtures/diamond/leaf/src/leaf.c -MMD -MF fixtures/diamond/app/.shard/..__leaf/src/leaf.d
-     ✔ src/nested/nested.c  <t>
-       $ clang -c -fansi-escape-codes -fcolor-diagnostics -O2 -std=c99 -pedantic-errors -I fixtures/diamond/leaf/src -I fixtures/diamond/leaf/src/nested -I fixtures/diamond/leaf/api -o fixtures/diamond/app/.shard/..__leaf/src/nested/nested.o fixtures/diamond/leaf/src/nested/nested.c -MMD -MF fixtures/diamond/app/.shard/..__leaf/src/nested/nested.d
-     → fixtures/diamond/app/.shard/leaf/target/arm64/darwin/none/leaf.a  <t>
-       $ ar rcs fixtures/diamond/app/.shard/leaf/target/arm64/darwin/none/leaf.a fixtures/diamond/app/.shard/..__leaf/src/leaf.o fixtures/diamond/app/.shard/..__leaf/src/nested/nested.o
-   mid-a (library · c99 · release)
-     ✔ src/mid_a.c  <t>
-       $ clang -c -fansi-escape-codes -fcolor-diagnostics -O2 -std=c99 -I fixtures/diamond/app/.shard/leaf/target/arm64/darwin/none/include -I fixtures/diamond/mid-a/src -o fixtures/diamond/app/.shard/..__mid-a/src/mid_a.o fixtures/diamond/mid-a/src/mid_a.c -MMD -MF fixtures/diamond/app/.shard/..__mid-a/src/mid_a.d
-     → fixtures/diamond/app/.shard/mid-a/target/arm64/darwin/none/mid-a.a  <t>
-       $ ar rcs fixtures/diamond/app/.shard/mid-a/target/arm64/darwin/none/mid-a.a fixtures/diamond/app/.shard/..__mid-a/src/mid_a.o
-   mid-b (library · c11 · small)
-     ✔ src/mid_b.c  <t>
-       $ clang -c -fansi-escape-codes -fcolor-diagnostics -Os -std=c11 -I fixtures/diamond/app/.shard/leaf/target/arm64/darwin/none/include -I fixtures/diamond/mid-b/src -o fixtures/diamond/app/.shard/..__mid-b/src/mid_b.o fixtures/diamond/mid-b/src/mid_b.c -MMD -MF fixtures/diamond/app/.shard/..__mid-b/src/mid_b.d
-     → fixtures/diamond/app/.shard/mid-b/target/arm64/darwin/none/mid-b.a  <t>
-       $ ar rcs fixtures/diamond/app/.shard/mid-b/target/arm64/darwin/none/mid-b.a fixtures/diamond/app/.shard/..__mid-b/src/mid_b.o
-   app (executable · c11 · release)
-     ▸ prebuild  echo prebuild-app > hook.log  <t>
-     ✔ src/main.c  <t>
-       $ clang -c -fansi-escape-codes -fcolor-diagnostics -O2 -std=c11 -Wall -Wextra -DAPP=1 -DON_DARWIN -DON_CLANG -I fixtures/diamond/app/.shard/mid-a/target/arm64/darwin/none/include -I fixtures/diamond/app/.shard/leaf/target/arm64/darwin/none/include -I fixtures/diamond/app/.shard/mid-b/target/arm64/darwin/none/include -I fixtures/diamond/app/src -o fixtures/diamond/app/.shard/_/src/main.o fixtures/diamond/app/src/main.c -MMD -MF fixtures/diamond/app/.shard/_/src/main.d
-     → fixtures/diamond/app/target/arm64/darwin/none/variant/app  <t>
-       $ clang fixtures/diamond/app/.shard/_/src/main.o fixtures/diamond/app/.shard/mid-a/target/arm64/darwin/none/mid-a.a fixtures/diamond/app/.shard/leaf/target/arm64/darwin/none/leaf.a fixtures/diamond/app/.shard/mid-b/target/arm64/darwin/none/mid-b.a -lm -Wl,-rpath,@executable_path -o fixtures/diamond/app/target/arm64/darwin/none/variant/app
-     ▸ postbuild  echo postbuild-app >> hook.log  <t>
-
- ✔ Built app in <t>  ·  5 compiled
+ ✔ app built in <t>
+   4 modules · 5 compiled
    → fixtures/diamond/app/target/arm64/darwin/none/variant/app
 
 "
@@ -1770,50 +1596,35 @@ exports[`commands verbose build 1`] = `
     ],
     "status": 0,
     "stderr": 
-"
- shard 0.1.0 · clang <ver> · arm64-darwin
-
- Dependencies
-   ✓ mid-a       local      ../mid-a
-     fixtures/diamond/mid-a
-     ✓ leaf        local      ../leaf  static
-       fixtures/diamond/leaf
-     ⚙ m           system     -lm
-   ✓ mid-b       local      ../mid-b
-     fixtures/diamond/mid-b
-     · leaf  (already resolved)
-       fixtures/diamond/leaf
-
- Preparing
+" shard 0.1.0 · clang <ver> · arm64-darwin
+   ✓ mid-a  local  fixtures/diamond/mid-a
+   ✓ leaf  local  fixtures/diamond/leaf
+   ✓ m  system  -lm
+   ✓ mid-b  local  fixtures/diamond/mid-b
+   · leaf  local  fixtures/diamond/leaf
    ▸ mid-a · preload  echo preload-mid-a > preload.log  <t>
+   ≡ leaf/src/leaf.c  cached
+     $ clang -c -fansi-escape-codes -fcolor-diagnostics -O2 -std=c99 -pedantic-errors -I fixtures/diamond/leaf/src -I fixtures/diamond/leaf/src/nested -I fixtures/diamond/leaf/api -o fixtures/diamond/app/.shard/..__leaf/src/leaf.o fixtures/diamond/leaf/src/leaf.c -MMD -MF fixtures/diamond/app/.shard/..__leaf/src/leaf.d
+   ≡ leaf/src/nested/nested.c  cached
+     $ clang -c -fansi-escape-codes -fcolor-diagnostics -O2 -std=c99 -pedantic-errors -I fixtures/diamond/leaf/src -I fixtures/diamond/leaf/src/nested -I fixtures/diamond/leaf/api -o fixtures/diamond/app/.shard/..__leaf/src/nested/nested.o fixtures/diamond/leaf/src/nested/nested.c -MMD -MF fixtures/diamond/app/.shard/..__leaf/src/nested/nested.d
+   → fixtures/diamond/app/.shard/leaf/target/arm64/darwin/none/leaf.a  <t>
+     $ ar rcs fixtures/diamond/app/.shard/leaf/target/arm64/darwin/none/leaf.a fixtures/diamond/app/.shard/..__leaf/src/leaf.o fixtures/diamond/app/.shard/..__leaf/src/nested/nested.o
+   ≡ mid-a/src/mid_a.c  cached
+     $ clang -c -fansi-escape-codes -fcolor-diagnostics -O2 -std=c99 -I fixtures/diamond/app/.shard/leaf/target/arm64/darwin/none/include -I fixtures/diamond/mid-a/src -o fixtures/diamond/app/.shard/..__mid-a/src/mid_a.o fixtures/diamond/mid-a/src/mid_a.c -MMD -MF fixtures/diamond/app/.shard/..__mid-a/src/mid_a.d
+   → fixtures/diamond/app/.shard/mid-a/target/arm64/darwin/none/mid-a.a  <t>
+     $ ar rcs fixtures/diamond/app/.shard/mid-a/target/arm64/darwin/none/mid-a.a fixtures/diamond/app/.shard/..__mid-a/src/mid_a.o
+   ≡ mid-b/src/mid_b.c  cached
+     $ clang -c -fansi-escape-codes -fcolor-diagnostics -Os -std=c11 -I fixtures/diamond/app/.shard/leaf/target/arm64/darwin/none/include -I fixtures/diamond/mid-b/src -o fixtures/diamond/app/.shard/..__mid-b/src/mid_b.o fixtures/diamond/mid-b/src/mid_b.c -MMD -MF fixtures/diamond/app/.shard/..__mid-b/src/mid_b.d
+   → fixtures/diamond/app/.shard/mid-b/target/arm64/darwin/none/mid-b.a  <t>
+     $ ar rcs fixtures/diamond/app/.shard/mid-b/target/arm64/darwin/none/mid-b.a fixtures/diamond/app/.shard/..__mid-b/src/mid_b.o
+   ▸ app · prebuild  echo prebuild-app > hook.log  <t>
+   ≡ app/src/main.c  cached
+     $ clang -c -fansi-escape-codes -fcolor-diagnostics -O2 -std=c11 -Wall -Wextra -DAPP=1 -DON_DARWIN -DON_CLANG -I fixtures/diamond/app/.shard/mid-a/target/arm64/darwin/none/include -I fixtures/diamond/app/.shard/leaf/target/arm64/darwin/none/include -I fixtures/diamond/app/.shard/mid-b/target/arm64/darwin/none/include -I fixtures/diamond/app/src -o fixtures/diamond/app/.shard/_/src/main.o fixtures/diamond/app/src/main.c -MMD -MF fixtures/diamond/app/.shard/_/src/main.d
+   → fixtures/diamond/app/target/arm64/darwin/none/variant/app  <t>
+     $ clang fixtures/diamond/app/.shard/_/src/main.o fixtures/diamond/app/.shard/mid-a/target/arm64/darwin/none/mid-a.a fixtures/diamond/app/.shard/leaf/target/arm64/darwin/none/leaf.a fixtures/diamond/app/.shard/mid-b/target/arm64/darwin/none/mid-b.a -lm -Wl,-rpath,@executable_path -o fixtures/diamond/app/target/arm64/darwin/none/variant/app
+   ▸ app · postbuild  echo postbuild-app >> hook.log  <t>
 
- Building 4 modules
-   leaf (library · c99 · release)
-     ≡ src/leaf.c  cached
-       $ clang -c -fansi-escape-codes -fcolor-diagnostics -O2 -std=c99 -pedantic-errors -I fixtures/diamond/leaf/src -I fixtures/diamond/leaf/src/nested -I fixtures/diamond/leaf/api -o fixtures/diamond/app/.shard/..__leaf/src/leaf.o fixtures/diamond/leaf/src/leaf.c -MMD -MF fixtures/diamond/app/.shard/..__leaf/src/leaf.d
-     ≡ src/nested/nested.c  cached
-       $ clang -c -fansi-escape-codes -fcolor-diagnostics -O2 -std=c99 -pedantic-errors -I fixtures/diamond/leaf/src -I fixtures/diamond/leaf/src/nested -I fixtures/diamond/leaf/api -o fixtures/diamond/app/.shard/..__leaf/src/nested/nested.o fixtures/diamond/leaf/src/nested/nested.c -MMD -MF fixtures/diamond/app/.shard/..__leaf/src/nested/nested.d
-     → fixtures/diamond/app/.shard/leaf/target/arm64/darwin/none/leaf.a  <t>
-       $ ar rcs fixtures/diamond/app/.shard/leaf/target/arm64/darwin/none/leaf.a fixtures/diamond/app/.shard/..__leaf/src/leaf.o fixtures/diamond/app/.shard/..__leaf/src/nested/nested.o
-   mid-a (library · c99 · release)
-     ≡ src/mid_a.c  cached
-       $ clang -c -fansi-escape-codes -fcolor-diagnostics -O2 -std=c99 -I fixtures/diamond/app/.shard/leaf/target/arm64/darwin/none/include -I fixtures/diamond/mid-a/src -o fixtures/diamond/app/.shard/..__mid-a/src/mid_a.o fixtures/diamond/mid-a/src/mid_a.c -MMD -MF fixtures/diamond/app/.shard/..__mid-a/src/mid_a.d
-     → fixtures/diamond/app/.shard/mid-a/target/arm64/darwin/none/mid-a.a  <t>
-       $ ar rcs fixtures/diamond/app/.shard/mid-a/target/arm64/darwin/none/mid-a.a fixtures/diamond/app/.shard/..__mid-a/src/mid_a.o
-   mid-b (library · c11 · small)
-     ≡ src/mid_b.c  cached
-       $ clang -c -fansi-escape-codes -fcolor-diagnostics -Os -std=c11 -I fixtures/diamond/app/.shard/leaf/target/arm64/darwin/none/include -I fixtures/diamond/mid-b/src -o fixtures/diamond/app/.shard/..__mid-b/src/mid_b.o fixtures/diamond/mid-b/src/mid_b.c -MMD -MF fixtures/diamond/app/.shard/..__mid-b/src/mid_b.d
-     → fixtures/diamond/app/.shard/mid-b/target/arm64/darwin/none/mid-b.a  <t>
-       $ ar rcs fixtures/diamond/app/.shard/mid-b/target/arm64/darwin/none/mid-b.a fixtures/diamond/app/.shard/..__mid-b/src/mid_b.o
-   app (executable · c11 · release)
-     ▸ prebuild  echo prebuild-app > hook.log  <t>
-     ≡ src/main.c  cached
-       $ clang -c -fansi-escape-codes -fcolor-diagnostics -O2 -std=c11 -Wall -Wextra -DAPP=1 -DON_DARWIN -DON_CLANG -I fixtures/diamond/app/.shard/mid-a/target/arm64/darwin/none/include -I fixtures/diamond/app/.shard/leaf/target/arm64/darwin/none/include -I fixtures/diamond/app/.shard/mid-b/target/arm64/darwin/none/include -I fixtures/diamond/app/src -o fixtures/diamond/app/.shard/_/src/main.o fixtures/diamond/app/src/main.c -MMD -MF fixtures/diamond/app/.shard/_/src/main.d
-     → fixtures/diamond/app/target/arm64/darwin/none/variant/app  <t>
-       $ clang fixtures/diamond/app/.shard/_/src/main.o fixtures/diamond/app/.shard/mid-a/target/arm64/darwin/none/mid-a.a fixtures/diamond/app/.shard/leaf/target/arm64/darwin/none/leaf.a fixtures/diamond/app/.shard/mid-b/target/arm64/darwin/none/mid-b.a -lm -Wl,-rpath,@executable_path -o fixtures/diamond/app/target/arm64/darwin/none/variant/app
-     ▸ postbuild  echo postbuild-app >> hook.log  <t>
-
- ✔ Built app in <t>  ·  5 cached
+ ✔ app is up to date · 4 modules cached
    → fixtures/diamond/app/target/arm64/darwin/none/variant/app
 
 "
@@ -1890,21 +1701,11 @@ exports[`commands update and clean 1`] = `
     ],
     "status": 0,
     "stderr": 
-"
- shard 0.1.0 · clang <ver> · arm64-darwin
+" ✔ lib-std  <t>
+ ✔ app-std  <t>
 
- Dependencies
-   ✓ lib-std     local      ../lib-std
-
- Building 2 modules
-   lib-std (library · c11 · debug-opt)
-     ✔ src/calc.c  <t>
-     → examples/app-std/.shard/lib-std/target/arm64/darwin/none/lib-std.a  <t>
-   app-std (executable · c17 · fast)
-     ✔ src/main.c  <t>
-     → examples/app-std/target/arm64/darwin/none/app-std  <t>
-
- ✔ Built app-std in <t>  ·  2 compiled
+ ✔ app-std built in <t>
+   2 modules · 2 compiled
    → examples/app-std/target/arm64/darwin/none/app-std
 
 "
@@ -1920,10 +1721,7 @@ exports[`commands update and clean 1`] = `
     "status": 0,
     "stderr": 
 "
-   − examples/app-std/.shard  <size>
-   − examples/app-std/target  <size>
-
- ✔ Cleaned app-std  ·  <size> freed
+ ✔ removed .shard, target · <size> freed
 
 "
 ,
@@ -1943,12 +1741,7 @@ exports[`commands update and clean 1`] = `
     "status": 0,
     "stderr": 
 "
- shard 0.1.0 · clang <ver> · arm64-darwin
-
- Dependencies
-   ✓ lib-std     local      ../lib-std
-
- ✔ Modules synced in <t>
+ ✔ modules up to date
 
 "
 ,
@@ -2036,13 +1829,9 @@ exports[`commands usage errors 1`] = `
     "status": 1,
     "stderr": 
 "
- shard 0.1.0 · clang <ver> · arm64-darwin
-
  ✘ Unknown dependency prefix "foo"
+   supported prefixes: git, local, sys, framework
    declared in  fixtures/bad-dep/shard.json
-   hint         supported prefixes: git, local, sys, framework
-
- ✘ Build failed after <t>
 
 "
 ,
@@ -2057,14 +1846,7 @@ exports[`commands usage errors 1`] = `
     "status": 1,
     "stderr": 
 "
- shard 0.1.0 · clang <ver> · arm64-darwin
-
- Dependencies
-   ✓ empty       local      ../empty
-
  ✘ Module "empty" is empty: no sources, exports, or artifacts
-
- ✘ Build failed after <t>
 
 "
 ,
@@ -2079,11 +1861,7 @@ exports[`commands usage errors 1`] = `
     "status": 1,
     "stderr": 
 "
- shard 0.1.0 · clang <ver> · arm64-darwin
-
  ✘ Module "does-not-exist" is empty: no sources, exports, or artifacts
-
- ✘ Build failed after <t>
 
 "
 ,
@@ -2148,19 +1926,12 @@ exports[`fixtures sys and framework deps 1`] = `
     ],
     "status": 0,
     "stderr": 
-"
- shard 0.1.0 · clang <ver> · arm64-darwin
+" ⚠ m: static linking unavailable on macOS, linking dynamically
+ ⚠ CoreFoundation: frameworks cannot be linked statically, linking dynamically
+ ✔ sysdeps  <t>
 
- Dependencies
-   ⚙ m           system     -lm  ⚠ -Bstatic unavailable on macOS, linking dynamically
-   ⚙ CoreFoundation  framework  -Wl,-framework,CoreFoundation  ⚠ frameworks cannot be linked statically, linking dynamically
-
- Building 1 module
-   sysdeps (executable · — · release)
-     ✔ src/main.c  <t>
-     → fixtures/sysdeps/target/arm64/darwin/none/sysdeps  <t>
-
- ✔ Built sysdeps in <t>  ·  1 compiled  ·  2 warnings
+ ✔ sysdeps built in <t>
+   1 module · 1 compiled · 2 warnings
    → fixtures/sysdeps/target/arm64/darwin/none/sysdeps
 
  ── running sysdeps ──
@@ -2213,19 +1984,11 @@ exports[`fixtures header-only dependency 1`] = `
     ],
     "status": 0,
     "stderr": 
-"
- shard 0.1.0 · clang <ver> · arm64-darwin
+" ✔ hdr-only  <t>
+ ✔ app-hdr  <t>
 
- Dependencies
-   ✓ hdr-only    local      ../hdr-only
-
- Building 2 modules
-   hdr-only (header-only · — · release)
-   app-hdr (executable · — · release)
-     ✔ src/main.c  <t>
-     → fixtures/app-hdr/target/arm64/darwin/none/app-hdr  <t>
-
- ✔ Built app-hdr in <t>  ·  1 compiled
+ ✔ app-hdr built in <t>
+   2 modules · 1 compiled
    → fixtures/app-hdr/target/arm64/darwin/none/app-hdr
 
  ── running app-hdr ──
@@ -2261,18 +2024,8 @@ exports[`fixtures prebuilt dependency 1`] = `
     "status": 1,
     "stderr": 
 "
- shard 0.1.0 · clang <ver> · arm64-darwin
-
- Dependencies
-   ✓ prebuilt    local      ../prebuilt
-
- Building 2 modules
-   prebuilt (prebuilt · — · release)
-
  ✘ Invalid prebuilt package "prebuilt": expected libraries at "fixtures/app-prebuilt/.shard/prebuilt/target/arm64/darwin/none"
-   hint  check the module layout or exports field
-
- ✘ Build failed after <t>
+   check the module layout or exports field
 
 "
 ,
@@ -2441,37 +2194,13 @@ exports[`fixtures diamond graph 1`] = `
     ],
     "status": 0,
     "stderr": 
-"
- shard 0.1.0 · clang <ver> · arm64-darwin
+" ✔ leaf  <t>
+ ✔ mid-a  <t>
+ ✔ mid-b  <t>
+ ✔ app  <t>
 
- Dependencies
-   ✓ mid-a       local      ../mid-a
-     ✓ leaf        local      ../leaf  static
-     ⚙ m           system     -lm
-   ✓ mid-b       local      ../mid-b
-     · leaf  (already resolved)
-
- Preparing
-   ▸ mid-a · preload  echo preload-mid-a > preload.log  <t>
-
- Building 4 modules
-   leaf (library · c99 · release)
-     ✔ src/leaf.c  <t>
-     ✔ src/nested/nested.c  <t>
-     → fixtures/diamond/app/.shard/leaf/target/arm64/darwin/none/leaf.a  <t>
-   mid-a (library · c99 · release)
-     ✔ src/mid_a.c  <t>
-     → fixtures/diamond/app/.shard/mid-a/target/arm64/darwin/none/mid-a.a  <t>
-   mid-b (library · c11 · small)
-     ✔ src/mid_b.c  <t>
-     → fixtures/diamond/app/.shard/mid-b/target/arm64/darwin/none/mid-b.a  <t>
-   app (executable · c11 · release)
-     ▸ prebuild  echo prebuild-app > hook.log  <t>
-     ✔ src/main.c  <t>
-     → fixtures/diamond/app/target/arm64/darwin/none/variant/app  <t>
-     ▸ postbuild  echo postbuild-app >> hook.log  <t>
-
- ✔ Built app in <t>  ·  5 compiled
+ ✔ app built in <t>
+   4 modules · 5 compiled
    → fixtures/diamond/app/target/arm64/darwin/none/variant/app
 
  ── running app ──
@@ -2662,37 +2391,13 @@ postbuild-app
     ],
     "status": 0,
     "stderr": 
-"
- shard 0.1.0 · clang <ver> · arm64-darwin
+" ✔ leaf  <t>
+ ✔ mid-a  <t>
+ ✔ mid-b  <t>
+ ✔ app  <t>
 
- Dependencies
-   ✓ mid-a       local      ../mid-a
-     ✓ leaf        local      ../leaf  static
-     ⚙ m           system     -lm
-   ✓ mid-b       local      ../mid-b
-     · leaf  (already resolved)
-
- Preparing
-   ▸ mid-a · preload  echo preload-mid-a > preload.log  <t>
-
- Building 4 modules
-   leaf (library · c99 · release)
-     ✔ src/leaf.c  <t>
-     ✔ src/nested/nested.c  <t>
-     → fixtures/diamond/app/.shard/leaf/target/arm64/darwin/none/leaf.a  <t>
-   mid-a (library · c99 · release)
-     ✔ src/mid_a.c  <t>
-     → fixtures/diamond/app/.shard/mid-a/target/arm64/darwin/none/mid-a.a  <t>
-   mid-b (library · c11 · small)
-     ✔ src/mid_b.c  <t>
-     → fixtures/diamond/app/.shard/mid-b/target/arm64/darwin/none/mid-b.a  <t>
-   app (executable · c11 · release)
-     ▸ prebuild  echo prebuild-app > hook.log  <t>
-     ✔ src/main.c  <t>
-     → fixtures/diamond/app/target/arm64/darwin/none/variant/app  <t>
-     ▸ postbuild  echo postbuild-app >> hook.log  <t>
-
- ✔ Built app in <t>  ·  5 compiled
+ ✔ app built in <t>
+   4 modules · 5 compiled
    → fixtures/diamond/app/target/arm64/darwin/none/variant/app
 
 "
@@ -2738,17 +2443,9 @@ exports[`fixtures git dependencies 1`] = `
     "status": 1,
     "stderr": 
 "
- shard 0.1.0 · clang <ver> · arm64-darwin
-
- Dependencies
-   ✘ gitlib      git        branch:main
-
- ✘ Version conflict: gitlib
-   installed  v1.2.0   fixtures/app-git/modules/gitlib@v1.2.0
-   requested  branch:main   by app-git
-   hint       one pinned state per module can be installed at a time
-
- ✘ Build failed after <t>
+ ✘ app-git › gitlib
+   branch:main requested by app-git, but v1.2.0 is installed
+   only one version of a module can be installed at a time
 
 "
 ,
@@ -2817,21 +2514,13 @@ exports[`fixtures git dependencies 1`] = `
     ],
     "status": 0,
     "stderr": 
-"
- shard 0.1.0 · clang <ver> · arm64-darwin
+" ↓ sub  libs/sub@v1.0.0  <t>
+ ✔ sub  <t>
+ ✔ app-git  <t>
 
- Dependencies
-   ↓ sub         git        libs/sub@v1.0.0  installed <t>
-
- Building 2 modules
-   sub (library · — · release)
-     ✔ src/gitlib.c  <t>
-     → fixtures/app-git/.shard/sub/target/arm64/darwin/none/sub.a  <t>
-   app-git (executable · — · release)
-     ✔ src/main.c  <t>
-     → fixtures/app-git/target/arm64/darwin/none/app-git  <t>
-
- ✔ Built app-git in <t>  ·  1 installed  ·  2 compiled
+ ✔ app-git built in <t>
+   2 modules · 2 compiled
+   ↓ sub libs/sub@v1.0.0
    → fixtures/app-git/target/arm64/darwin/none/app-git
 
  ── running app-git ──
@@ -2908,21 +2597,13 @@ exports[`fixtures git dependencies 1`] = `
     ],
     "status": 0,
     "stderr": 
-"
- shard 0.1.0 · clang <ver> · arm64-darwin
+" ↓ gitlib  HEAD  <t>
+ ✔ gitlib  <t>
+ ✔ app-git  <t>
 
- Dependencies
-   ↓ gitlib      git        HEAD  installed <t>
-
- Building 2 modules
-   gitlib (library · — · release)
-     ✔ src/gitlib.c  <t>
-     → fixtures/app-git/.shard/gitlib/target/arm64/darwin/none/gitlib.a  <t>
-   app-git (executable · — · release)
-     ✔ src/main.c  <t>
-     → fixtures/app-git/target/arm64/darwin/none/app-git  <t>
-
- ✔ Built app-git in <t>  ·  1 installed  ·  2 compiled
+ ✔ app-git built in <t>
+   2 modules · 2 compiled
+   ↓ gitlib HEAD
    → fixtures/app-git/target/arm64/darwin/none/app-git
 
  ── running app-git ──
@@ -2945,17 +2626,9 @@ exports[`fixtures git dependencies 1`] = `
     "status": 1,
     "stderr": 
 "
- shard 0.1.0 · clang <ver> · arm64-darwin
-
- Dependencies
-   ✘ gitlib      git        v2.0.0
-
- ✘ Version conflict: gitlib
-   installed  v1.2.0   fixtures/app-git/modules/gitlib@v1.2.0
-   requested  v2.0.0   by app-git
-   hint       one pinned state per module can be installed at a time
-
- ✘ Build failed after <t>
+ ✘ app-git › gitlib
+   v2.0.0 requested by app-git, but v1.2.0 is installed
+   only one version of a module can be installed at a time
 
 "
 ,
@@ -2972,18 +2645,12 @@ exports[`fixtures git dependencies 1`] = `
     "status": 1,
     "stderr": 
 "
- shard 0.1.0 · clang <ver> · arm64-darwin
-
- Dependencies
-   ✘ gitlib      git        v9.9.9
-
- ✘ Ref "9.9.9" not found
+ ✘ app-git › gitlib
+   Ref "9.9.9" not found
    repository  file://$SB/remotes/gitlib.git
 
    │ Cloning into 'fixtures/app-git/modules/gitlib@v9.9.9'...
    │ fatal: Remote branch 9.9.9 not found in upstream origin
-
- ✘ Update failed after <t>
 
 "
 ,
@@ -3046,21 +2713,10 @@ exports[`fixtures git dependencies 1`] = `
     ],
     "status": 0,
     "stderr": 
-"
- shard 0.1.0 · clang <ver> · arm64-darwin
+" ≡ gitlib  cached
+ ≡ app-git  cached
 
- Dependencies
-   ≡ gitlib      git        v1.0.0  reused
-
- Building 2 modules
-   gitlib (library · — · release)
-     ≡ src/gitlib.c  cached
-     → fixtures/app-git/.shard/gitlib/target/arm64/darwin/none/gitlib.a  <t>
-   app-git (executable · — · release)
-     ≡ src/main.c  cached
-     → fixtures/app-git/target/arm64/darwin/none/app-git  <t>
-
- ✔ Built app-git in <t>  ·  2 cached
+ ✔ app-git is up to date · 2 modules cached
    → fixtures/app-git/target/arm64/darwin/none/app-git
 
  ── running app-git ──
@@ -3083,15 +2739,8 @@ exports[`fixtures git dependencies 1`] = `
     "status": 0,
     "stderr": 
 "
- shard 0.1.0 · clang <ver> · arm64-darwin
-
- Dependencies
-   ≡ sub         git        libs/sub@v1.0.0  reused
-
- Removed
+ ✔ modules synced in <t>
    − gitlib@v1.2.0
-
- ✔ Modules synced in <t>  ·  1 removed
 
 "
 ,
@@ -3125,21 +2774,10 @@ exports[`fixtures git dependencies 1`] = `
     ],
     "status": 0,
     "stderr": 
-"
- shard 0.1.0 · clang <ver> · arm64-darwin
+" ≡ gitlib  cached
+ ≡ app-git  cached
 
- Dependencies
-   ≡ gitlib      git        v1.0.0  reused
-
- Building 2 modules
-   gitlib (library · — · release)
-     ≡ src/gitlib.c  cached
-     → fixtures/app-git/.shard/gitlib/target/arm64/darwin/none/gitlib.a  <t>
-   app-git (executable · — · release)
-     ≡ src/main.c  cached
-     → fixtures/app-git/target/arm64/darwin/none/app-git  <t>
-
- ✔ Built app-git in <t>  ·  2 cached
+ ✔ app-git is up to date · 2 modules cached
    → fixtures/app-git/target/arm64/darwin/none/app-git
 
  ── running app-git ──
@@ -3198,21 +2836,13 @@ exports[`fixtures git dependencies 1`] = `
     ],
     "status": 0,
     "stderr": 
-"
- shard 0.1.0 · clang <ver> · arm64-darwin
+" ↻ gitlib  v1.0.0 → v1.2.0  <t>
+ ✔ gitlib  <t>
+ ≡ app-git  cached
 
- Dependencies
-   ↻ gitlib      git        v1.0.0 → v1.2.0  upgraded <t>
-
- Building 2 modules
-   gitlib (library · — · release)
-     ✔ src/gitlib.c  <t>
-     → fixtures/app-git/.shard/gitlib/target/arm64/darwin/none/gitlib.a  <t>
-   app-git (executable · — · release)
-     ≡ src/main.c  cached
-     → fixtures/app-git/target/arm64/darwin/none/app-git  <t>
-
- ✔ Built app-git in <t>  ·  1 upgraded  ·  1 compiled  ·  1 cached
+ ✔ app-git built in <t>
+   2 modules · 1 compiled · 1 cached
+   ↻ gitlib v1.0.0 → v1.2.0
    → fixtures/app-git/target/arm64/darwin/none/app-git
 
  ── running app-git ──
@@ -3236,17 +2866,9 @@ exports[`fixtures git dependencies 1`] = `
     "status": 1,
     "stderr": 
 "
- shard 0.1.0 · clang <ver> · arm64-darwin
-
- Dependencies
-   ✘ gitlib      git        1.2.0
-
- ✘ Version conflict: gitlib
-   installed  v1.0.0   fixtures/app-git/modules/gitlib@v1.0.0
-   requested  1.2.0   by app-git
-   hint       one pinned state per module can be installed at a time
-
- ✘ Build failed after <t>
+ ✘ app-git › gitlib
+   1.2.0 requested by app-git, but v1.0.0 is installed
+   only one version of a module can be installed at a time
 
 "
 ,
@@ -3317,21 +2939,13 @@ exports[`fixtures git dependencies 1`] = `
     ],
     "status": 0,
     "stderr": 
-"
- shard 0.1.0 · clang <ver> · arm64-darwin
+" ↓ gitlib  v1.0.0  <t>
+ ✔ gitlib  <t>
+ ✔ app-git  <t>
 
- Dependencies
-   ↓ gitlib      git        v1.0.0  installed <t>
-
- Building 2 modules
-   gitlib (library · — · release)
-     ✔ src/gitlib.c  <t>
-     → fixtures/app-git/.shard/gitlib/target/arm64/darwin/none/gitlib.a  <t>
-   app-git (executable · — · release)
-     ✔ src/main.c  <t>
-     → fixtures/app-git/target/arm64/darwin/none/app-git  <t>
-
- ✔ Built app-git in <t>  ·  1 installed  ·  2 compiled
+ ✔ app-git built in <t>
+   2 modules · 2 compiled
+   ↓ gitlib v1.0.0
    → fixtures/app-git/target/arm64/darwin/none/app-git
 
  ── running app-git ──

@@ -27,27 +27,35 @@ export class Resolver {
   }
 
   async resolve(root: DeclaredTarget): Promise<TargetGraph<ResolvedTarget>> {
-    await this.visit(this.graph.setRoot(root), [root.name]);
+    await this.visit(this.graph.setRoot(root), [root.name], null);
+    this.ws.reporter.emit({ type: "resolve.end" });
     return this.graph.build().map(target => ({ ...target, linkFlags: this.flags.get(target.path) ?? [] }));
   }
 
-  /** `chain` lists module names from the root down to `target`. */
-  private async visit(target: DeclaredTarget, chain: readonly string[]): Promise<void> {
+  /**
+   * `chain` lists module names from the root down to `target`; `via` is the
+   * edge that reached it. All declared dependencies are announced up front.
+   */
+  private async visit(target: DeclaredTarget, chain: readonly string[], via: number | null): Promise<void> {
     if (this.visited.has(target.path)) return;
     this.visited.add(target.path);
 
-    for (const spec of target.manifest.depend) {
-      const dep = this.parse(spec, target);
+    const { reporter } = this.ws;
+    const deps = target.manifest.depend.map(spec => this.parse(spec, target));
+    const infos = deps.map((dep): DepInfo => ({
+      id: this.nextId++,
+      parentId: via,
+      name: dep.name,
+      source: sourceLabel(dep),
+      spec: sourceFor(dep.kind)!.spec(dep),
+      link: dep.link,
+    }));
+    if (infos.length > 0) reporter.emit({ type: "deps.declared", parent: target.name, parentId: via, deps: infos });
+
+    for (let i = 0; i < deps.length; i++) {
+      const dep = deps[i];
+      const info = infos[i];
       const source = sourceFor(dep.kind)!;
-      const info: DepInfo = {
-        id: this.nextId++,
-        depth: chain.length - 1,
-        name: dep.name,
-        source: sourceLabel(dep),
-        spec: source.spec(dep),
-        link: dep.link,
-      };
-      const { reporter } = this.ws;
       const env: ResolveEnv = {
         rootPath: this.ws.rootPath,
         store: this.store,
@@ -56,7 +64,7 @@ export class Resolver {
         onProgress: (percent) => reporter.emit({ type: "dep.progress", id: info.id, percent }),
       };
 
-      reporter.emit({ type: "dep.start", dep: info });
+      reporter.emit({ type: "dep.start", id: info.id });
       const startedAt = performance.now();
       const decision = source.decide(dep, env);
 
@@ -80,7 +88,7 @@ export class Resolver {
 
       const child = known ?? this.graph.add(this.ws.declare(decision.path, decision.name));
       this.graph.connect(target, child, dep.link);
-      await this.visit(child, [...chain, child.name]);
+      await this.visit(child, [...chain, child.name], info.id);
     }
   }
 

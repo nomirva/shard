@@ -3,8 +3,9 @@ import { fit } from "./format";
 const FRAME_MS = 80;
 
 /**
- * Finished lines scroll up; the live lines (spinners) are redrawn in place
- * below them. Disabled outside a TTY: lines are only ever appended.
+ * Finished lines scroll up; the live block (the progress tree) is redrawn in
+ * place below them while started. Disabled outside a TTY: lines are only
+ * ever appended and the live block is never drawn.
  */
 export class LiveArea {
   private drawn = 0;
@@ -18,6 +19,22 @@ export class LiveArea {
     private readonly render: (frame: number) => string[],
   ) {}
 
+  /** Starts periodic redraws (spinners, timers). */
+  start(): void {
+    if (!this.enabled || this.timer) return;
+    this.timer = setInterval(() => {
+      this.frame++;
+      this.refresh();
+    }, FRAME_MS);
+    this.timer.unref?.();
+  }
+
+  stop(): void {
+    this.clear();
+    if (this.timer) clearInterval(this.timer);
+    this.timer = null;
+  }
+
   print(text: string): void {
     this.clear();
     this.write(text + "\n");
@@ -30,12 +47,6 @@ export class LiveArea {
     this.draw();
   }
 
-  stop(): void {
-    this.clear();
-    if (this.timer) clearInterval(this.timer);
-    this.timer = null;
-  }
-
   private clear(): void {
     if (this.drawn > 0) this.write(`\x1b[${this.drawn}A\x1b[0J`);
     this.drawn = 0;
@@ -46,16 +57,5 @@ export class LiveArea {
     const lines = this.render(this.frame).map(line => fit(line, this.columns()));
     for (const line of lines) this.write(line + "\n");
     this.drawn = lines.length;
-
-    if (lines.length > 0 && !this.timer) {
-      this.timer = setInterval(() => {
-        this.frame++;
-        this.refresh();
-      }, FRAME_MS);
-      this.timer.unref?.();
-    } else if (lines.length === 0 && this.timer) {
-      clearInterval(this.timer);
-      this.timer = null;
-    }
   }
 }

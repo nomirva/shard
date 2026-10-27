@@ -35,14 +35,8 @@ export const gitSource: DependencySource<GitDependency> = {
         case "conflict":
           throw new ShardError(
             "conflict",
-            `Version conflict: ${dep.name}`,
-            "one pinned state per module can be installed at a time",
-            {
-              details: [
-                ["installed", `${describePin(installedPin)}   ${installed.path}`],
-                ["requested", `${describePin(dep.pin)}   by ${env.requestedBy.join(" → ")}`],
-              ],
-            },
+            `${describePin(dep.pin)} requested by ${env.requestedBy.at(-1)}, but ${describePin(installedPin)} is installed`,
+            "only one version of a module can be installed at a time",
           );
         case "reinstall":
           stale = { path: installed.path, pin: installedPin };

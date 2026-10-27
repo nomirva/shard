@@ -1,11 +1,9 @@
 import { homedir } from "os";
 import { relative, sep } from "path";
 
-const ANSI = /\x1b\[[0-9;]*[A-Za-z]/g;
+import { stripAnsi } from "../../utils/text";
 
-export function stripAnsi(s: string): string {
-  return s.replace(ANSI, "");
-}
+export { stripAnsi };
 
 export function visibleLength(s: string): number {
   return stripAnsi(s).length;
@@ -51,7 +49,7 @@ export function rel(path: string): string {
 /** Shortens absolute paths under the current directory inside free text (not inside URLs). */
 export function shortenPaths(text: string): string {
   const prefix = (process.cwd() + sep).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-  return text.replace(new RegExp(`(^|[\\s'"(=])${prefix}`, "gm"), "$1");
+  return text.replace(new RegExp(`(^|[\\s'"(=]|\\x1b\\[[0-9;]*m)${prefix}`, "gm"), "$1");
 }
 
 /** "Apple clang version 21.0.0 (clang-…)" → "21.0.0". */

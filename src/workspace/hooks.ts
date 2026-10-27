@@ -16,6 +16,7 @@ export class HookRunner {
     const command = target.manifest.scripts[hook];
     if (command === undefined) return;
 
+    this.reporter.emit({ type: "hook.start", target: target.name, hook, command });
     const startedAt = performance.now();
     const result = shellSync(target.path, command, "pipe");
     const output = [result.stdout.trim(), result.stderr.trim()].filter(Boolean).join("\n");

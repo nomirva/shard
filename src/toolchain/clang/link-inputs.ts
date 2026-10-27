@@ -12,7 +12,7 @@ export function clangLinkInputs(target: TargetPlatform): LinkInputTranslator {
           }
           return {
             flags: [`-l${input.name}`],
-            warnings: ["-Bstatic unavailable on macOS, linking dynamically"],
+            warnings: ["static linking unavailable on macOS, linking dynamically"],
           };
         }
         return { flags: [`-l${input.name}`], warnings: [] };

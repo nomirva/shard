@@ -1,120 +1,129 @@
 // Bun Snapshot v1, https://bun.sh/docs/test/snapshots
 
-exports[`console reporter live build: one line per module, details after it 1`] = `
+exports[`console reporter resolve phase: live tree with pending deps and clone progress 1`] = `
+" ⚠ m: static linking unavailable on macOS, linking dynamically
+ Resolving           3/5  900ms
+ app
+ ├─ mid-a    local   ✓
+ │  ├─ leaf  local   ✓
+ │  └─ m     system  ✓
+ ├─ gitlib   v1.2.0  ━━━━━─────── 45%
+ └─ mid-b    local   ○
 "
- shard 0.1.0 · clang 21.0.0 · arm64-darwin
+`;
 
- Dependencies
-   ✓ leaf        local      ../leaf  static
-     ↻ gitlib      git        v1.0.0 → v1.2.0  upgraded <t>
-   ⚙ m           system     -lm  ⚠ -Bstatic unavailable on macOS, linking dynamically
+exports[`console reporter build phase: tree fills bottom-up, warnings stay above it 1`] = `
+" ⚠ m: static linking unavailable on macOS, linking dynamically
+ src/mid_b.c:3:5: warning: unused variable 'x'
+ Building    3/5  1.30s
+ app         ○
+ ├─ mid-a    ✔  80ms
+ │  └─ leaf  ✔  210ms
+ ├─ gitlib   ≡  cached
+ └─ mid-b    ━━━━━───── 1/2  src/extra.c
+    └─ leaf  ·
+"
+`;
 
- Building 2 modules
-   leaf  library     c99 · release  2 files  ✔ <t> (1 cached)  → leaf.a
-   app   executable  c11 · release  1 file   ✔ <t>  → app
-     ▸ prebuild  sh gen.sh  <t>
-       src/main.c:3:5: warning: unused variable 'x'
+exports[`console reporter finished run: tree disappears, summary remains 1`] = `
+" ⚠ m: static linking unavailable on macOS, linking dynamically
+ src/mid_b.c:3:5: warning: unused variable 'x'
 
- ✔ Built app in <t>  ·  1 upgraded  ·  2 compiled  ·  1 cached  ·  2 warnings
+ ✔ app built in 3.80s
+   5 modules · 5 compiled · 2 cached · 2 warnings
+   ↻ gitlib v1.0.0 → v1.2.0
    → /x/target/app
 
 "
 `;
 
-exports[`console reporter plain build: files listed under their module 1`] = `
+exports[`console reporter short terminal: finished subtrees fold 1`] = `
+" ⚠ m: static linking unavailable on macOS, linking dynamically
+ src/mid_b.c:3:5: warning: unused variable 'x'
+ Building     3/5  1.30s
+ app          ○
+ ├─ mid-a +1  ✔  80ms
+ ├─ gitlib    ≡  cached
+ … 2 more
 "
- shard 0.1.0 · clang 21.0.0 · arm64-darwin
+`;
 
- Dependencies
-   ✓ leaf        local      ../leaf  static
-     ↻ gitlib      git        v1.0.0 → v1.2.0  upgraded <t>
-   ⚙ m           system     -lm  ⚠ -Bstatic unavailable on macOS, linking dynamically
+exports[`console reporter error during resolve folds the tree into a path 1`] = `
+" ⚠ m: static linking unavailable on macOS, linking dynamically
 
- Building 2 modules
-   leaf (library · c99 · release)
-     ✔ src/leaf.c  <t>
-     ≡ src/nested.c  cached
-     → /x/.shard/leaf/target/leaf.a  <t>
-   app (executable · c11 · release)
-     ▸ prebuild  sh gen.sh  <t>
-     ✔ src/main.c  <t>
-       src/main.c:3:5: warning: unused variable 'x'
-     → /x/target/app  <t>
+ ✘ app › gitlib
+   v1.2.0 requested by app, but v2.0.0 is installed
+   only one version of a module can be installed at a time
 
- ✔ Built app in <t>  ·  1 upgraded  ·  2 compiled  ·  1 cached  ·  2 warnings
+"
+`;
+
+exports[`console reporter compile error: diagnostics and one statement 1`] = `
+" ⚠ m: static linking unavailable on macOS, linking dynamically
+ src/leaf.c:1:1: error: unknown type name 'nope'
+
+ ✘ leaf: 1 error
+
+"
+`;
+
+exports[`console reporter plain output: no tree, one line per finished node 1`] = `
+" ⚠ m: static linking unavailable on macOS, linking dynamically
+ ↻ gitlib  v1.0.0 → v1.2.0  420ms
+ ✔ leaf  210ms
+ ✔ mid-a  80ms
+ ≡ gitlib  cached
+ src/mid_b.c:3:5: warning: unused variable 'x'
+ ✔ mid-b  60ms
+ ✔ app  90ms
+
+ ✔ app built in 3.80s
+   5 modules · 5 compiled · 2 cached · 2 warnings
+   ↻ gitlib v1.0.0 → v1.2.0
    → /x/target/app
 
 "
 `;
 
-exports[`console reporter verbose build shows commands and hook output 1`] = `
-"
- shard 0.1.0 · clang 21.0.0 · arm64-darwin
+exports[`console reporter verbose output lists everything 1`] = `
+" shard 0.1.0 · clang 21.0.0 · arm64-darwin
+   ✓ mid-a  local  /x/mid-a
+   ✓ leaf  local  /x/leaf
+ ⚠ m: static linking unavailable on macOS, linking dynamically
+   ✓ m  system  -lm
+   ↻ gitlib  git  v1.0.0 → v1.2.0  /x/modules/gitlib@v1.2.0
+   ✓ mid-b  local  /x/mid-b
+   · leaf  local  /x/leaf
+   ✔ leaf/src/leaf.c  20ms
+     $ clang -c src/leaf.c
+   ✔ leaf/src/nested.c  20ms
+     $ clang -c src/nested.c
+   ✔ mid-a/src/mid_a.c  20ms
+     $ clang -c src/mid_a.c
+   ≡ gitlib/src/gitlib.c  cached
+     $ clang -c src/gitlib.c
+   ✔ mid-b/src/mid_b.c  20ms
+     $ clang -c src/mid_b.c
+ src/mid_b.c:3:5: warning: unused variable 'x'
+   ≡ mid-b/src/extra.c  cached
+     $ clang -c src/extra.c
+   ✔ app/src/main.c  20ms
+     $ clang -c src/main.c
+   → /x/target/app  40ms
+     $ clang -o app
 
- Dependencies
-   ✓ leaf        local      ../leaf  static
-     /x/leaf
-     ↻ gitlib      git        v1.0.0 → v1.2.0  upgraded <t>
-       /x/modules/gitlib@v1.2.0
-   ⚙ m           system     -lm  ⚠ -Bstatic unavailable on macOS, linking dynamically
-
- Building 2 modules
-   leaf  library     c99 · release  2 files  ✔ <t> (1 cached)  → leaf.a
-     ✔ src/leaf.c  <t>
-       $ clang -c leaf.c
-     ≡ src/nested.c  cached
-       $ clang -c nested.c
-     → /x/.shard/leaf/target/leaf.a  <t>
-       $ ar rcs leaf.a
-   app   executable  c11 · release  1 file   ✔ <t>  → app
-     ▸ prebuild  sh gen.sh  <t>
-       generated
-     ✔ src/main.c  <t>
-       $ clang -c main.c
-       src/main.c:3:5: warning: unused variable 'x'
-     → /x/target/app  <t>
-       $ clang -o app
-
- ✔ Built app in <t>  ·  1 upgraded  ·  2 compiled  ·  1 cached  ·  2 warnings
+ ✔ app built in 3.80s
+   5 modules · 5 compiled · 2 cached · 2 warnings
+   ↻ gitlib v1.0.0 → v1.2.0
    → /x/target/app
 
 "
 `;
 
-exports[`console reporter failure in the middle of a module 1`] = `
+exports[`console reporter cached rebuild is a single line 1`] = `
 "
- shard 0.1.0 · clang 21.0.0 · arm64-darwin
-
- Dependencies
-   ✓ leaf        local      ../leaf  static
-     ↻ gitlib      git        v1.0.0 → v1.2.0  upgraded <t>
-   ⚙ m           system     -lm  ⚠ -Bstatic unavailable on macOS, linking dynamically
-
- Building 2 modules
-   leaf  library     c99 · release  2 files  ✘ failed
-       src/leaf.c:1:1: error: unknown type name 'nope'
-       1 error generated.
-
- ✘ Compilation failed: leaf
-   file  /x/leaf/src/leaf.c
-
- ✘ Build failed after <t>
-
-"
-`;
-
-exports[`console reporter structured error with hint and tool output 1`] = `
-"
- Dependencies
-   ✘ gitlib      git        v2.0.0
-
- ✘ Version conflict: gitlib
-   installed  v1.0.0   modules/gitlib@v1.0.0
-   requested  v2.0.0   by app → mid-a
-   hint       one pinned state per module can be installed at a time
-
-   │ fatal: something
-   │ second line
+ ✔ app is up to date · 1 module cached
+   → /x/target/app
 
 "
 `;

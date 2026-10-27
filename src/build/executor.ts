@@ -2,7 +2,8 @@ import { copyFileSync, existsSync, mkdirSync } from "fs";
 import { dirname, join } from "path";
 import { ShardError } from "../utils/errors";
 import { DEFAULT_PROFILE } from "../lang/profiles";
-import type { TargetSummary } from "../report/events";
+import type { TargetSummary, TreeShape } from "../report/events";
+import { countDiagnostics } from "../utils/text";
 import type { CompileCache } from "../cache/cache";
 import type { TargetGraph } from "../target/graph";
 import type { Workspace } from "../workspace/workspace";
@@ -20,7 +21,7 @@ export class Executor {
 
   async execute(graph: TargetGraph<PlannedTarget>): Promise<void> {
     const order = graph.topoOrder();
-    this.ws.reporter.emit({ type: "build.start", targets: order.map(summarize) });
+    this.ws.reporter.emit({ type: "build.start", targets: order.map(summarize), tree: shapeOf(graph) });
     try {
       for (const target of order) await this.buildTarget(target);
     } finally {
@@ -81,9 +82,10 @@ export class Executor {
       const diagnostics = err instanceof ShardError ? err.output ?? "" : "";
       reporter.emit({ type: "compile", ...base, status: "failed", duration: performance.now() - startedAt, diagnostics });
       if (!(err instanceof ShardError) || err.code !== "build") throw err;
-      throw new ShardError("build", `Compilation failed: ${target.name}`, undefined, {
-        details: [["file", unit.task.source]],
-      });
+      const errors = countDiagnostics(diagnostics, "error");
+      throw new ShardError("build", errors > 0
+        ? `${target.name}: ${errors} error${errors === 1 ? "" : "s"}`
+        : `${target.name}: compilation failed (${err.message})`);
     }
     if (useCache) this.cache.record(unit.cacheKey, unit.task);
   }
@@ -111,6 +113,16 @@ export class Executor {
       command: commandLine(step.invocation),
     });
   }
+}
+
+function shapeOf(graph: TargetGraph<PlannedTarget>): TreeShape {
+  const seen = new Set<string>();
+  const walk = (node: PlannedTarget): TreeShape => {
+    if (seen.has(node.path)) return { name: node.name, repeat: true, children: [] };
+    seen.add(node.path);
+    return { name: node.name, repeat: false, children: graph.children(node).map(walk) };
+  };
+  return walk(graph.root);
 }
 
 function summarize(target: PlannedTarget): TargetSummary {

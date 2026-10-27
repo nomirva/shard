@@ -27,13 +27,13 @@ export async function buildCommand(path: string, flags: BuildFlags = {}): Promis
     gitProtocol: flags.gitProtocol,
   });
 
-  const details = toolchainFacts(ws.toolchain);
+  const details = [`shard ${pkg.version}`, ...toolchainFacts(ws.toolchain)];
   if (flags.profile) details.push(`profile ${flags.profile}`);
   if (cacheMode !== 0) details.push(cacheMode === 1 ? "root cache off" : "cache off");
-  ui.emit({ type: "run.start", noun: "Build", title: `shard ${pkg.version}`, details });
+  ui.emit({ type: "run.start", command: "build", details });
 
   const graph = await buildPipeline.run(undefined, ws);
-  ui.emit({ type: "run.end", label: `Built ${graph.root.name}`, artifacts: rootArtifacts(graph.root) });
+  ui.emit({ type: "run.end", command: "build", subject: graph.root.name, artifacts: rootArtifacts(graph.root) });
 
   if (flags.start) await start.run(graph, ws);
 }
