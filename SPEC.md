@@ -20,7 +20,7 @@ Conformance language follows [RFC 2119](https://www.rfc-editor.org/rfc/rfc2119).
 ## 3 Terms and definitions
 
 **Module**
-A directory containing a `shard.json` manifest, C sources, and optionally headers and prebuilt artefacts. Every module has exactly one shape.
+A directory containing a config (`shard.ts` or `shard.json`), C sources, and optionally headers and prebuilt artefacts. Every module has exactly one shape. See `ARCHITECTURE.md` for how modules, tasks and plugins fit together.
 
 **Root**  
 The top-level module passed on the command line. Git dependencies are cloned into the root's `modules/` directory; build cache and artefacts live under `.shard/`.
@@ -77,9 +77,31 @@ else → error
 
 Note: only the array form of `sources` is checked for `main.c`. Object-form sources (prefix + glob) do not trigger executable detection automatically.
 
-## 5 Manifest (shard.json)
+## 5 Manifest (shard.ts, shard.json)
 
-### 5.1 Grammar
+A module is configured by `shard.ts` or by `shard.json`; when both exist, `shard.ts` is used. Both describe the same config.
+
+### 5.0 shard.ts
+
+The default export is a config object, or a function of the config context returning one:
+
+```ts
+import type { ShardConfig } from "<shard>/src/config";
+
+export default (({ defined, local, sys }) => ({
+  plugins: ["c", "clang", "scripts"],            // default when omitted
+  dependencies: [local("../lib", { linkage: "shared" }), sys("m")],
+  c: { standard: defined("C89") ? "c89" : "c17", exports: ["include"] },
+  scripts: { prebuild: "sh gen.sh" },
+})) satisfies ShardConfig;
+```
+
+- The context has `platform`, `arch`, `compiler`, `defines`, `defined(name)`, `define(name)` and the dependency helpers `local`, `git`, `sys`, `framework`.
+- `dependencies` is a list (the `implementation` scope) or an object naming scopes.
+- Every other key is a block of the extension with that name: `c` (the fields of `options` plus `sources`, `imports`, `exports`, `variant`, `kind`), `scripts`, `codegen`. An unknown block is an error.
+- `git(repo, { version | branch | ref, subdir, linkage })` accepts the same repositories as `git:` in §5.2; `git("repo@ref")` also works.
+
+### 5.1 Grammar (shard.json)
 
 ```json
 {
@@ -141,7 +163,7 @@ The prefix is REQUIRED. Omitting it produces an error.
 |--------|-------|-----------|
 | `sys` | System library name | Passed as `-l<value>` |
 | `framework` | Framework name (Apple) | Passed as `-Wl,-framework,<value>` |
-| `local` | Path relative to parent module | Resolved via `Fetcher.local()` |
+| `local` | Path relative to the declaring module | A module in another directory |
 | `git` | Git URL | Cloned via `Fetcher.git()`; `.git` directory removed |
 
 **Ref pinning** (git only):
@@ -340,9 +362,9 @@ Canonical C standard names are `c89`, `c99`, `c11`, `c17`, `c23` and the GNU dia
 
 `standard.version` declares the standard used to compile a module. `standard.support` declares the oldest standard that a consumer of the module's exported headers may use; it is optional and defaults to `effective(B)` (the module's own standard). Both must be canonical names.
 
-**Inheritance.** A module that does not declare `version` inherits the effective standard of the modules that depend on it, transitively up to the root. If the root declares no version, no `-std` flag is passed and no compatibility checks apply. When a module is reachable through several paths that inherit different standards, the oldest standard wins (C versions are backwards compatible); for the same version the pure `c` dialect is preferred over the corresponding `gnu` dialect.
+**Inheritance.** A module that does not declare `version` inherits the effective standard of the modules that depend on it, transitively up to the root. If the root declares no version, no `-std` flag is passed and no compatibility checks apply. When a module is reachable through several paths that inherit different standards, the newest standard wins: C is backwards compatible, so code written for an older standard builds with a newer one. For the same version the `gnu` dialect is preferred over the corresponding pure `c` dialect.
 
-**Header compatibility.** Let `baselines(B) = { effective(B) } ∪ { support(B) }`. When a module `A` depends, directly or transitively, on a module `B` that exports headers, the build fails unless some baseline `s ∈ baselines(B)` is covered by `A`:
+**Header compatibility.** Let `baselines(B) = { version(B) } ∪ { support(B) }`, the standards `B` declares. An inherited standard is not a baseline: it says how `B` is compiled, not what its headers need. When a module `A` depends, directly or transitively, on a module `B` that exports headers, the build fails unless some baseline `s ∈ baselines(B)` is covered by `A`:
 
 ```
 rank(version_A) ≥ rank(s)   and   (s is pure `c`  or  A uses a `gnu` dialect)
@@ -363,7 +385,7 @@ Because C is backwards compatible, a pure-`c` header is usable by newer and by `
 
 ### 6.2 Link type modifiers
 
-If a dependency declares `+static`, `+shared`, or `+dynamic`, the link type is treated as a hint. The actual link type used is determined by the availability at resolution time; a mismatch produces a warning but does not fail the build.
+A library publishes a static and a shared variant; a dependency without a modifier gets the static one. One module is linked one way in a build: as soon as any edge asks for `+shared` (or `+dynamic`), every edge to that module gets the shared library.
 
 ### 6.3 Version compatibility
 
@@ -378,14 +400,11 @@ A module is installed in exactly one pinned state per name; C is statically link
 
 ### 7.1 Lifecycle
 
-A build invocation proceeds in the following order:
+A build invocation proceeds in three passes (see `ARCHITECTURE.md`):
 
-1. Manifest loading: manifests are parsed and dependency lists are constructed.
-2. Dependency sync (`update()`): all transitive dependencies are installed (fetched) and their manifests loaded.
-3. Materialization: for each module in dependency order, the `preload` hook runs (if defined) and the module's files are scanned, fixing its content and shape.
-4. Recursive build: each dependency is built before its consumer. Before compilation, the `prebuild` hook is executed (if defined). After linking but before returning the result, `postbuild` is executed (if defined).
-5. Export copying: exports are copied to the target include directory (after `prebuild`, before `postbuild`).
-6. Linking or archiving.
+1. Initialization: configs are read, plugins applied, dependencies resolved; git dependencies are installed.
+2. Configuration: for each module in dependency order the `preload` hook runs (if defined); the task graph for `assemble` of the root is built, which scans each module's files and fixes its shape and settings.
+3. Execution: tasks run in dependency order, up to `--jobs` at a time. Per module: `prebuild`, then compile, copy exports, archive or link, then `postbuild`. A dependency is built only in the variants its consumers chose. An archive or link whose inputs did not change is skipped.
 
 ### 7.2 Compilation
 
@@ -445,9 +464,9 @@ At toolchain initialisation (`detect()`) the output of `clang --version` is pars
 
 A module MAY declare `preload`, `prebuild`, `postbuild` and `preclean` scripts in `scripts`:
 
-- `preload`: executed after the manifest is parsed and before the module's files are scanned. Intended for code generation that produces source or header files; the generated files are discovered by the subsequent scan.
-- `prebuild`: executed after include paths are resolved and before compilation. Runs before individual compile tasks, after the dependency build loop.
-- `postbuild`: executed after export copying and `BuildResult.includePaths` assignment, before the result is returned to the parent.
+- `preload`: executed once configuration is over and before the module's files are scanned, dependencies first. The generated files are discovered by the scan. For generation that should rerun only when its inputs change, use the `codegen` block instead: `codegen: { command, inputs, outputs }` runs as a task, and its outputs (relative to `$SHARD_GEN_DIR`) are compiled and included.
+- `prebuild`: executed before every other task of the module.
+- `postbuild`: executed after the module's other tasks in the build, only if all of them succeeded.
 - `preclean`: executed at the start of `shard clean`, before any filesystem removal. If it fails, the cleaning operation is aborted.
 
 All hooks run via `spawnSync` with `shell: true` and their working directory set to the module root. A non-zero exit from any hook aborts the current operation.
@@ -456,7 +475,7 @@ All hooks run via `spawnSync` with `shell: true` and their working directory set
 
 ### 8.1 Storage format
 
-Cache entries are stored as a JSON dictionary at `<root>/.shard/cache.json`. Each key is a slash-separated path `{moduleName}/{relPath}`. Each value is the SHA-256 hash of the source and its transitive dependencies at the time of compilation.
+Cache entries are stored as a JSON dictionary at `<root>/.shard/cache.json`. `task:<task path>` records a task's last successful fingerprint and the input files it discovered; `state:<task path>:<key>` is a task's own state, such as the fingerprint of one compiled source file.
 
 ### 8.2 Invalidation
 
@@ -483,7 +502,7 @@ The hash is computed using SHA-256.
 Build a module. Synopsis:
 
 ```
-shard build [<path>] [--ignore-cache <0|1|2>] [--def <names...>] [--profile <name>] [--start] [--git-protocol <protocol>]
+shard build [<path>] [--ignore-cache <0|1|2>] [--def <names...>] [--profile <name>] [--start] [--git-protocol <protocol>] [-j <n>]
 ```
 
 - `<path>` defaults to `.` (current directory).
@@ -492,6 +511,7 @@ shard build [<path>] [--ignore-cache <0|1|2>] [--def <names...>] [--profile <nam
 - `--profile` selects the compilation profile for the whole build, overriding per-module `options.profile` (see §5.9).
 - `--start` builds and runs the resulting executable.
 - `--git-protocol` selects the git protocol for dependency cloning: `https` (default), `ssh`, or `http`. May also be set via the `SHARD_GIT_PROTOCOL` environment variable.
+- `-j, --jobs` sets how many tasks run at once; defaults to `SHARD_JOBS`, else one per CPU.
 
 ### 9.2 `shard info`
 
