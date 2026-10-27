@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "typecheck": "tsc --noEmit",
+    "test": "bun test",
     "smoke": "bun shard.ts build examples/app --def GREET && bun shard.ts build examples/app --def MATH"
   },
   "dependencies": {

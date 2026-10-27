@@ -1,0 +1,5 @@
+{
+  "depend": ["local:../leaf+shared"],
+  "exports": ["src/mid_b.h"],
+  "options": { "profile": "small" }
+}

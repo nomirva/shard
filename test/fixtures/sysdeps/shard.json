@@ -1,0 +1,3 @@
+{
+  "depend": ["sys:m+static", "framework:CoreFoundation+static"]
+}

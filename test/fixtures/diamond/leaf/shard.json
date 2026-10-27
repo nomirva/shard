@@ -1,0 +1,6 @@
+{
+  "sources": ["src"],
+  "imports": ["api"],
+  "exports": { "api": ["**/*.h"] },
+  "options": { "standard": { "support": "c89", "pedantic": "error" } }
+}

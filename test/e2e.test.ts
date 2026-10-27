@@ -1,0 +1,206 @@
+import { describe, expect, test } from "bun:test";
+import { spawnSync } from "child_process";
+import { cpSync, mkdirSync, writeFileSync } from "fs";
+import { Sandbox, git, type RunSnapshot } from "./harness";
+
+const TIMEOUT = 120_000;
+
+function scenario(name: string, fn: (sb: Sandbox) => Record<string, unknown>): void {
+  test(name, () => {
+    const sb = new Sandbox(name.replace(/[^a-z0-9]+/gi, "-"));
+    expect(fn(sb)).toMatchSnapshot();
+  }, TIMEOUT);
+}
+
+function build(sb: Sandbox, rel: string, ...flags: string[]): RunSnapshot {
+  return sb.run(["build", sb.path(rel), ...flags]);
+}
+
+describe("examples", () => {
+  scenario("hello: build, cached rebuild, start", sb => ({
+    first: build(sb, "examples/hello"),
+    second: build(sb, "examples/hello"),
+    start: build(sb, "examples/hello", "--start"),
+    tree: sb.tree("examples/hello"),
+    cache: sb.read("examples/hello/.shard/cache.json"),
+  }));
+
+  scenario("app: variants and cache modes", sb => ({
+    greet: build(sb, "examples/app", "--def", "GREET", "--start"),
+    math: build(sb, "examples/app", "--def", "MATH", "--start"),
+    mathCached: build(sb, "examples/app", "--def", "MATH"),
+    ignoreRoot: build(sb, "examples/app", "--def", "GREET", "--ignore-cache", "1"),
+    ignoreAll: build(sb, "examples/app", "--def", "GREET", "--ignore-cache", "2"),
+    commaDefs: build(sb, "examples/app", "--def", "MATH,EXTRA=5"),
+    tree: sb.tree("examples/app"),
+    cache: sb.read("examples/app/.shard/cache.json"),
+  }));
+
+  scenario("app: no variant is a compile error", sb => ({
+    run: build(sb, "examples/app"),
+  }));
+
+  scenario("app-std: standards and compatibility", sb => ({
+    ok: build(sb, "examples/app-std", "--start"),
+    c89: build(sb, "examples/app-std", "--def", "C89"),
+    tree: sb.tree("examples/app-std"),
+  }));
+
+  scenario("libraries as root", sb => ({
+    greet: build(sb, "examples/lib-greet"),
+    std: build(sb, "examples/lib-std"),
+    math: build(sb, "examples/lib-math"),
+    startLib: build(sb, "examples/lib-greet", "--start"),
+    greetTree: sb.tree("examples/lib-greet"),
+    stdTree: sb.tree("examples/lib-std"),
+  }));
+
+  scenario("profiles override", sb => ({
+    manifest: build(sb, "examples/profiles", "--start"),
+    fast: build(sb, "examples/profiles", "--profile", "fast", "--start"),
+    tiny: build(sb, "examples/profiles", "--profile", "tiny", "--start"),
+    invalid: build(sb, "examples/profiles", "--profile", "nope"),
+  }));
+
+  scenario("codegen: preload and preclean hooks", sb => ({
+    build: build(sb, "examples/codegen", "--start"),
+    treeAfterBuild: sb.tree("examples/codegen"),
+    script: sb.run(["run", "preload", sb.path("examples/codegen")]),
+    clean: sb.run(["clean", sb.path("examples/codegen")]),
+    treeAfterClean: sb.tree("examples/codegen"),
+  }));
+});
+
+describe("commands", () => {
+  scenario("info", sb => ({
+    appStd: sb.run(["info", sb.path("examples/app-std")]),
+    libGreet: sb.run(["info", sb.path("examples/lib-greet")]),
+    diamond: sb.run(["info", sb.path("fixtures/diamond/app")]),
+    sysdeps: sb.run(["info", sb.path("fixtures/sysdeps")]),
+  }));
+
+  scenario("update and clean", sb => ({
+    update: sb.run(["update", sb.path("examples/app-std")]),
+    build: build(sb, "examples/app-std"),
+    clean: sb.run(["clean", sb.path("examples/app-std")]),
+    tree: sb.tree("examples/app-std"),
+  }));
+
+  scenario("run scripts", sb => ({
+    hello: sb.run(["run", "hello", sb.path("fixtures/diamond/app")]),
+    missing: sb.run(["run", "nope", sb.path("fixtures/diamond/app")]),
+    cwdDefault: sb.run(["run", "hello"], sb.path("fixtures/diamond/app")),
+  }));
+
+  scenario("usage errors", sb => ({
+    badCacheMode: build(sb, "examples/hello", "--ignore-cache", "5"),
+    nanCacheMode: build(sb, "examples/hello", "--ignore-cache", "x"),
+    missingDir: build(sb, "does-not-exist"),
+    badPrefix: build(sb, "fixtures/bad-dep"),
+    emptyDep: build(sb, "fixtures/app-empty"),
+  }));
+
+  test("doctor", () => {
+    const sb = new Sandbox("doctor");
+    const r = sb.run(["doctor"]);
+    expect(r.status).toBe(0);
+    expect(r.stdout).toContain("[Toolchain]");
+    expect(r.stdout).toContain("READY TO USE");
+  }, TIMEOUT);
+});
+
+describe("fixtures", () => {
+  scenario("sys and framework deps", sb => ({
+    build: build(sb, "fixtures/sysdeps", "--start"),
+  }));
+
+  scenario("header-only dependency", sb => ({
+    build: build(sb, "fixtures/app-hdr", "--start"),
+    tree: sb.tree("fixtures/app-hdr"),
+  }));
+
+  scenario("prebuilt dependency", sb => {
+    mkdirSync(sb.path("fixtures/prebuilt/target"), { recursive: true });
+    writeFileSync(sb.path("pb.c"), "int pb_value(void) { return 7; }\n");
+    spawnSync("clang", ["-c", sb.path("pb.c"), "-o", sb.path("pb.o")]);
+    spawnSync("ar", ["rcs", sb.path("fixtures/prebuilt/target/libpb.a"), sb.path("pb.o")]);
+    return {
+      build: build(sb, "fixtures/app-prebuilt", "--start"),
+      tree: sb.tree("fixtures/app-prebuilt"),
+    };
+  });
+
+  scenario("diamond graph", sb => ({
+    build: build(sb, "fixtures/diamond/app", "--start"),
+    hookLog: sb.read("fixtures/diamond/app/hook.log"),
+    preloadLog: sb.read("fixtures/diamond/mid-a/preload.log"),
+    rebuild: build(sb, "fixtures/diamond/app", "--def", "EXTRA"),
+    tree: sb.tree("fixtures/diamond/app"),
+    cache: sb.read("fixtures/diamond/app/.shard/cache.json"),
+  }));
+
+  scenario("git dependencies", sb => {
+    const remotes = sb.path("remotes");
+    const work = sb.path("remotes/work");
+    cpSync(sb.path("fixtures/gitlib"), work, { recursive: true });
+    const setVersion = (v: number): void => writeFileSync(`${work}/shard.json`, JSON.stringify({
+      imports: ["include"], exports: ["include"], options: { defines: [`GITLIB_VERSION=${v}`] },
+    }));
+    git(work, "init", "-q", "-b", "main");
+    setVersion(100);
+    git(work, "add", ".");
+    git(work, "commit", "-q", "-m", "v1.0.0");
+    git(work, "tag", "v1.0.0");
+    setVersion(120);
+    git(work, "commit", "-q", "-am", "v1.2.0");
+    git(work, "tag", "v1.2.0");
+    git(remotes, "clone", "-q", "--bare", work, "gitlib.git");
+
+    const mono = sb.path("remotes/mono-work");
+    cpSync(sb.path("fixtures/gitlib"), `${mono}/libs/sub`, { recursive: true });
+    writeFileSync(`${mono}/libs/sub/shard.json`, JSON.stringify({
+      imports: ["include"], exports: ["include"], options: { defines: ["GITLIB_VERSION=7"] },
+    }));
+    writeFileSync(`${mono}/README`, "mono\n");
+    git(mono, "init", "-q", "-b", "main");
+    git(mono, "add", ".");
+    git(mono, "commit", "-q", "-m", "mono");
+    git(mono, "tag", "libs/sub/v1.0.0");
+    git(remotes, "clone", "-q", "--bare", mono, "mono.git");
+
+    const app = "fixtures/app-git";
+    const depend = (...deps: string[]): void =>
+      sb.write(`${app}/shard.json`, JSON.stringify({ depend: deps }));
+    const gitBuild = (...flags: string[]): RunSnapshot => build(sb, app, "--git-protocol", "file", ...flags);
+
+    depend(`git:${remotes}/gitlib@v1.0.0`);
+    const v100 = gitBuild("--start");
+    const reuse = gitBuild("--start");
+    depend(`git:${remotes}/gitlib@1.2.0`);
+    const upgradeWithoutV = gitBuild("--start");
+    depend(`git:${remotes}/gitlib@v1.2.0`);
+    const upgrade = gitBuild("--start");
+    const modulesAfterUpgrade = sb.tree(`${app}/modules`);
+    depend(`git:${remotes}/gitlib@v1.0.0`);
+    const olderReuse = gitBuild("--start");
+    depend(`git:${remotes}/gitlib@v2.0.0`);
+    const majorConflict = gitBuild();
+    depend(`git:${remotes}/gitlib@main`);
+    const branchConflict = gitBuild();
+    depend(`git:${remotes}/mono//libs/sub@v1.0.0`);
+    const envProtocol = sb.run(["build", sb.path(app), "--start"], sb.dir, { SHARD_GIT_PROTOCOL: "file" });
+    const modulesWithMono = sb.tree(`${app}/modules`);
+    const prune = sb.run(["update", sb.path(app), "--git-protocol", "file"]);
+    const modulesAfterPrune = sb.tree(`${app}/modules`);
+    depend(`git:${remotes}/gitlib@v9.9.9`);
+    const missingRef = sb.run(["update", sb.path(app), "--git-protocol", "file"]);
+    depend(`git:${remotes}/gitlib`);
+    const head = gitBuild("--start");
+    const modulesWithHead = sb.tree(`${app}/modules`);
+
+    return {
+      v100, reuse, upgradeWithoutV, upgrade, modulesAfterUpgrade, olderReuse, majorConflict, branchConflict,
+      envProtocol, modulesWithMono, prune, modulesAfterPrune, missingRef, head, modulesWithHead,
+    };
+  });
+});

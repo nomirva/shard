@@ -1,0 +1,9 @@
+{
+  "depend": ["local:../mid-a", "local:../mid-b"],
+  "target": "variant",
+  "options": { "standard": "c11", "warnings": "extra", "defines": ["APP=1"] },
+  "?platform:darwin": { "options": { "defines": ["ON_DARWIN"] } },
+  "?compiler:clang": { "options": { "defines": ["ON_CLANG"] } },
+  "?define:EXTRA": { "options": { "compileExtra": ["-DEXTRA_ON"] } },
+  "scripts": { "prebuild": "echo prebuild-app > hook.log", "postbuild": "echo postbuild-app >> hook.log", "hello": "echo hello-from-script" }
+}

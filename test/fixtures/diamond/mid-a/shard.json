@@ -1,0 +1,6 @@
+{
+  "depend": ["local:../leaf+static", "sys:m"],
+  "exports": { "src": ["mid_a.h"] },
+  "options": { "standard": { "version": "c99" } },
+  "scripts": { "preload": "echo preload-mid-a > preload.log" }
+}

@@ -1,0 +1,2573 @@
+// Bun Snapshot v1, https://bun.sh/docs/test/snapshots
+
+exports[`examples hello: build, cached rebuild, start 1`] = `
+{
+  "cache": 
+"{
+  "_/src/main.o": "251aad96747279a5131904f38742436fa1fcfd9df60b96049f37b70f3c06351b"
+}"
+,
+  "first": {
+    "args": [
+      "build",
+      "$SB/examples/hello",
+    ],
+    "invocations": [
+      [
+        "clang",
+        "$SB/examples/hello",
+        "-c",
+        "-fansi-escape-codes",
+        "-fcolor-diagnostics",
+        "-O0",
+        "-g",
+        "-I",
+        "$SB/examples/hello/src",
+        "-o",
+        "$SB/examples/hello/.shard/_/src/main.o",
+        "$SB/examples/hello/src/main.c",
+        "-MMD",
+        "-MF",
+        "$SB/examples/hello/.shard/_/src/main.d",
+      ],
+      [
+        "clang",
+        "$SB",
+        "$SB/examples/hello/.shard/_/src/main.o",
+        "-Wl,-rpath,@executable_path",
+        "-o",
+        "$SB/examples/hello/target/arm64/darwin/none/hello",
+      ],
+    ],
+    "status": 0,
+    "stderr": 
+" ✔ hello/src/main.o
+"
+,
+    "stdout": 
+"
+
+  BUILD SUCCEEDED 
+
+"
+,
+  },
+  "second": {
+    "args": [
+      "build",
+      "$SB/examples/hello",
+    ],
+    "invocations": [
+      [
+        "clang",
+        "$SB",
+        "$SB/examples/hello/.shard/_/src/main.o",
+        "-Wl,-rpath,@executable_path",
+        "-o",
+        "$SB/examples/hello/target/arm64/darwin/none/hello",
+      ],
+    ],
+    "status": 0,
+    "stderr": 
+" ≡ hello/src/main.o
+"
+,
+    "stdout": 
+"
+
+  BUILD SUCCEEDED 
+
+"
+,
+  },
+  "start": {
+    "args": [
+      "build",
+      "$SB/examples/hello",
+      "--start",
+    ],
+    "invocations": [
+      [
+        "clang",
+        "$SB",
+        "$SB/examples/hello/.shard/_/src/main.o",
+        "-Wl,-rpath,@executable_path",
+        "-o",
+        "$SB/examples/hello/target/arm64/darwin/none/hello",
+      ],
+    ],
+    "status": 0,
+    "stderr": 
+" ≡ hello/src/main.o
+"
+,
+    "stdout": 
+"
+Hello, shard!
+"
+,
+  },
+  "tree": [
+    ".gitignore",
+    ".shard/_/src/main.d",
+    ".shard/_/src/main.o",
+    ".shard/cache.json",
+    "shard.json",
+    "src/main.c",
+    "target/arm64/darwin/none/hello",
+  ],
+}
+`;
+
+exports[`examples app: variants and cache modes 1`] = `
+{
+  "cache": 
+"{
+  "..__lib-greet/src/greet.o": "2e6e9bbab953eff43bb7b9dd92b36095d6e1caccda90e9ced56f3f4a265c2778",
+  "_/src/main.o": "d47f665c71952317e7b60ab559201f98325f124287ceee7ba74608e64e71d705",
+  "..__lib-math/src/math_util.o": "7ad2ed52f986402ac866be61a29023c533fef96a4d2ebf8fe2705f37971fa3ce"
+}"
+,
+  "commaDefs": {
+    "args": [
+      "build",
+      "$SB/examples/app",
+      "--def",
+      "MATH,EXTRA=5",
+    ],
+    "invocations": [
+      [
+        "clang",
+        "$SB/examples/lib-math",
+        "-c",
+        "-fansi-escape-codes",
+        "-fcolor-diagnostics",
+        "-O2",
+        "-DMATH",
+        "-DEXTRA=5",
+        "-I",
+        "$SB/examples/lib-math/src",
+        "-o",
+        "$SB/examples/app/.shard/..__lib-math/src/math_util.o",
+        "$SB/examples/lib-math/src/math_util.c",
+        "-MMD",
+        "-MF",
+        "$SB/examples/app/.shard/..__lib-math/src/math_util.d",
+      ],
+      [
+        "ar",
+        "$SB",
+        "rcs",
+        "$SB/examples/app/.shard/lib-math/target/arm64/darwin/none/lib-math.a",
+        "$SB/examples/app/.shard/..__lib-math/src/math_util.o",
+      ],
+      [
+        "clang",
+        "$SB/examples/app",
+        "-c",
+        "-fansi-escape-codes",
+        "-fcolor-diagnostics",
+        "-O2",
+        "-DMATH",
+        "-DEXTRA=5",
+        "-I",
+        "$SB/examples/app/.shard/lib-math/target/arm64/darwin/none/include",
+        "-I",
+        "$SB/examples/app/src",
+        "-o",
+        "$SB/examples/app/.shard/_/src/main.o",
+        "$SB/examples/app/src/main.c",
+        "-MMD",
+        "-MF",
+        "$SB/examples/app/.shard/_/src/main.d",
+      ],
+      [
+        "clang",
+        "$SB",
+        "$SB/examples/app/.shard/_/src/main.o",
+        "$SB/examples/app/.shard/lib-math/target/arm64/darwin/none/lib-math.a",
+        "-Wl,-rpath,@executable_path",
+        "-o",
+        "$SB/examples/app/target/arm64/darwin/none/math/app",
+      ],
+    ],
+    "status": 0,
+    "stderr": 
+" ✔ lib-math/src/math_util.o
+ ✔ app/src/main.o
+"
+,
+    "stdout": 
+"
+
+  BUILD SUCCEEDED 
+
+"
+,
+  },
+  "greet": {
+    "args": [
+      "build",
+      "$SB/examples/app",
+      "--def",
+      "GREET",
+      "--start",
+    ],
+    "invocations": [
+      [
+        "clang",
+        "$SB/examples/lib-greet",
+        "-c",
+        "-fansi-escape-codes",
+        "-fcolor-diagnostics",
+        "-O2",
+        "-DGREET",
+        "-I",
+        "$SB/examples/lib-greet/src",
+        "-I",
+        "$SB/examples/lib-greet/include",
+        "-o",
+        "$SB/examples/app/.shard/..__lib-greet/src/greet.o",
+        "$SB/examples/lib-greet/src/greet.c",
+        "-MMD",
+        "-MF",
+        "$SB/examples/app/.shard/..__lib-greet/src/greet.d",
+      ],
+      [
+        "clang",
+        "$SB",
+        "-shared",
+        "$SB/examples/app/.shard/..__lib-greet/src/greet.o",
+        "-o",
+        "$SB/examples/app/.shard/lib-greet/target/arm64/darwin/none/lib-greet.dylib",
+      ],
+      [
+        "clang",
+        "$SB/examples/app",
+        "-c",
+        "-fansi-escape-codes",
+        "-fcolor-diagnostics",
+        "-O2",
+        "-DGREET",
+        "-I",
+        "$SB/examples/app/.shard/lib-greet/target/arm64/darwin/none/include",
+        "-I",
+        "$SB/examples/app/src",
+        "-o",
+        "$SB/examples/app/.shard/_/src/main.o",
+        "$SB/examples/app/src/main.c",
+        "-MMD",
+        "-MF",
+        "$SB/examples/app/.shard/_/src/main.d",
+      ],
+      [
+        "clang",
+        "$SB",
+        "$SB/examples/app/.shard/_/src/main.o",
+        "$SB/examples/app/.shard/lib-greet/target/arm64/darwin/none/lib-greet.dylib",
+        "-Wl,-rpath,@executable_path",
+        "-o",
+        "$SB/examples/app/target/arm64/darwin/none/greet/app",
+      ],
+    ],
+    "status": 0,
+    "stderr": 
+" ✔ lib-greet/src/greet.o
+ ✔ app/src/main.o
+"
+,
+    "stdout": 
+"
+Hello, shard!
+"
+,
+  },
+  "ignoreAll": {
+    "args": [
+      "build",
+      "$SB/examples/app",
+      "--def",
+      "GREET",
+      "--ignore-cache",
+      "2",
+    ],
+    "invocations": [
+      [
+        "clang",
+        "$SB/examples/lib-greet",
+        "-c",
+        "-fansi-escape-codes",
+        "-fcolor-diagnostics",
+        "-O2",
+        "-DGREET",
+        "-I",
+        "$SB/examples/lib-greet/src",
+        "-I",
+        "$SB/examples/lib-greet/include",
+        "-o",
+        "$SB/examples/app/.shard/..__lib-greet/src/greet.o",
+        "$SB/examples/lib-greet/src/greet.c",
+        "-MMD",
+        "-MF",
+        "$SB/examples/app/.shard/..__lib-greet/src/greet.d",
+      ],
+      [
+        "clang",
+        "$SB",
+        "-shared",
+        "$SB/examples/app/.shard/..__lib-greet/src/greet.o",
+        "-o",
+        "$SB/examples/app/.shard/lib-greet/target/arm64/darwin/none/lib-greet.dylib",
+      ],
+      [
+        "clang",
+        "$SB/examples/app",
+        "-c",
+        "-fansi-escape-codes",
+        "-fcolor-diagnostics",
+        "-O2",
+        "-DGREET",
+        "-I",
+        "$SB/examples/app/.shard/lib-greet/target/arm64/darwin/none/include",
+        "-I",
+        "$SB/examples/app/src",
+        "-o",
+        "$SB/examples/app/.shard/_/src/main.o",
+        "$SB/examples/app/src/main.c",
+        "-MMD",
+        "-MF",
+        "$SB/examples/app/.shard/_/src/main.d",
+      ],
+      [
+        "clang",
+        "$SB",
+        "$SB/examples/app/.shard/_/src/main.o",
+        "$SB/examples/app/.shard/lib-greet/target/arm64/darwin/none/lib-greet.dylib",
+        "-Wl,-rpath,@executable_path",
+        "-o",
+        "$SB/examples/app/target/arm64/darwin/none/greet/app",
+      ],
+    ],
+    "status": 0,
+    "stderr": 
+" ✔ lib-greet/src/greet.o
+ ✔ app/src/main.o
+"
+,
+    "stdout": 
+"
+
+  BUILD SUCCEEDED 
+
+"
+,
+  },
+  "ignoreRoot": {
+    "args": [
+      "build",
+      "$SB/examples/app",
+      "--def",
+      "GREET",
+      "--ignore-cache",
+      "1",
+    ],
+    "invocations": [
+      [
+        "clang",
+        "$SB",
+        "-shared",
+        "$SB/examples/app/.shard/..__lib-greet/src/greet.o",
+        "-o",
+        "$SB/examples/app/.shard/lib-greet/target/arm64/darwin/none/lib-greet.dylib",
+      ],
+      [
+        "clang",
+        "$SB/examples/app",
+        "-c",
+        "-fansi-escape-codes",
+        "-fcolor-diagnostics",
+        "-O2",
+        "-DGREET",
+        "-I",
+        "$SB/examples/app/.shard/lib-greet/target/arm64/darwin/none/include",
+        "-I",
+        "$SB/examples/app/src",
+        "-o",
+        "$SB/examples/app/.shard/_/src/main.o",
+        "$SB/examples/app/src/main.c",
+        "-MMD",
+        "-MF",
+        "$SB/examples/app/.shard/_/src/main.d",
+      ],
+      [
+        "clang",
+        "$SB",
+        "$SB/examples/app/.shard/_/src/main.o",
+        "$SB/examples/app/.shard/lib-greet/target/arm64/darwin/none/lib-greet.dylib",
+        "-Wl,-rpath,@executable_path",
+        "-o",
+        "$SB/examples/app/target/arm64/darwin/none/greet/app",
+      ],
+    ],
+    "status": 0,
+    "stderr": 
+" ≡ lib-greet/src/greet.o
+ ✔ app/src/main.o
+"
+,
+    "stdout": 
+"
+
+  BUILD SUCCEEDED 
+
+"
+,
+  },
+  "math": {
+    "args": [
+      "build",
+      "$SB/examples/app",
+      "--def",
+      "MATH",
+      "--start",
+    ],
+    "invocations": [
+      [
+        "clang",
+        "$SB/examples/lib-math",
+        "-c",
+        "-fansi-escape-codes",
+        "-fcolor-diagnostics",
+        "-O2",
+        "-DMATH",
+        "-I",
+        "$SB/examples/lib-math/src",
+        "-o",
+        "$SB/examples/app/.shard/..__lib-math/src/math_util.o",
+        "$SB/examples/lib-math/src/math_util.c",
+        "-MMD",
+        "-MF",
+        "$SB/examples/app/.shard/..__lib-math/src/math_util.d",
+      ],
+      [
+        "ar",
+        "$SB",
+        "rcs",
+        "$SB/examples/app/.shard/lib-math/target/arm64/darwin/none/lib-math.a",
+        "$SB/examples/app/.shard/..__lib-math/src/math_util.o",
+      ],
+      [
+        "clang",
+        "$SB/examples/app",
+        "-c",
+        "-fansi-escape-codes",
+        "-fcolor-diagnostics",
+        "-O2",
+        "-DMATH",
+        "-I",
+        "$SB/examples/app/.shard/lib-math/target/arm64/darwin/none/include",
+        "-I",
+        "$SB/examples/app/src",
+        "-o",
+        "$SB/examples/app/.shard/_/src/main.o",
+        "$SB/examples/app/src/main.c",
+        "-MMD",
+        "-MF",
+        "$SB/examples/app/.shard/_/src/main.d",
+      ],
+      [
+        "clang",
+        "$SB",
+        "$SB/examples/app/.shard/_/src/main.o",
+        "$SB/examples/app/.shard/lib-math/target/arm64/darwin/none/lib-math.a",
+        "-Wl,-rpath,@executable_path",
+        "-o",
+        "$SB/examples/app/target/arm64/darwin/none/math/app",
+      ],
+    ],
+    "status": 0,
+    "stderr": 
+" ✔ lib-math/src/math_util.o
+ ✔ app/src/main.o
+"
+,
+    "stdout": 
+"
+2 + 3 = 5
+4 * 5 = 20
+"
+,
+  },
+  "mathCached": {
+    "args": [
+      "build",
+      "$SB/examples/app",
+      "--def",
+      "MATH",
+    ],
+    "invocations": [
+      [
+        "ar",
+        "$SB",
+        "rcs",
+        "$SB/examples/app/.shard/lib-math/target/arm64/darwin/none/lib-math.a",
+        "$SB/examples/app/.shard/..__lib-math/src/math_util.o",
+      ],
+      [
+        "clang",
+        "$SB",
+        "$SB/examples/app/.shard/_/src/main.o",
+        "$SB/examples/app/.shard/lib-math/target/arm64/darwin/none/lib-math.a",
+        "-Wl,-rpath,@executable_path",
+        "-o",
+        "$SB/examples/app/target/arm64/darwin/none/math/app",
+      ],
+    ],
+    "status": 0,
+    "stderr": 
+" ≡ lib-math/src/math_util.o
+ ≡ app/src/main.o
+"
+,
+    "stdout": 
+"
+
+  BUILD SUCCEEDED 
+
+"
+,
+  },
+  "tree": [
+    ".gitignore",
+    ".shard/..__lib-greet/src/greet.d",
+    ".shard/..__lib-greet/src/greet.o",
+    ".shard/..__lib-math/src/math_util.d",
+    ".shard/..__lib-math/src/math_util.o",
+    ".shard/_/src/main.d",
+    ".shard/_/src/main.o",
+    ".shard/cache.json",
+    ".shard/lib-greet/target/arm64/darwin/none/include/greet.h",
+    ".shard/lib-greet/target/arm64/darwin/none/lib-greet.dylib",
+    ".shard/lib-math/target/arm64/darwin/none/include/math_util.h",
+    ".shard/lib-math/target/arm64/darwin/none/lib-math.a",
+    "shard.json",
+    "src/main.c",
+    "target/arm64/darwin/none/greet/app",
+    "target/arm64/darwin/none/greet/lib-greet.dylib",
+    "target/arm64/darwin/none/math/app",
+  ],
+}
+`;
+
+exports[`examples app: no variant is a compile error 1`] = `
+{
+  "run": {
+    "args": [
+      "build",
+      "$SB/examples/app",
+    ],
+    "invocations": [
+      [
+        "clang",
+        "$SB/examples/app",
+        "-c",
+        "-fansi-escape-codes",
+        "-fcolor-diagnostics",
+        "-O2",
+        "-I",
+        "$SB/examples/app/src",
+        "-o",
+        "$SB/examples/app/.shard/_/src/main.o",
+        "$SB/examples/app/src/main.c",
+        "-MMD",
+        "-MF",
+        "$SB/examples/app/.shard/_/src/main.d",
+      ],
+    ],
+    "status": 1,
+    "stderr": 
+"\x1B[1m$SB/examples/app/src/main.c:17:2: \x1B[0m\x1B[0;1;31merror: \x1B[0m\x1B[1m"No variant selected. Build with: --def GREET | --def MATH"\x1B[0m
+   17 | #error \x1B[0;32m"No variant selected. Build with: --def GREET | --def MATH"\x1B[0m
+      | \x1B[0;1;32m ^
+\x1B[0m1 error generated.
+ ✘ app/src/main.o
+  ✖ [build] clang failed (exit code 1)
+"
+,
+    "stdout": 
+"
+
+
+"
+,
+  },
+}
+`;
+
+exports[`examples app-std: standards and compatibility 1`] = `
+{
+  "c89": {
+    "args": [
+      "build",
+      "$SB/examples/app-std",
+      "--def",
+      "C89",
+    ],
+    "invocations": [],
+    "status": 1,
+    "stderr": 
+"  ✖ [config] Module 'lib-std' exports headers requiring at least c99, but 'app-std' uses c89.
+    hint: Lower 'lib-std'.standard.support to 'c89' if the headers are compatible.
+"
+,
+    "stdout": 
+"
+
+
+"
+,
+  },
+  "ok": {
+    "args": [
+      "build",
+      "$SB/examples/app-std",
+      "--start",
+    ],
+    "invocations": [
+      [
+        "clang",
+        "$SB/examples/lib-std",
+        "-c",
+        "-fansi-escape-codes",
+        "-fcolor-diagnostics",
+        "-O2",
+        "-g",
+        "-std=c11",
+        "-Wpedantic",
+        "-I",
+        "$SB/examples/lib-std/src",
+        "-I",
+        "$SB/examples/lib-std/include",
+        "-o",
+        "$SB/examples/app-std/.shard/..__lib-std/src/calc.o",
+        "$SB/examples/lib-std/src/calc.c",
+        "-MMD",
+        "-MF",
+        "$SB/examples/app-std/.shard/..__lib-std/src/calc.d",
+      ],
+      [
+        "ar",
+        "$SB",
+        "rcs",
+        "$SB/examples/app-std/.shard/lib-std/target/arm64/darwin/none/lib-std.a",
+        "$SB/examples/app-std/.shard/..__lib-std/src/calc.o",
+      ],
+      [
+        "clang",
+        "$SB/examples/app-std",
+        "-c",
+        "-fansi-escape-codes",
+        "-fcolor-diagnostics",
+        "-O3",
+        "-std=c17",
+        "-I",
+        "$SB/examples/app-std/.shard/lib-std/target/arm64/darwin/none/include",
+        "-I",
+        "$SB/examples/app-std/src",
+        "-o",
+        "$SB/examples/app-std/.shard/_/src/main.o",
+        "$SB/examples/app-std/src/main.c",
+        "-MMD",
+        "-MF",
+        "$SB/examples/app-std/.shard/_/src/main.d",
+      ],
+      [
+        "clang",
+        "$SB",
+        "$SB/examples/app-std/.shard/_/src/main.o",
+        "$SB/examples/app-std/.shard/lib-std/target/arm64/darwin/none/lib-std.a",
+        "-Wl,-rpath,@executable_path",
+        "-o",
+        "$SB/examples/app-std/target/arm64/darwin/none/app-std",
+      ],
+    ],
+    "status": 0,
+    "stderr": 
+" ✔ lib-std/src/calc.o
+ ✔ app-std/src/main.o
+"
+,
+    "stdout": 
+"
+calc_square(5) = 25
+"
+,
+  },
+  "tree": [
+    ".gitignore",
+    ".shard/..__lib-std/src/calc.d",
+    ".shard/..__lib-std/src/calc.o",
+    ".shard/_/src/main.d",
+    ".shard/_/src/main.o",
+    ".shard/cache.json",
+    ".shard/lib-std/target/arm64/darwin/none/include/calc.h",
+    ".shard/lib-std/target/arm64/darwin/none/lib-std.a",
+    "shard.json",
+    "src/main.c",
+    "target/arm64/darwin/none/app-std",
+  ],
+}
+`;
+
+exports[`examples libraries as root 1`] = `
+{
+  "greet": {
+    "args": [
+      "build",
+      "$SB/examples/lib-greet",
+    ],
+    "invocations": [
+      [
+        "clang",
+        "$SB/examples/lib-greet",
+        "-c",
+        "-fansi-escape-codes",
+        "-fcolor-diagnostics",
+        "-O2",
+        "-I",
+        "$SB/examples/lib-greet/src",
+        "-I",
+        "$SB/examples/lib-greet/include",
+        "-o",
+        "$SB/examples/lib-greet/.shard/_/src/greet.o",
+        "$SB/examples/lib-greet/src/greet.c",
+        "-MMD",
+        "-MF",
+        "$SB/examples/lib-greet/.shard/_/src/greet.d",
+      ],
+      [
+        "ar",
+        "$SB",
+        "rcs",
+        "$SB/examples/lib-greet/target/arm64/darwin/none/lib-greet.a",
+        "$SB/examples/lib-greet/.shard/_/src/greet.o",
+      ],
+      [
+        "clang",
+        "$SB",
+        "-shared",
+        "$SB/examples/lib-greet/.shard/_/src/greet.o",
+        "-o",
+        "$SB/examples/lib-greet/target/arm64/darwin/none/lib-greet.dylib",
+      ],
+    ],
+    "status": 0,
+    "stderr": 
+" ✔ lib-greet/src/greet.o
+"
+,
+    "stdout": 
+"
+
+  BUILD SUCCEEDED 
+
+"
+,
+  },
+  "greetTree": [
+    ".gitignore",
+    ".shard/_/src/greet.d",
+    ".shard/_/src/greet.o",
+    ".shard/cache.json",
+    "include/greet.h",
+    "shard.json",
+    "src/greet.c",
+    "target/arm64/darwin/none/include/greet.h",
+    "target/arm64/darwin/none/lib-greet.a",
+    "target/arm64/darwin/none/lib-greet.dylib",
+  ],
+  "math": {
+    "args": [
+      "build",
+      "$SB/examples/lib-math",
+    ],
+    "invocations": [
+      [
+        "clang",
+        "$SB/examples/lib-math",
+        "-c",
+        "-fansi-escape-codes",
+        "-fcolor-diagnostics",
+        "-O2",
+        "-I",
+        "$SB/examples/lib-math/src",
+        "-o",
+        "$SB/examples/lib-math/.shard/_/src/math_util.o",
+        "$SB/examples/lib-math/src/math_util.c",
+        "-MMD",
+        "-MF",
+        "$SB/examples/lib-math/.shard/_/src/math_util.d",
+      ],
+      [
+        "ar",
+        "$SB",
+        "rcs",
+        "$SB/examples/lib-math/target/arm64/darwin/none/lib-math.a",
+        "$SB/examples/lib-math/.shard/_/src/math_util.o",
+      ],
+      [
+        "clang",
+        "$SB",
+        "-shared",
+        "$SB/examples/lib-math/.shard/_/src/math_util.o",
+        "-o",
+        "$SB/examples/lib-math/target/arm64/darwin/none/lib-math.dylib",
+      ],
+    ],
+    "status": 0,
+    "stderr": 
+" ✔ lib-math/src/math_util.o
+"
+,
+    "stdout": 
+"
+
+  BUILD SUCCEEDED 
+
+"
+,
+  },
+  "startLib": {
+    "args": [
+      "build",
+      "$SB/examples/lib-greet",
+      "--start",
+    ],
+    "invocations": [
+      [
+        "ar",
+        "$SB",
+        "rcs",
+        "$SB/examples/lib-greet/target/arm64/darwin/none/lib-greet.a",
+        "$SB/examples/lib-greet/.shard/_/src/greet.o",
+      ],
+      [
+        "clang",
+        "$SB",
+        "-shared",
+        "$SB/examples/lib-greet/.shard/_/src/greet.o",
+        "-o",
+        "$SB/examples/lib-greet/target/arm64/darwin/none/lib-greet.dylib",
+      ],
+    ],
+    "status": 1,
+    "stderr": 
+" ≡ lib-greet/src/greet.o
+  ✖ [usage] "lib-greet" is not an executable module
+"
+,
+    "stdout": 
+"
+
+
+"
+,
+  },
+  "std": {
+    "args": [
+      "build",
+      "$SB/examples/lib-std",
+    ],
+    "invocations": [
+      [
+        "clang",
+        "$SB/examples/lib-std",
+        "-c",
+        "-fansi-escape-codes",
+        "-fcolor-diagnostics",
+        "-O2",
+        "-g",
+        "-std=c11",
+        "-Wpedantic",
+        "-I",
+        "$SB/examples/lib-std/src",
+        "-I",
+        "$SB/examples/lib-std/include",
+        "-o",
+        "$SB/examples/lib-std/.shard/_/src/calc.o",
+        "$SB/examples/lib-std/src/calc.c",
+        "-MMD",
+        "-MF",
+        "$SB/examples/lib-std/.shard/_/src/calc.d",
+      ],
+      [
+        "ar",
+        "$SB",
+        "rcs",
+        "$SB/examples/lib-std/target/arm64/darwin/none/lib-std.a",
+        "$SB/examples/lib-std/.shard/_/src/calc.o",
+      ],
+      [
+        "clang",
+        "$SB",
+        "-shared",
+        "$SB/examples/lib-std/.shard/_/src/calc.o",
+        "-o",
+        "$SB/examples/lib-std/target/arm64/darwin/none/lib-std.dylib",
+      ],
+    ],
+    "status": 0,
+    "stderr": 
+" ✔ lib-std/src/calc.o
+"
+,
+    "stdout": 
+"
+
+  BUILD SUCCEEDED 
+
+"
+,
+  },
+  "stdTree": [
+    ".gitignore",
+    ".shard/_/src/calc.d",
+    ".shard/_/src/calc.o",
+    ".shard/cache.json",
+    "include/calc.h",
+    "shard.json",
+    "src/calc.c",
+    "target/arm64/darwin/none/include/calc.h",
+    "target/arm64/darwin/none/lib-std.a",
+    "target/arm64/darwin/none/lib-std.dylib",
+  ],
+}
+`;
+
+exports[`examples profiles override 1`] = `
+{
+  "fast": {
+    "args": [
+      "build",
+      "$SB/examples/profiles",
+      "--profile",
+      "fast",
+      "--start",
+    ],
+    "invocations": [
+      [
+        "clang",
+        "$SB/examples/profiles",
+        "-c",
+        "-fansi-escape-codes",
+        "-fcolor-diagnostics",
+        "-O3",
+        "-I",
+        "$SB/examples/profiles/src",
+        "-o",
+        "$SB/examples/profiles/.shard/_/src/main.o",
+        "$SB/examples/profiles/src/main.c",
+        "-MMD",
+        "-MF",
+        "$SB/examples/profiles/.shard/_/src/main.d",
+      ],
+      [
+        "clang",
+        "$SB",
+        "$SB/examples/profiles/.shard/_/src/main.o",
+        "-Wl,-rpath,@executable_path",
+        "-o",
+        "$SB/examples/profiles/target/arm64/darwin/none/profiles",
+      ],
+    ],
+    "status": 0,
+    "stderr": 
+" ✔ profiles/src/main.o
+"
+,
+    "stdout": 
+"
+profile: optimized (-O2/-O3)
+"
+,
+  },
+  "invalid": {
+    "args": [
+      "build",
+      "$SB/examples/profiles",
+      "--profile",
+      "nope",
+    ],
+    "invocations": [],
+    "status": 1,
+    "stderr": 
+"error: option '--profile <name>' argument 'nope' is invalid. Allowed choices are debug, debug-opt, release, fast, small, tiny.
+"
+,
+    "stdout": "",
+  },
+  "manifest": {
+    "args": [
+      "build",
+      "$SB/examples/profiles",
+      "--start",
+    ],
+    "invocations": [
+      [
+        "clang",
+        "$SB/examples/profiles",
+        "-c",
+        "-fansi-escape-codes",
+        "-fcolor-diagnostics",
+        "-O0",
+        "-g",
+        "-I",
+        "$SB/examples/profiles/src",
+        "-o",
+        "$SB/examples/profiles/.shard/_/src/main.o",
+        "$SB/examples/profiles/src/main.c",
+        "-MMD",
+        "-MF",
+        "$SB/examples/profiles/.shard/_/src/main.d",
+      ],
+      [
+        "clang",
+        "$SB",
+        "$SB/examples/profiles/.shard/_/src/main.o",
+        "-Wl,-rpath,@executable_path",
+        "-o",
+        "$SB/examples/profiles/target/arm64/darwin/none/profiles",
+      ],
+    ],
+    "status": 0,
+    "stderr": 
+" ✔ profiles/src/main.o
+"
+,
+    "stdout": 
+"
+profile: debug (-O0)
+"
+,
+  },
+  "tiny": {
+    "args": [
+      "build",
+      "$SB/examples/profiles",
+      "--profile",
+      "tiny",
+      "--start",
+    ],
+    "invocations": [
+      [
+        "clang",
+        "$SB/examples/profiles",
+        "-c",
+        "-fansi-escape-codes",
+        "-fcolor-diagnostics",
+        "-Oz",
+        "-I",
+        "$SB/examples/profiles/src",
+        "-o",
+        "$SB/examples/profiles/.shard/_/src/main.o",
+        "$SB/examples/profiles/src/main.c",
+        "-MMD",
+        "-MF",
+        "$SB/examples/profiles/.shard/_/src/main.d",
+      ],
+      [
+        "clang",
+        "$SB",
+        "$SB/examples/profiles/.shard/_/src/main.o",
+        "-Wl,-rpath,@executable_path",
+        "-o",
+        "$SB/examples/profiles/target/arm64/darwin/none/profiles",
+      ],
+    ],
+    "status": 0,
+    "stderr": 
+" ✔ profiles/src/main.o
+"
+,
+    "stdout": 
+"
+profile: size (-Os/-Oz)
+"
+,
+  },
+}
+`;
+
+exports[`examples codegen: preload and preclean hooks 1`] = `
+{
+  "build": {
+    "args": [
+      "build",
+      "$SB/examples/codegen",
+      "--start",
+    ],
+    "invocations": [
+      [
+        "clang",
+        "$SB/examples/codegen",
+        "-c",
+        "-fansi-escape-codes",
+        "-fcolor-diagnostics",
+        "-O2",
+        "-I",
+        "$SB/examples/codegen/src",
+        "-o",
+        "$SB/examples/codegen/.shard/_/src/generated.o",
+        "$SB/examples/codegen/src/generated.c",
+        "-MMD",
+        "-MF",
+        "$SB/examples/codegen/.shard/_/src/generated.d",
+      ],
+      [
+        "clang",
+        "$SB/examples/codegen",
+        "-c",
+        "-fansi-escape-codes",
+        "-fcolor-diagnostics",
+        "-O2",
+        "-I",
+        "$SB/examples/codegen/src",
+        "-o",
+        "$SB/examples/codegen/.shard/_/src/main.o",
+        "$SB/examples/codegen/src/main.c",
+        "-MMD",
+        "-MF",
+        "$SB/examples/codegen/.shard/_/src/main.d",
+      ],
+      [
+        "clang",
+        "$SB",
+        "$SB/examples/codegen/.shard/_/src/generated.o",
+        "$SB/examples/codegen/.shard/_/src/main.o",
+        "-Wl,-rpath,@executable_path",
+        "-o",
+        "$SB/examples/codegen/target/arm64/darwin/none/codegen",
+      ],
+    ],
+    "status": 0,
+    "stderr": 
+" ✔ codegen/src/generated.o
+ ✔ codegen/src/main.o
+"
+,
+    "stdout": 
+"
+The answer is 42
+"
+,
+  },
+  "clean": {
+    "args": [
+      "clean",
+      "$SB/examples/codegen",
+    ],
+    "invocations": [],
+    "status": 0,
+    "stderr": "",
+    "stdout": 
+"  removed: $SB/examples/codegen/.shard
+  removed: $SB/examples/codegen/target
+"
+,
+  },
+  "script": {
+    "args": [
+      "run",
+      "preload",
+      "$SB/examples/codegen",
+    ],
+    "invocations": [],
+    "status": 0,
+    "stderr": "",
+    "stdout": "",
+  },
+  "treeAfterBuild": [
+    ".gitignore",
+    ".shard/_/src/generated.d",
+    ".shard/_/src/generated.o",
+    ".shard/_/src/main.d",
+    ".shard/_/src/main.o",
+    ".shard/cache.json",
+    "clean.sh",
+    "gen.sh",
+    "shard.json",
+    "src/generated.c",
+    "src/generated.h",
+    "src/main.c",
+    "target/arm64/darwin/none/codegen",
+  ],
+  "treeAfterClean": [
+    ".gitignore",
+    "clean.sh",
+    "gen.sh",
+    "shard.json",
+    "src/main.c",
+  ],
+}
+`;
+
+exports[`commands info 1`] = `
+{
+  "appStd": {
+    "args": [
+      "info",
+      "$SB/examples/app-std",
+    ],
+    "invocations": [],
+    "status": 0,
+    "stderr": "",
+    "stdout": 
+"
+  Name: app-std
+  Type: executable
+  Include: $SB/examples/app-std/src
+  Dependencies (1):
+    - lib-std default (static)
+"
+,
+  },
+  "diamond": {
+    "args": [
+      "info",
+      "$SB/fixtures/diamond/app",
+    ],
+    "invocations": [],
+    "status": 0,
+    "stderr": "",
+    "stdout": 
+"
+  Name: app
+  Type: executable
+  Include: $SB/fixtures/diamond/app/src
+  Dependencies (2):
+    - mid-a default (static)
+    - mid-b default (static)
+"
+,
+  },
+  "libGreet": {
+    "args": [
+      "info",
+      "$SB/examples/lib-greet",
+    ],
+    "invocations": [],
+    "status": 0,
+    "stderr": "",
+    "stdout": 
+"
+  Name: lib-greet
+  Type: library
+  Include: $SB/examples/lib-greet/src
+  Dependencies: none
+"
+,
+  },
+  "sysdeps": {
+    "args": [
+      "info",
+      "$SB/fixtures/sysdeps",
+    ],
+    "invocations": [],
+    "status": 0,
+    "stderr": "",
+    "stdout": 
+"
+  Name: sysdeps
+  Type: executable
+  Include: $SB/fixtures/sysdeps/src
+  Dependencies (2):
+    - sys:m static
+    - framework:CoreFoundation static
+"
+,
+  },
+}
+`;
+
+exports[`commands update and clean 1`] = `
+{
+  "build": {
+    "args": [
+      "build",
+      "$SB/examples/app-std",
+    ],
+    "invocations": [
+      [
+        "clang",
+        "$SB/examples/lib-std",
+        "-c",
+        "-fansi-escape-codes",
+        "-fcolor-diagnostics",
+        "-O2",
+        "-g",
+        "-std=c11",
+        "-Wpedantic",
+        "-I",
+        "$SB/examples/lib-std/src",
+        "-I",
+        "$SB/examples/lib-std/include",
+        "-o",
+        "$SB/examples/app-std/.shard/..__lib-std/src/calc.o",
+        "$SB/examples/lib-std/src/calc.c",
+        "-MMD",
+        "-MF",
+        "$SB/examples/app-std/.shard/..__lib-std/src/calc.d",
+      ],
+      [
+        "ar",
+        "$SB",
+        "rcs",
+        "$SB/examples/app-std/.shard/lib-std/target/arm64/darwin/none/lib-std.a",
+        "$SB/examples/app-std/.shard/..__lib-std/src/calc.o",
+      ],
+      [
+        "clang",
+        "$SB/examples/app-std",
+        "-c",
+        "-fansi-escape-codes",
+        "-fcolor-diagnostics",
+        "-O3",
+        "-std=c17",
+        "-I",
+        "$SB/examples/app-std/.shard/lib-std/target/arm64/darwin/none/include",
+        "-I",
+        "$SB/examples/app-std/src",
+        "-o",
+        "$SB/examples/app-std/.shard/_/src/main.o",
+        "$SB/examples/app-std/src/main.c",
+        "-MMD",
+        "-MF",
+        "$SB/examples/app-std/.shard/_/src/main.d",
+      ],
+      [
+        "clang",
+        "$SB",
+        "$SB/examples/app-std/.shard/_/src/main.o",
+        "$SB/examples/app-std/.shard/lib-std/target/arm64/darwin/none/lib-std.a",
+        "-Wl,-rpath,@executable_path",
+        "-o",
+        "$SB/examples/app-std/target/arm64/darwin/none/app-std",
+      ],
+    ],
+    "status": 0,
+    "stderr": 
+" ✔ lib-std/src/calc.o
+ ✔ app-std/src/main.o
+"
+,
+    "stdout": 
+"
+
+  BUILD SUCCEEDED 
+
+"
+,
+  },
+  "clean": {
+    "args": [
+      "clean",
+      "$SB/examples/app-std",
+    ],
+    "invocations": [],
+    "status": 0,
+    "stderr": "",
+    "stdout": 
+"  removed: $SB/examples/app-std/.shard
+  removed: $SB/examples/app-std/target
+"
+,
+  },
+  "tree": [
+    ".gitignore",
+    "shard.json",
+    "src/main.c",
+  ],
+  "update": {
+    "args": [
+      "update",
+      "$SB/examples/app-std",
+    ],
+    "invocations": [],
+    "status": 0,
+    "stderr": "",
+    "stdout": 
+"Modules synced — dependency modules up to date
+"
+,
+  },
+}
+`;
+
+exports[`commands run scripts 1`] = `
+{
+  "cwdDefault": {
+    "args": [
+      "run",
+      "hello",
+    ],
+    "invocations": [],
+    "status": 0,
+    "stderr": "",
+    "stdout": 
+"hello-from-script
+"
+,
+  },
+  "hello": {
+    "args": [
+      "run",
+      "hello",
+      "$SB/fixtures/diamond/app",
+    ],
+    "invocations": [],
+    "status": 0,
+    "stderr": "",
+    "stdout": 
+"hello-from-script
+"
+,
+  },
+  "missing": {
+    "args": [
+      "run",
+      "nope",
+      "$SB/fixtures/diamond/app",
+    ],
+    "invocations": [],
+    "status": 1,
+    "stderr": 
+"  ✖ [config] Script "nope" is not defined in shard.json
+"
+,
+    "stdout": 
+"
+
+"
+,
+  },
+}
+`;
+
+exports[`commands usage errors 1`] = `
+{
+  "badCacheMode": {
+    "args": [
+      "build",
+      "$SB/examples/hello",
+      "--ignore-cache",
+      "5",
+    ],
+    "invocations": [],
+    "status": 1,
+    "stderr": 
+"  ✖ [usage] --ignore-cache must be 0, 1, or 2
+"
+,
+    "stdout": 
+"
+
+
+"
+,
+  },
+  "badPrefix": {
+    "args": [
+      "build",
+      "$SB/fixtures/bad-dep",
+    ],
+    "invocations": [],
+    "status": 1,
+    "stderr": 
+"  ✖ [config] Unknown dependency prefix "foo"
+    hint: supported prefixes: git, local, sys, framework
+"
+,
+    "stdout": 
+"
+
+
+"
+,
+  },
+  "emptyDep": {
+    "args": [
+      "build",
+      "$SB/fixtures/app-empty",
+    ],
+    "invocations": [],
+    "status": 1,
+    "stderr": 
+"  ✖ [config] Module "empty" is empty: no sources, exports, or artifacts
+"
+,
+    "stdout": 
+"
+
+
+"
+,
+  },
+  "missingDir": {
+    "args": [
+      "build",
+      "$SB/does-not-exist",
+    ],
+    "invocations": [],
+    "status": 1,
+    "stderr": 
+"  ✖ [config] Module "does-not-exist" is empty: no sources, exports, or artifacts
+"
+,
+    "stdout": 
+"
+
+
+"
+,
+  },
+  "nanCacheMode": {
+    "args": [
+      "build",
+      "$SB/examples/hello",
+      "--ignore-cache",
+      "x",
+    ],
+    "invocations": [],
+    "status": 1,
+    "stderr": 
+"  ✖ [usage] --ignore-cache must be 0, 1, or 2
+"
+,
+    "stdout": 
+"
+
+
+"
+,
+  },
+}
+`;
+
+exports[`fixtures sys and framework deps 1`] = `
+{
+  "build": {
+    "args": [
+      "build",
+      "$SB/fixtures/sysdeps",
+      "--start",
+    ],
+    "invocations": [
+      [
+        "clang",
+        "$SB/fixtures/sysdeps",
+        "-c",
+        "-fansi-escape-codes",
+        "-fcolor-diagnostics",
+        "-O2",
+        "-I",
+        "$SB/fixtures/sysdeps/src",
+        "-o",
+        "$SB/fixtures/sysdeps/.shard/_/src/main.o",
+        "$SB/fixtures/sysdeps/src/main.c",
+        "-MMD",
+        "-MF",
+        "$SB/fixtures/sysdeps/.shard/_/src/main.d",
+      ],
+      [
+        "clang",
+        "$SB",
+        "$SB/fixtures/sysdeps/.shard/_/src/main.o",
+        "-lm",
+        "-Wl,-framework,CoreFoundation",
+        "-Wl,-rpath,@executable_path",
+        "-o",
+        "$SB/fixtures/sysdeps/target/arm64/darwin/none/sysdeps",
+      ],
+    ],
+    "status": 0,
+    "stderr": 
+"Warning: "m" — -Bstatic unavailable on macOS, linking dynamically
+Warning: "CoreFoundation" — framework cannot be linked statically, linking dynamically
+ ✔ sysdeps/src/main.o
+"
+,
+    "stdout": 
+"
+sqrt(16) = 4
+"
+,
+  },
+}
+`;
+
+exports[`fixtures header-only dependency 1`] = `
+{
+  "build": {
+    "args": [
+      "build",
+      "$SB/fixtures/app-hdr",
+      "--start",
+    ],
+    "invocations": [
+      [
+        "clang",
+        "$SB/fixtures/app-hdr",
+        "-c",
+        "-fansi-escape-codes",
+        "-fcolor-diagnostics",
+        "-O2",
+        "-I",
+        "$SB/fixtures/app-hdr/.shard/hdr-only/target/arm64/darwin/none/include",
+        "-I",
+        "$SB/fixtures/app-hdr/src",
+        "-o",
+        "$SB/fixtures/app-hdr/.shard/_/src/main.o",
+        "$SB/fixtures/app-hdr/src/main.c",
+        "-MMD",
+        "-MF",
+        "$SB/fixtures/app-hdr/.shard/_/src/main.d",
+      ],
+      [
+        "clang",
+        "$SB",
+        "$SB/fixtures/app-hdr/.shard/_/src/main.o",
+        "-Wl,-rpath,@executable_path",
+        "-o",
+        "$SB/fixtures/app-hdr/target/arm64/darwin/none/app-hdr",
+      ],
+    ],
+    "status": 0,
+    "stderr": 
+" ✔ app-hdr/src/main.o
+"
+,
+    "stdout": 
+"
+twice(21) = 42
+"
+,
+  },
+  "tree": [
+    ".shard/_/src/main.d",
+    ".shard/_/src/main.o",
+    ".shard/cache.json",
+    ".shard/hdr-only/target/arm64/darwin/none/include/hdr.h",
+    "shard.json",
+    "src/main.c",
+    "target/arm64/darwin/none/app-hdr",
+  ],
+}
+`;
+
+exports[`fixtures prebuilt dependency 1`] = `
+{
+  "build": {
+    "args": [
+      "build",
+      "$SB/fixtures/app-prebuilt",
+      "--start",
+    ],
+    "invocations": [],
+    "status": 1,
+    "stderr": 
+"  ✖ [build] Invalid prebuilt package "prebuilt": expected libraries at "$SB/fixtures/app-prebuilt/.shard/prebuilt/target/arm64/darwin/none"
+    hint: check the module layout or exports field
+"
+,
+    "stdout": 
+"
+
+
+"
+,
+  },
+  "tree": [
+    "shard.json",
+    "src/main.c",
+  ],
+}
+`;
+
+exports[`fixtures diamond graph 1`] = `
+{
+  "build": {
+    "args": [
+      "build",
+      "$SB/fixtures/diamond/app",
+      "--start",
+    ],
+    "invocations": [
+      [
+        "clang",
+        "$SB/fixtures/diamond/leaf",
+        "-c",
+        "-fansi-escape-codes",
+        "-fcolor-diagnostics",
+        "-O2",
+        "-std=c99",
+        "-pedantic-errors",
+        "-I",
+        "$SB/fixtures/diamond/leaf/src",
+        "-I",
+        "$SB/fixtures/diamond/leaf/src/nested",
+        "-I",
+        "$SB/fixtures/diamond/leaf/api",
+        "-o",
+        "$SB/fixtures/diamond/app/.shard/..__leaf/src/leaf.o",
+        "$SB/fixtures/diamond/leaf/src/leaf.c",
+        "-MMD",
+        "-MF",
+        "$SB/fixtures/diamond/app/.shard/..__leaf/src/leaf.d",
+      ],
+      [
+        "clang",
+        "$SB/fixtures/diamond/leaf",
+        "-c",
+        "-fansi-escape-codes",
+        "-fcolor-diagnostics",
+        "-O2",
+        "-std=c99",
+        "-pedantic-errors",
+        "-I",
+        "$SB/fixtures/diamond/leaf/src",
+        "-I",
+        "$SB/fixtures/diamond/leaf/src/nested",
+        "-I",
+        "$SB/fixtures/diamond/leaf/api",
+        "-o",
+        "$SB/fixtures/diamond/app/.shard/..__leaf/src/nested/nested.o",
+        "$SB/fixtures/diamond/leaf/src/nested/nested.c",
+        "-MMD",
+        "-MF",
+        "$SB/fixtures/diamond/app/.shard/..__leaf/src/nested/nested.d",
+      ],
+      [
+        "ar",
+        "$SB",
+        "rcs",
+        "$SB/fixtures/diamond/app/.shard/leaf/target/arm64/darwin/none/leaf.a",
+        "$SB/fixtures/diamond/app/.shard/..__leaf/src/leaf.o",
+        "$SB/fixtures/diamond/app/.shard/..__leaf/src/nested/nested.o",
+      ],
+      [
+        "clang",
+        "$SB/fixtures/diamond/mid-a",
+        "-c",
+        "-fansi-escape-codes",
+        "-fcolor-diagnostics",
+        "-O2",
+        "-std=c99",
+        "-I",
+        "$SB/fixtures/diamond/app/.shard/leaf/target/arm64/darwin/none/include",
+        "-I",
+        "$SB/fixtures/diamond/mid-a/src",
+        "-o",
+        "$SB/fixtures/diamond/app/.shard/..__mid-a/src/mid_a.o",
+        "$SB/fixtures/diamond/mid-a/src/mid_a.c",
+        "-MMD",
+        "-MF",
+        "$SB/fixtures/diamond/app/.shard/..__mid-a/src/mid_a.d",
+      ],
+      [
+        "ar",
+        "$SB",
+        "rcs",
+        "$SB/fixtures/diamond/app/.shard/mid-a/target/arm64/darwin/none/mid-a.a",
+        "$SB/fixtures/diamond/app/.shard/..__mid-a/src/mid_a.o",
+      ],
+      [
+        "clang",
+        "$SB/fixtures/diamond/mid-b",
+        "-c",
+        "-fansi-escape-codes",
+        "-fcolor-diagnostics",
+        "-Os",
+        "-std=c11",
+        "-I",
+        "$SB/fixtures/diamond/app/.shard/leaf/target/arm64/darwin/none/include",
+        "-I",
+        "$SB/fixtures/diamond/mid-b/src",
+        "-o",
+        "$SB/fixtures/diamond/app/.shard/..__mid-b/src/mid_b.o",
+        "$SB/fixtures/diamond/mid-b/src/mid_b.c",
+        "-MMD",
+        "-MF",
+        "$SB/fixtures/diamond/app/.shard/..__mid-b/src/mid_b.d",
+      ],
+      [
+        "ar",
+        "$SB",
+        "rcs",
+        "$SB/fixtures/diamond/app/.shard/mid-b/target/arm64/darwin/none/mid-b.a",
+        "$SB/fixtures/diamond/app/.shard/..__mid-b/src/mid_b.o",
+      ],
+      [
+        "clang",
+        "$SB/fixtures/diamond/app",
+        "-c",
+        "-fansi-escape-codes",
+        "-fcolor-diagnostics",
+        "-O2",
+        "-std=c11",
+        "-Wall",
+        "-Wextra",
+        "-DAPP=1",
+        "-DON_DARWIN",
+        "-DON_CLANG",
+        "-I",
+        "$SB/fixtures/diamond/app/.shard/mid-a/target/arm64/darwin/none/include",
+        "-I",
+        "$SB/fixtures/diamond/app/.shard/leaf/target/arm64/darwin/none/include",
+        "-I",
+        "$SB/fixtures/diamond/app/.shard/mid-b/target/arm64/darwin/none/include",
+        "-I",
+        "$SB/fixtures/diamond/app/src",
+        "-o",
+        "$SB/fixtures/diamond/app/.shard/_/src/main.o",
+        "$SB/fixtures/diamond/app/src/main.c",
+        "-MMD",
+        "-MF",
+        "$SB/fixtures/diamond/app/.shard/_/src/main.d",
+      ],
+      [
+        "clang",
+        "$SB",
+        "$SB/fixtures/diamond/app/.shard/_/src/main.o",
+        "$SB/fixtures/diamond/app/.shard/mid-a/target/arm64/darwin/none/mid-a.a",
+        "$SB/fixtures/diamond/app/.shard/leaf/target/arm64/darwin/none/leaf.a",
+        "$SB/fixtures/diamond/app/.shard/mid-b/target/arm64/darwin/none/mid-b.a",
+        "-lm",
+        "-Wl,-rpath,@executable_path",
+        "-o",
+        "$SB/fixtures/diamond/app/target/arm64/darwin/none/variant/app",
+      ],
+    ],
+    "status": 0,
+    "stderr": 
+" ✔ leaf/src/leaf.o
+ ✔ leaf/src/nested/nested.o
+ ✔ mid-a/src/mid_a.o
+ ✔ mid-b/src/mid_b.o
+ ✔ app/src/main.o
+"
+,
+    "stdout": 
+"
+41 42
+"
+,
+  },
+  "cache": 
+"{
+  "..__leaf/src/leaf.o": "66efe89d32adf430d9fc55efdf63a53f5aac769b977698246e646bdae6cdc7b1",
+  "..__leaf/src/nested/nested.o": "0c634a813df18ce411041929791bcb72bb41f792c33258add06e49fd2b5c4e33",
+  "..__mid-a/src/mid_a.o": "707ba1cc676e5e540f35ce3eaaf7a91358aca1d48675a75daebaccfe5a3eb3c9",
+  "..__mid-b/src/mid_b.o": "4dd090e95b98a19f1b00470baba7f151f5cb200644cb067cf4b408654b12c62a",
+  "_/src/main.o": "8e0ebd4e6b83c6f0510616183b91de67507f938fa802bed2e522d267685b377a"
+}"
+,
+  "hookLog": 
+"prebuild-app
+postbuild-app
+"
+,
+  "preloadLog": 
+"preload-mid-a
+"
+,
+  "rebuild": {
+    "args": [
+      "build",
+      "$SB/fixtures/diamond/app",
+      "--def",
+      "EXTRA",
+    ],
+    "invocations": [
+      [
+        "clang",
+        "$SB/fixtures/diamond/leaf",
+        "-c",
+        "-fansi-escape-codes",
+        "-fcolor-diagnostics",
+        "-O2",
+        "-std=c99",
+        "-pedantic-errors",
+        "-DEXTRA",
+        "-I",
+        "$SB/fixtures/diamond/leaf/src",
+        "-I",
+        "$SB/fixtures/diamond/leaf/src/nested",
+        "-I",
+        "$SB/fixtures/diamond/leaf/api",
+        "-o",
+        "$SB/fixtures/diamond/app/.shard/..__leaf/src/leaf.o",
+        "$SB/fixtures/diamond/leaf/src/leaf.c",
+        "-MMD",
+        "-MF",
+        "$SB/fixtures/diamond/app/.shard/..__leaf/src/leaf.d",
+      ],
+      [
+        "clang",
+        "$SB/fixtures/diamond/leaf",
+        "-c",
+        "-fansi-escape-codes",
+        "-fcolor-diagnostics",
+        "-O2",
+        "-std=c99",
+        "-pedantic-errors",
+        "-DEXTRA",
+        "-I",
+        "$SB/fixtures/diamond/leaf/src",
+        "-I",
+        "$SB/fixtures/diamond/leaf/src/nested",
+        "-I",
+        "$SB/fixtures/diamond/leaf/api",
+        "-o",
+        "$SB/fixtures/diamond/app/.shard/..__leaf/src/nested/nested.o",
+        "$SB/fixtures/diamond/leaf/src/nested/nested.c",
+        "-MMD",
+        "-MF",
+        "$SB/fixtures/diamond/app/.shard/..__leaf/src/nested/nested.d",
+      ],
+      [
+        "ar",
+        "$SB",
+        "rcs",
+        "$SB/fixtures/diamond/app/.shard/leaf/target/arm64/darwin/none/leaf.a",
+        "$SB/fixtures/diamond/app/.shard/..__leaf/src/leaf.o",
+        "$SB/fixtures/diamond/app/.shard/..__leaf/src/nested/nested.o",
+      ],
+      [
+        "clang",
+        "$SB/fixtures/diamond/mid-a",
+        "-c",
+        "-fansi-escape-codes",
+        "-fcolor-diagnostics",
+        "-O2",
+        "-std=c99",
+        "-DEXTRA",
+        "-I",
+        "$SB/fixtures/diamond/app/.shard/leaf/target/arm64/darwin/none/include",
+        "-I",
+        "$SB/fixtures/diamond/mid-a/src",
+        "-o",
+        "$SB/fixtures/diamond/app/.shard/..__mid-a/src/mid_a.o",
+        "$SB/fixtures/diamond/mid-a/src/mid_a.c",
+        "-MMD",
+        "-MF",
+        "$SB/fixtures/diamond/app/.shard/..__mid-a/src/mid_a.d",
+      ],
+      [
+        "ar",
+        "$SB",
+        "rcs",
+        "$SB/fixtures/diamond/app/.shard/mid-a/target/arm64/darwin/none/mid-a.a",
+        "$SB/fixtures/diamond/app/.shard/..__mid-a/src/mid_a.o",
+      ],
+      [
+        "clang",
+        "$SB/fixtures/diamond/mid-b",
+        "-c",
+        "-fansi-escape-codes",
+        "-fcolor-diagnostics",
+        "-Os",
+        "-std=c11",
+        "-DEXTRA",
+        "-I",
+        "$SB/fixtures/diamond/app/.shard/leaf/target/arm64/darwin/none/include",
+        "-I",
+        "$SB/fixtures/diamond/mid-b/src",
+        "-o",
+        "$SB/fixtures/diamond/app/.shard/..__mid-b/src/mid_b.o",
+        "$SB/fixtures/diamond/mid-b/src/mid_b.c",
+        "-MMD",
+        "-MF",
+        "$SB/fixtures/diamond/app/.shard/..__mid-b/src/mid_b.d",
+      ],
+      [
+        "ar",
+        "$SB",
+        "rcs",
+        "$SB/fixtures/diamond/app/.shard/mid-b/target/arm64/darwin/none/mid-b.a",
+        "$SB/fixtures/diamond/app/.shard/..__mid-b/src/mid_b.o",
+      ],
+      [
+        "clang",
+        "$SB/fixtures/diamond/app",
+        "-c",
+        "-fansi-escape-codes",
+        "-fcolor-diagnostics",
+        "-O2",
+        "-std=c11",
+        "-Wall",
+        "-Wextra",
+        "-DAPP=1",
+        "-DON_DARWIN",
+        "-DON_CLANG",
+        "-DEXTRA",
+        "-I",
+        "$SB/fixtures/diamond/app/.shard/mid-a/target/arm64/darwin/none/include",
+        "-I",
+        "$SB/fixtures/diamond/app/.shard/leaf/target/arm64/darwin/none/include",
+        "-I",
+        "$SB/fixtures/diamond/app/.shard/mid-b/target/arm64/darwin/none/include",
+        "-I",
+        "$SB/fixtures/diamond/app/src",
+        "-DEXTRA_ON",
+        "-o",
+        "$SB/fixtures/diamond/app/.shard/_/src/main.o",
+        "$SB/fixtures/diamond/app/src/main.c",
+        "-MMD",
+        "-MF",
+        "$SB/fixtures/diamond/app/.shard/_/src/main.d",
+      ],
+      [
+        "clang",
+        "$SB",
+        "$SB/fixtures/diamond/app/.shard/_/src/main.o",
+        "$SB/fixtures/diamond/app/.shard/mid-a/target/arm64/darwin/none/mid-a.a",
+        "$SB/fixtures/diamond/app/.shard/leaf/target/arm64/darwin/none/leaf.a",
+        "$SB/fixtures/diamond/app/.shard/mid-b/target/arm64/darwin/none/mid-b.a",
+        "-lm",
+        "-Wl,-rpath,@executable_path",
+        "-o",
+        "$SB/fixtures/diamond/app/target/arm64/darwin/none/variant/app",
+      ],
+    ],
+    "status": 0,
+    "stderr": 
+" ✔ leaf/src/leaf.o
+ ✔ leaf/src/nested/nested.o
+ ✔ mid-a/src/mid_a.o
+ ✔ mid-b/src/mid_b.o
+ ✔ app/src/main.o
+"
+,
+    "stdout": 
+"
+
+  BUILD SUCCEEDED 
+
+"
+,
+  },
+  "tree": [
+    ".shard/..__leaf/src/leaf.d",
+    ".shard/..__leaf/src/leaf.o",
+    ".shard/..__leaf/src/nested/nested.d",
+    ".shard/..__leaf/src/nested/nested.o",
+    ".shard/..__mid-a/src/mid_a.d",
+    ".shard/..__mid-a/src/mid_a.o",
+    ".shard/..__mid-b/src/mid_b.d",
+    ".shard/..__mid-b/src/mid_b.o",
+    ".shard/_/src/main.d",
+    ".shard/_/src/main.o",
+    ".shard/cache.json",
+    ".shard/leaf/target/arm64/darwin/none/include/leaf/leaf.h",
+    ".shard/leaf/target/arm64/darwin/none/leaf.a",
+    ".shard/mid-a/target/arm64/darwin/none/include/mid_a.h",
+    ".shard/mid-a/target/arm64/darwin/none/mid-a.a",
+    ".shard/mid-b/target/arm64/darwin/none/include/mid_b.h",
+    ".shard/mid-b/target/arm64/darwin/none/mid-b.a",
+    "hook.log",
+    "shard.json",
+    "src/main.c",
+    "target/arm64/darwin/none/variant/app",
+  ],
+}
+`;
+
+exports[`fixtures git dependencies 1`] = `
+{
+  "branchConflict": {
+    "args": [
+      "build",
+      "$SB/fixtures/app-git",
+      "--git-protocol",
+      "file",
+    ],
+    "invocations": [],
+    "status": 1,
+    "stderr": 
+"  ✖ [conflict] Version conflict for "gitlib": installed v1.2.0, requested branch:main
+    hint: one pinned state per module can be installed at a time
+"
+,
+    "stdout": 
+"
+
+
+"
+,
+  },
+  "envProtocol": {
+    "args": [
+      "build",
+      "$SB/fixtures/app-git",
+      "--start",
+    ],
+    "invocations": [
+      [
+        "clang",
+        "$SB/fixtures/app-git/modules/sub@v1.0.0",
+        "-c",
+        "-fansi-escape-codes",
+        "-fcolor-diagnostics",
+        "-O2",
+        "-DGITLIB_VERSION=7",
+        "-I",
+        "$SB/fixtures/app-git/modules/sub@v1.0.0/src",
+        "-I",
+        "$SB/fixtures/app-git/modules/sub@v1.0.0/include",
+        "-o",
+        "$SB/fixtures/app-git/.shard/modules__sub@v1.0.0/src/gitlib.o",
+        "$SB/fixtures/app-git/modules/sub@v1.0.0/src/gitlib.c",
+        "-MMD",
+        "-MF",
+        "$SB/fixtures/app-git/.shard/modules__sub@v1.0.0/src/gitlib.d",
+      ],
+      [
+        "ar",
+        "$SB",
+        "rcs",
+        "$SB/fixtures/app-git/.shard/sub/target/arm64/darwin/none/sub.a",
+        "$SB/fixtures/app-git/.shard/modules__sub@v1.0.0/src/gitlib.o",
+      ],
+      [
+        "clang",
+        "$SB/fixtures/app-git",
+        "-c",
+        "-fansi-escape-codes",
+        "-fcolor-diagnostics",
+        "-O2",
+        "-I",
+        "$SB/fixtures/app-git/.shard/sub/target/arm64/darwin/none/include",
+        "-I",
+        "$SB/fixtures/app-git/src",
+        "-o",
+        "$SB/fixtures/app-git/.shard/_/src/main.o",
+        "$SB/fixtures/app-git/src/main.c",
+        "-MMD",
+        "-MF",
+        "$SB/fixtures/app-git/.shard/_/src/main.d",
+      ],
+      [
+        "clang",
+        "$SB",
+        "$SB/fixtures/app-git/.shard/_/src/main.o",
+        "$SB/fixtures/app-git/.shard/sub/target/arm64/darwin/none/sub.a",
+        "-Wl,-rpath,@executable_path",
+        "-o",
+        "$SB/fixtures/app-git/target/arm64/darwin/none/app-git",
+      ],
+    ],
+    "status": 0,
+    "stderr": 
+" ✔ sub/src/gitlib.o
+ ✔ app-git/src/main.o
+"
+,
+    "stdout": 
+"
+gitlib 7
+"
+,
+  },
+  "head": {
+    "args": [
+      "build",
+      "$SB/fixtures/app-git",
+      "--git-protocol",
+      "file",
+      "--start",
+    ],
+    "invocations": [
+      [
+        "clang",
+        "$SB/fixtures/app-git/modules/gitlib",
+        "-c",
+        "-fansi-escape-codes",
+        "-fcolor-diagnostics",
+        "-O2",
+        "-DGITLIB_VERSION=120",
+        "-I",
+        "$SB/fixtures/app-git/modules/gitlib/src",
+        "-I",
+        "$SB/fixtures/app-git/modules/gitlib/include",
+        "-o",
+        "$SB/fixtures/app-git/.shard/modules__gitlib/src/gitlib.o",
+        "$SB/fixtures/app-git/modules/gitlib/src/gitlib.c",
+        "-MMD",
+        "-MF",
+        "$SB/fixtures/app-git/.shard/modules__gitlib/src/gitlib.d",
+      ],
+      [
+        "ar",
+        "$SB",
+        "rcs",
+        "$SB/fixtures/app-git/.shard/gitlib/target/arm64/darwin/none/gitlib.a",
+        "$SB/fixtures/app-git/.shard/modules__gitlib/src/gitlib.o",
+      ],
+      [
+        "clang",
+        "$SB/fixtures/app-git",
+        "-c",
+        "-fansi-escape-codes",
+        "-fcolor-diagnostics",
+        "-O2",
+        "-I",
+        "$SB/fixtures/app-git/.shard/gitlib/target/arm64/darwin/none/include",
+        "-I",
+        "$SB/fixtures/app-git/src",
+        "-o",
+        "$SB/fixtures/app-git/.shard/_/src/main.o",
+        "$SB/fixtures/app-git/src/main.c",
+        "-MMD",
+        "-MF",
+        "$SB/fixtures/app-git/.shard/_/src/main.d",
+      ],
+      [
+        "clang",
+        "$SB",
+        "$SB/fixtures/app-git/.shard/_/src/main.o",
+        "$SB/fixtures/app-git/.shard/gitlib/target/arm64/darwin/none/gitlib.a",
+        "-Wl,-rpath,@executable_path",
+        "-o",
+        "$SB/fixtures/app-git/target/arm64/darwin/none/app-git",
+      ],
+    ],
+    "status": 0,
+    "stderr": 
+" ✔ gitlib/src/gitlib.o
+ ✔ app-git/src/main.o
+"
+,
+    "stdout": 
+"
+gitlib 120
+"
+,
+  },
+  "majorConflict": {
+    "args": [
+      "build",
+      "$SB/fixtures/app-git",
+      "--git-protocol",
+      "file",
+    ],
+    "invocations": [],
+    "status": 1,
+    "stderr": 
+"  ✖ [conflict] Version conflict for "gitlib": installed v1.2.0, requested v2.0.0
+    hint: one pinned state per module can be installed at a time
+"
+,
+    "stdout": 
+"
+
+
+"
+,
+  },
+  "missingRef": {
+    "args": [
+      "update",
+      "$SB/fixtures/app-git",
+      "--git-protocol",
+      "file",
+    ],
+    "invocations": [],
+    "status": 1,
+    "stderr": 
+"  ✖ [git] Ref "9.9.9" not found for file://$SB/remotes/gitlib.git
+    hint: Cloning into '$SB/fixtures/app-git/modules/gitlib@v9.9.9'...
+fatal: Remote branch 9.9.9 not found in upstream origin
+"
+,
+    "stdout": 
+"
+
+"
+,
+  },
+  "modulesAfterPrune": [
+    "sub@v1.0.0/README",
+    "sub@v1.0.0/include/gitlib.h",
+    "sub@v1.0.0/shard.json",
+    "sub@v1.0.0/src/gitlib.c",
+  ],
+  "modulesAfterUpgrade": [
+    "gitlib@v1.2.0/include/gitlib.h",
+    "gitlib@v1.2.0/shard.json",
+    "gitlib@v1.2.0/src/gitlib.c",
+  ],
+  "modulesWithHead": [
+    "gitlib/include/gitlib.h",
+    "gitlib/shard.json",
+    "gitlib/src/gitlib.c",
+    "sub@v1.0.0/README",
+    "sub@v1.0.0/include/gitlib.h",
+    "sub@v1.0.0/shard.json",
+    "sub@v1.0.0/src/gitlib.c",
+  ],
+  "modulesWithMono": [
+    "gitlib@v1.2.0/include/gitlib.h",
+    "gitlib@v1.2.0/shard.json",
+    "gitlib@v1.2.0/src/gitlib.c",
+    "sub@v1.0.0/README",
+    "sub@v1.0.0/include/gitlib.h",
+    "sub@v1.0.0/shard.json",
+    "sub@v1.0.0/src/gitlib.c",
+  ],
+  "olderReuse": {
+    "args": [
+      "build",
+      "$SB/fixtures/app-git",
+      "--git-protocol",
+      "file",
+      "--start",
+    ],
+    "invocations": [
+      [
+        "ar",
+        "$SB",
+        "rcs",
+        "$SB/fixtures/app-git/.shard/gitlib/target/arm64/darwin/none/gitlib.a",
+        "$SB/fixtures/app-git/.shard/modules__gitlib@v1.2.0/src/gitlib.o",
+      ],
+      [
+        "clang",
+        "$SB",
+        "$SB/fixtures/app-git/.shard/_/src/main.o",
+        "$SB/fixtures/app-git/.shard/gitlib/target/arm64/darwin/none/gitlib.a",
+        "-Wl,-rpath,@executable_path",
+        "-o",
+        "$SB/fixtures/app-git/target/arm64/darwin/none/app-git",
+      ],
+    ],
+    "status": 0,
+    "stderr": 
+" ≡ gitlib/src/gitlib.o
+ ≡ app-git/src/main.o
+"
+,
+    "stdout": 
+"
+gitlib 120
+"
+,
+  },
+  "prune": {
+    "args": [
+      "update",
+      "$SB/fixtures/app-git",
+      "--git-protocol",
+      "file",
+    ],
+    "invocations": [],
+    "status": 0,
+    "stderr": "",
+    "stdout": 
+"Modules synced — dependency modules up to date
+"
+,
+  },
+  "reuse": {
+    "args": [
+      "build",
+      "$SB/fixtures/app-git",
+      "--git-protocol",
+      "file",
+      "--start",
+    ],
+    "invocations": [
+      [
+        "ar",
+        "$SB",
+        "rcs",
+        "$SB/fixtures/app-git/.shard/gitlib/target/arm64/darwin/none/gitlib.a",
+        "$SB/fixtures/app-git/.shard/modules__gitlib@v1.0.0/src/gitlib.o",
+      ],
+      [
+        "clang",
+        "$SB",
+        "$SB/fixtures/app-git/.shard/_/src/main.o",
+        "$SB/fixtures/app-git/.shard/gitlib/target/arm64/darwin/none/gitlib.a",
+        "-Wl,-rpath,@executable_path",
+        "-o",
+        "$SB/fixtures/app-git/target/arm64/darwin/none/app-git",
+      ],
+    ],
+    "status": 0,
+    "stderr": 
+" ≡ gitlib/src/gitlib.o
+ ≡ app-git/src/main.o
+"
+,
+    "stdout": 
+"
+gitlib 100
+"
+,
+  },
+  "upgrade": {
+    "args": [
+      "build",
+      "$SB/fixtures/app-git",
+      "--git-protocol",
+      "file",
+      "--start",
+    ],
+    "invocations": [
+      [
+        "clang",
+        "$SB/fixtures/app-git/modules/gitlib@v1.2.0",
+        "-c",
+        "-fansi-escape-codes",
+        "-fcolor-diagnostics",
+        "-O2",
+        "-DGITLIB_VERSION=120",
+        "-I",
+        "$SB/fixtures/app-git/modules/gitlib@v1.2.0/src",
+        "-I",
+        "$SB/fixtures/app-git/modules/gitlib@v1.2.0/include",
+        "-o",
+        "$SB/fixtures/app-git/.shard/modules__gitlib@v1.2.0/src/gitlib.o",
+        "$SB/fixtures/app-git/modules/gitlib@v1.2.0/src/gitlib.c",
+        "-MMD",
+        "-MF",
+        "$SB/fixtures/app-git/.shard/modules__gitlib@v1.2.0/src/gitlib.d",
+      ],
+      [
+        "ar",
+        "$SB",
+        "rcs",
+        "$SB/fixtures/app-git/.shard/gitlib/target/arm64/darwin/none/gitlib.a",
+        "$SB/fixtures/app-git/.shard/modules__gitlib@v1.2.0/src/gitlib.o",
+      ],
+      [
+        "clang",
+        "$SB",
+        "$SB/fixtures/app-git/.shard/_/src/main.o",
+        "$SB/fixtures/app-git/.shard/gitlib/target/arm64/darwin/none/gitlib.a",
+        "-Wl,-rpath,@executable_path",
+        "-o",
+        "$SB/fixtures/app-git/target/arm64/darwin/none/app-git",
+      ],
+    ],
+    "status": 0,
+    "stderr": 
+" ✔ gitlib/src/gitlib.o
+ ≡ app-git/src/main.o
+"
+,
+    "stdout": 
+"
+gitlib 120
+"
+,
+  },
+  "upgradeWithoutV": {
+    "args": [
+      "build",
+      "$SB/fixtures/app-git",
+      "--git-protocol",
+      "file",
+      "--start",
+    ],
+    "invocations": [],
+    "status": 1,
+    "stderr": 
+"  ✖ [conflict] Version conflict for "gitlib": installed v1.0.0, requested 1.2.0
+    hint: one pinned state per module can be installed at a time
+"
+,
+    "stdout": 
+"
+
+
+"
+,
+  },
+  "v100": {
+    "args": [
+      "build",
+      "$SB/fixtures/app-git",
+      "--git-protocol",
+      "file",
+      "--start",
+    ],
+    "invocations": [
+      [
+        "clang",
+        "$SB/fixtures/app-git/modules/gitlib@v1.0.0",
+        "-c",
+        "-fansi-escape-codes",
+        "-fcolor-diagnostics",
+        "-O2",
+        "-DGITLIB_VERSION=100",
+        "-I",
+        "$SB/fixtures/app-git/modules/gitlib@v1.0.0/src",
+        "-I",
+        "$SB/fixtures/app-git/modules/gitlib@v1.0.0/include",
+        "-o",
+        "$SB/fixtures/app-git/.shard/modules__gitlib@v1.0.0/src/gitlib.o",
+        "$SB/fixtures/app-git/modules/gitlib@v1.0.0/src/gitlib.c",
+        "-MMD",
+        "-MF",
+        "$SB/fixtures/app-git/.shard/modules__gitlib@v1.0.0/src/gitlib.d",
+      ],
+      [
+        "ar",
+        "$SB",
+        "rcs",
+        "$SB/fixtures/app-git/.shard/gitlib/target/arm64/darwin/none/gitlib.a",
+        "$SB/fixtures/app-git/.shard/modules__gitlib@v1.0.0/src/gitlib.o",
+      ],
+      [
+        "clang",
+        "$SB/fixtures/app-git",
+        "-c",
+        "-fansi-escape-codes",
+        "-fcolor-diagnostics",
+        "-O2",
+        "-I",
+        "$SB/fixtures/app-git/.shard/gitlib/target/arm64/darwin/none/include",
+        "-I",
+        "$SB/fixtures/app-git/src",
+        "-o",
+        "$SB/fixtures/app-git/.shard/_/src/main.o",
+        "$SB/fixtures/app-git/src/main.c",
+        "-MMD",
+        "-MF",
+        "$SB/fixtures/app-git/.shard/_/src/main.d",
+      ],
+      [
+        "clang",
+        "$SB",
+        "$SB/fixtures/app-git/.shard/_/src/main.o",
+        "$SB/fixtures/app-git/.shard/gitlib/target/arm64/darwin/none/gitlib.a",
+        "-Wl,-rpath,@executable_path",
+        "-o",
+        "$SB/fixtures/app-git/target/arm64/darwin/none/app-git",
+      ],
+    ],
+    "status": 0,
+    "stderr": 
+" ✔ gitlib/src/gitlib.o
+ ✔ app-git/src/main.o
+"
+,
+    "stdout": 
+"
+gitlib 100
+"
+,
+  },
+}
+`;

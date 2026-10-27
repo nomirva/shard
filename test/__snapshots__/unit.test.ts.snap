@@ -1,0 +1,789 @@
+// Bun Snapshot v1, https://bun.sh/docs/test/snapshots
+
+exports[`conditionals resolution and merge order 1`] = `
+{
+  "depend": [
+    "x",
+    "mac",
+    "a-and-b",
+  ],
+  "name": "clang-name",
+  "options": {
+    "defines": [
+      "BASE",
+      "MAC",
+    ],
+    "nested": {
+      "a": 1,
+      "b": 2,
+    },
+  },
+  "target": "no-c",
+  "version": "1.0.0",
+}
+`;
+
+exports[`manifest normalization 1`] = `
+{
+  "depend": [],
+  "exports": undefined,
+  "imports": undefined,
+  "name": undefined,
+  "options": {},
+  "scripts": {},
+  "sources": undefined,
+  "target": undefined,
+  "version": undefined,
+}
+`;
+
+exports[`manifest normalization 2`] = `
+{
+  "depend": [
+    "a",
+    "b",
+  ],
+  "exports": undefined,
+  "imports": undefined,
+  "name": "n",
+  "options": {
+    "defines": [
+      "D",
+    ],
+    "profile": "debug",
+    "standard": {
+      "version": "gnu11",
+    },
+    "warnings": "extra",
+  },
+  "scripts": {
+    "x": "y",
+  },
+  "sources": undefined,
+  "target": "t",
+  "version": "1",
+}
+`;
+
+exports[`manifest normalization 3`] = `
+{
+  "depend": [],
+  "exports": undefined,
+  "imports": undefined,
+  "name": undefined,
+  "options": {
+    "profile": undefined,
+    "standard": {
+      "pedantic": "error",
+      "support": "c89",
+      "version": "c99",
+    },
+  },
+  "scripts": {},
+  "sources": undefined,
+  "target": undefined,
+  "version": undefined,
+}
+`;
+
+exports[`manifest errors 1`] = `
+[
+  {
+    "error": "Unknown compilation profile 'turbo'",
+    "hint": "Valid profiles: debug, debug-opt, release, fast, small, tiny",
+  },
+  {
+    "error": "Unknown standard 'c++17'",
+    "hint": "C++ is not supported. Supported: c89, c99, c11, c17, c23, gnu89, gnu99, gnu11, gnu17, gnu23",
+  },
+  {
+    "error": "Unknown standard 'c2x'",
+    "hint": "Supported: c89, c99, c11, c17, c23, gnu89, gnu99, gnu11, gnu17, gnu23",
+  },
+  {
+    "error": "options.standard must be a string or an object",
+    "hint": undefined,
+  },
+  {
+    "error": "options.standard.version must be a string",
+    "hint": undefined,
+  },
+  {
+    "error": "options.standard.support must be a standard name",
+    "hint": undefined,
+  },
+  {
+    "error": "options.standard.pedantic must be true, false, or "error"",
+    "hint": undefined,
+  },
+]
+`;
+
+exports[`dependency parsing forms 1`] = `
+[
+  {
+    "kind": "git",
+    "link": null,
+    "name": "repo",
+    "pin": {
+      "kind": "head",
+    },
+    "repo": "user/repo",
+    "subdir": undefined,
+    "version": null,
+  },
+  {
+    "kind": "git",
+    "link": null,
+    "name": "repo",
+    "pin": {
+      "kind": "branch",
+      "value": "main",
+    },
+    "repo": "user/repo.git",
+    "subdir": undefined,
+    "version": "main",
+  },
+  {
+    "kind": "git",
+    "link": "static",
+    "name": "repo",
+    "pin": {
+      "kind": "version",
+      "value": "v1.2.3",
+    },
+    "repo": "user/repo",
+    "subdir": undefined,
+    "version": "v1.2.3",
+  },
+  {
+    "kind": "git",
+    "link": "shared",
+    "name": "repo",
+    "pin": {
+      "kind": "version",
+      "value": "1.2.3",
+    },
+    "repo": "user/repo",
+    "subdir": undefined,
+    "version": "v1.2.3",
+  },
+  {
+    "kind": "git",
+    "link": "shared",
+    "name": "mylib",
+    "pin": {
+      "kind": "version",
+      "value": "v1.0.0",
+    },
+    "repo": "owner/mono",
+    "subdir": "libs/mylib",
+    "version": "v1.0.0",
+  },
+  {
+    "kind": "git",
+    "link": null,
+    "name": "mylib",
+    "pin": {
+      "kind": "version",
+      "value": "v1.0.0",
+    },
+    "repo": "owner/mono",
+    "subdir": "libs/mylib",
+    "version": "v1.0.0",
+  },
+  {
+    "kind": "git",
+    "link": null,
+    "name": "mylib",
+    "pin": {
+      "kind": "head",
+    },
+    "repo": "owner/mono",
+    "subdir": "libs/mylib",
+    "version": null,
+  },
+  {
+    "kind": "local",
+    "link": null,
+    "name": "lib",
+    "target": "../lib/",
+    "version": null,
+  },
+  {
+    "kind": "local",
+    "link": "shared",
+    "name": "lib",
+    "target": "../lib",
+    "version": null,
+  },
+  {
+    "kind": "sys",
+    "link": "static",
+    "name": "sys:z",
+    "value": "z",
+    "version": null,
+  },
+  {
+    "kind": "framework",
+    "link": null,
+    "name": "framework:Cocoa",
+    "value": "Cocoa",
+    "version": null,
+  },
+  {
+    "error": "Invalid dependency format: "nope"",
+    "hint": "expected one of: git:user/repo[@ref], local:../path, sys:z, framework:Cocoa",
+  },
+  {
+    "error": "Unknown dependency prefix "foo"",
+    "hint": "supported prefixes: git, local, sys, framework",
+  },
+]
+`;
+
+exports[`git pins reconcile matrix 1`] = `
+[
+  {
+    "inst": {
+      "kind": "head",
+    },
+    "req": {
+      "kind": "head",
+    },
+    "result": "reuse",
+  },
+  {
+    "inst": {
+      "kind": "branch",
+      "value": "main",
+    },
+    "req": {
+      "kind": "head",
+    },
+    "result": "conflict",
+  },
+  {
+    "inst": {
+      "kind": "branch",
+      "value": "dev",
+    },
+    "req": {
+      "kind": "head",
+    },
+    "result": "conflict",
+  },
+  {
+    "inst": {
+      "kind": "version",
+      "value": "v1.0.0",
+    },
+    "req": {
+      "kind": "head",
+    },
+    "result": "conflict",
+  },
+  {
+    "inst": {
+      "kind": "version",
+      "value": "v1.2.0",
+    },
+    "req": {
+      "kind": "head",
+    },
+    "result": "conflict",
+  },
+  {
+    "inst": {
+      "kind": "version",
+      "value": "1.2.0",
+    },
+    "req": {
+      "kind": "head",
+    },
+    "result": "conflict",
+  },
+  {
+    "inst": {
+      "kind": "version",
+      "value": "v2.0.0",
+    },
+    "req": {
+      "kind": "head",
+    },
+    "result": "conflict",
+  },
+  {
+    "inst": {
+      "kind": "head",
+    },
+    "req": {
+      "kind": "branch",
+      "value": "main",
+    },
+    "result": "conflict",
+  },
+  {
+    "inst": {
+      "kind": "branch",
+      "value": "main",
+    },
+    "req": {
+      "kind": "branch",
+      "value": "main",
+    },
+    "result": "reuse",
+  },
+  {
+    "inst": {
+      "kind": "branch",
+      "value": "dev",
+    },
+    "req": {
+      "kind": "branch",
+      "value": "main",
+    },
+    "result": "conflict",
+  },
+  {
+    "inst": {
+      "kind": "version",
+      "value": "v1.0.0",
+    },
+    "req": {
+      "kind": "branch",
+      "value": "main",
+    },
+    "result": "conflict",
+  },
+  {
+    "inst": {
+      "kind": "version",
+      "value": "v1.2.0",
+    },
+    "req": {
+      "kind": "branch",
+      "value": "main",
+    },
+    "result": "conflict",
+  },
+  {
+    "inst": {
+      "kind": "version",
+      "value": "1.2.0",
+    },
+    "req": {
+      "kind": "branch",
+      "value": "main",
+    },
+    "result": "conflict",
+  },
+  {
+    "inst": {
+      "kind": "version",
+      "value": "v2.0.0",
+    },
+    "req": {
+      "kind": "branch",
+      "value": "main",
+    },
+    "result": "conflict",
+  },
+  {
+    "inst": {
+      "kind": "head",
+    },
+    "req": {
+      "kind": "branch",
+      "value": "dev",
+    },
+    "result": "conflict",
+  },
+  {
+    "inst": {
+      "kind": "branch",
+      "value": "main",
+    },
+    "req": {
+      "kind": "branch",
+      "value": "dev",
+    },
+    "result": "conflict",
+  },
+  {
+    "inst": {
+      "kind": "branch",
+      "value": "dev",
+    },
+    "req": {
+      "kind": "branch",
+      "value": "dev",
+    },
+    "result": "reuse",
+  },
+  {
+    "inst": {
+      "kind": "version",
+      "value": "v1.0.0",
+    },
+    "req": {
+      "kind": "branch",
+      "value": "dev",
+    },
+    "result": "conflict",
+  },
+  {
+    "inst": {
+      "kind": "version",
+      "value": "v1.2.0",
+    },
+    "req": {
+      "kind": "branch",
+      "value": "dev",
+    },
+    "result": "conflict",
+  },
+  {
+    "inst": {
+      "kind": "version",
+      "value": "1.2.0",
+    },
+    "req": {
+      "kind": "branch",
+      "value": "dev",
+    },
+    "result": "conflict",
+  },
+  {
+    "inst": {
+      "kind": "version",
+      "value": "v2.0.0",
+    },
+    "req": {
+      "kind": "branch",
+      "value": "dev",
+    },
+    "result": "conflict",
+  },
+  {
+    "inst": {
+      "kind": "head",
+    },
+    "req": {
+      "kind": "version",
+      "value": "v1.0.0",
+    },
+    "result": "conflict",
+  },
+  {
+    "inst": {
+      "kind": "branch",
+      "value": "main",
+    },
+    "req": {
+      "kind": "version",
+      "value": "v1.0.0",
+    },
+    "result": "conflict",
+  },
+  {
+    "inst": {
+      "kind": "branch",
+      "value": "dev",
+    },
+    "req": {
+      "kind": "version",
+      "value": "v1.0.0",
+    },
+    "result": "conflict",
+  },
+  {
+    "inst": {
+      "kind": "version",
+      "value": "v1.0.0",
+    },
+    "req": {
+      "kind": "version",
+      "value": "v1.0.0",
+    },
+    "result": "reuse",
+  },
+  {
+    "inst": {
+      "kind": "version",
+      "value": "v1.2.0",
+    },
+    "req": {
+      "kind": "version",
+      "value": "v1.0.0",
+    },
+    "result": "reuse",
+  },
+  {
+    "inst": {
+      "kind": "version",
+      "value": "1.2.0",
+    },
+    "req": {
+      "kind": "version",
+      "value": "v1.0.0",
+    },
+    "result": "conflict",
+  },
+  {
+    "inst": {
+      "kind": "version",
+      "value": "v2.0.0",
+    },
+    "req": {
+      "kind": "version",
+      "value": "v1.0.0",
+    },
+    "result": "conflict",
+  },
+  {
+    "inst": {
+      "kind": "head",
+    },
+    "req": {
+      "kind": "version",
+      "value": "v1.2.0",
+    },
+    "result": "conflict",
+  },
+  {
+    "inst": {
+      "kind": "branch",
+      "value": "main",
+    },
+    "req": {
+      "kind": "version",
+      "value": "v1.2.0",
+    },
+    "result": "conflict",
+  },
+  {
+    "inst": {
+      "kind": "branch",
+      "value": "dev",
+    },
+    "req": {
+      "kind": "version",
+      "value": "v1.2.0",
+    },
+    "result": "conflict",
+  },
+  {
+    "inst": {
+      "kind": "version",
+      "value": "v1.0.0",
+    },
+    "req": {
+      "kind": "version",
+      "value": "v1.2.0",
+    },
+    "result": "reinstall",
+  },
+  {
+    "inst": {
+      "kind": "version",
+      "value": "v1.2.0",
+    },
+    "req": {
+      "kind": "version",
+      "value": "v1.2.0",
+    },
+    "result": "reuse",
+  },
+  {
+    "inst": {
+      "kind": "version",
+      "value": "1.2.0",
+    },
+    "req": {
+      "kind": "version",
+      "value": "v1.2.0",
+    },
+    "result": "conflict",
+  },
+  {
+    "inst": {
+      "kind": "version",
+      "value": "v2.0.0",
+    },
+    "req": {
+      "kind": "version",
+      "value": "v1.2.0",
+    },
+    "result": "conflict",
+  },
+  {
+    "inst": {
+      "kind": "head",
+    },
+    "req": {
+      "kind": "version",
+      "value": "1.2.0",
+    },
+    "result": "conflict",
+  },
+  {
+    "inst": {
+      "kind": "branch",
+      "value": "main",
+    },
+    "req": {
+      "kind": "version",
+      "value": "1.2.0",
+    },
+    "result": "conflict",
+  },
+  {
+    "inst": {
+      "kind": "branch",
+      "value": "dev",
+    },
+    "req": {
+      "kind": "version",
+      "value": "1.2.0",
+    },
+    "result": "conflict",
+  },
+  {
+    "inst": {
+      "kind": "version",
+      "value": "v1.0.0",
+    },
+    "req": {
+      "kind": "version",
+      "value": "1.2.0",
+    },
+    "result": "conflict",
+  },
+  {
+    "inst": {
+      "kind": "version",
+      "value": "v1.2.0",
+    },
+    "req": {
+      "kind": "version",
+      "value": "1.2.0",
+    },
+    "result": "conflict",
+  },
+  {
+    "inst": {
+      "kind": "version",
+      "value": "1.2.0",
+    },
+    "req": {
+      "kind": "version",
+      "value": "1.2.0",
+    },
+    "result": "reuse",
+  },
+  {
+    "inst": {
+      "kind": "version",
+      "value": "v2.0.0",
+    },
+    "req": {
+      "kind": "version",
+      "value": "1.2.0",
+    },
+    "result": "conflict",
+  },
+  {
+    "inst": {
+      "kind": "head",
+    },
+    "req": {
+      "kind": "version",
+      "value": "v2.0.0",
+    },
+    "result": "conflict",
+  },
+  {
+    "inst": {
+      "kind": "branch",
+      "value": "main",
+    },
+    "req": {
+      "kind": "version",
+      "value": "v2.0.0",
+    },
+    "result": "conflict",
+  },
+  {
+    "inst": {
+      "kind": "branch",
+      "value": "dev",
+    },
+    "req": {
+      "kind": "version",
+      "value": "v2.0.0",
+    },
+    "result": "conflict",
+  },
+  {
+    "inst": {
+      "kind": "version",
+      "value": "v1.0.0",
+    },
+    "req": {
+      "kind": "version",
+      "value": "v2.0.0",
+    },
+    "result": "conflict",
+  },
+  {
+    "inst": {
+      "kind": "version",
+      "value": "v1.2.0",
+    },
+    "req": {
+      "kind": "version",
+      "value": "v2.0.0",
+    },
+    "result": "conflict",
+  },
+  {
+    "inst": {
+      "kind": "version",
+      "value": "1.2.0",
+    },
+    "req": {
+      "kind": "version",
+      "value": "v2.0.0",
+    },
+    "result": "conflict",
+  },
+  {
+    "inst": {
+      "kind": "version",
+      "value": "v2.0.0",
+    },
+    "req": {
+      "kind": "version",
+      "value": "v2.0.0",
+    },
+    "result": "reuse",
+  },
+]
+`;
+
+exports[`standards ordering 1`] = `
+[
+  "c11",
+  "c11",
+  "c99",
+  "c11",
+  "c11",
+  "c11",
+  true,
+  false,
+  false,
+  true,
+  true,
+]
+`;
