@@ -120,6 +120,57 @@ exports[`console reporter verbose output lists everything 1`] = `
 "
 `;
 
+exports[`console reporter preload hook gets its own Preparing tree 1`] = `
+" ⚠ m: static linking unavailable on macOS, linking dynamically
+ Preparing        0ms
+ app
+ └─ mid-a
+    └─ ▸ preload  ⠋ hook is running…  sh gen.sh
+"
+`;
+
+exports[`console reporter build hooks are rows under their module 1`] = `
+{
+  "done": 
+" ⚠ m: static linking unavailable on macOS, linking dynamically
+ Building          1/5  700ms
+ app               ○
+ ├─ mid-a          ────────── 0/1
+ │  ├─ ▸ prebuild  ✔  30ms  python3 tools/generate_sources.py --out…
+ │  └─ leaf        ✔  210ms
+ ├─ gitlib         ○
+ └─ mid-b          ○
+    └─ leaf        ·
+"
+,
+  "running": 
+" ⚠ m: static linking unavailable on macOS, linking dynamically
+ Building          1/5  600ms
+ app               ○
+ ├─ mid-a          ────────── 0/1
+ │  ├─ ▸ prebuild  ⠋ hook is running…  python3 tools/generate_sources.py --out…
+ │  └─ leaf        ✔  210ms
+ ├─ gitlib         ○
+ └─ mid-b          ○
+    └─ leaf        ·
+"
+,
+}
+`;
+
+exports[`console reporter failing hook names module and hook 1`] = `
+" ⚠ m: static linking unavailable on macOS, linking dynamically
+
+ ✘ app › mid-a · prebuild
+   Script "prebuild" failed (exit code 1)
+   command  sh gen.sh
+   cwd      /x/mid-a
+
+   │ gen.sh: line 3: python: not found
+
+"
+`;
+
 exports[`console reporter cached rebuild is a single line 1`] = `
 "
  ✔ app is up to date · 1 module cached

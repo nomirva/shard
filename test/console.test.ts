@@ -192,6 +192,34 @@ describe("console reporter", () => {
     expect(c.out()).toMatchSnapshot();
   });
 
+  test("preload hook gets its own Preparing tree", () => {
+    const c = record({ live: true });
+    play(c, [...resolving, ...resolved,
+      { type: "hook.start", target: "mid-a", hook: "preload", command: "sh gen.sh" }]);
+    expect(c.out()).toMatchSnapshot();
+  });
+
+  test("build hooks are rows under their module", () => {
+    const c = record({ live: true });
+    play(c, [...resolving, ...resolved, ...building.slice(0, 5),
+      { type: "target.start", target: target("mid-a", "library", 1) },
+      { type: "hook.start", target: "mid-a", hook: "prebuild", command: "python3 tools/generate_sources.py --out build/generated" }]);
+    const running = c.out();
+    play(c, [{ type: "hook", target: "mid-a", hook: "prebuild", command: "sh gen.sh", duration: 30, output: "" }]);
+    expect({ running, done: c.out() }).toMatchSnapshot();
+  });
+
+  test("failing hook names module and hook", () => {
+    const c = record({ live: true });
+    play(c, [...resolving, ...resolved, ...building.slice(0, 5),
+      { type: "target.start", target: target("mid-a", "library", 1) },
+      { type: "hook.start", target: "mid-a", hook: "prebuild", command: "sh gen.sh" }]);
+    c.ui.error(new ShardError("script", 'Script "prebuild" failed (exit code 1)', undefined, {
+      details: [["command", "sh gen.sh"], ["cwd", "/x/mid-a"]], output: "gen.sh: line 3: python: not found",
+    }));
+    expect(c.out()).toMatchSnapshot();
+  });
+
   test("cached rebuild is a single line", () => {
     const c = record({ live: true });
     play(c, [

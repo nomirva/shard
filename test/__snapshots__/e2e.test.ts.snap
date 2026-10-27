@@ -1178,7 +1178,8 @@ exports[`examples codegen: preload and preclean hooks 1`] = `
     ],
     "status": 0,
     "stderr": 
-" ✔ codegen  <t>
+" ▸ codegen · preload  <t>
+ ✔ codegen  <t>
 
  ✔ codegen built in <t>
    1 module · 2 compiled
@@ -1201,7 +1202,8 @@ exports[`examples codegen: preload and preclean hooks 1`] = `
     "invocations": [],
     "status": 0,
     "stderr": 
-"
+" ▸ codegen · preclean  <t>
+
  ✔ removed .shard, target · <size> freed
 
 "
@@ -2194,9 +2196,12 @@ exports[`fixtures diamond graph 1`] = `
     ],
     "status": 0,
     "stderr": 
-" ✔ leaf  <t>
+" ▸ mid-a · preload  <t>
+ ✔ leaf  <t>
  ✔ mid-a  <t>
  ✔ mid-b  <t>
+ ▸ app · prebuild  <t>
+ ▸ app · postbuild  <t>
  ✔ app  <t>
 
  ✔ app built in <t>
@@ -2391,9 +2396,12 @@ postbuild-app
     ],
     "status": 0,
     "stderr": 
-" ✔ leaf  <t>
+" ▸ mid-a · preload  <t>
+ ✔ leaf  <t>
  ✔ mid-a  <t>
  ✔ mid-b  <t>
+ ▸ app · prebuild  <t>
+ ▸ app · postbuild  <t>
  ✔ app  <t>
 
  ✔ app built in <t>

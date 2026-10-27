@@ -10,6 +10,7 @@ export function cleanCommand(path: string): void {
   ws.hooks.run(ws.declareRoot(), "preclean");
 
   const removed = ws.clean();
+  ui.finish();
   const total = removed.reduce((sum, r) => sum + r.bytes, 0);
   ui.print();
   ui.print(removed.length === 0
