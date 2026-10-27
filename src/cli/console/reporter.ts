@@ -42,11 +42,11 @@ interface ModuleState {
   duration: number;
 }
 
+/** A hook is on screen only while it runs (or as the failed one). */
 interface HookRow {
   hook: string;
   command: string;
-  state: "running" | "done" | "failed";
-  duration: number;
+  state: "running" | "failed";
 }
 
 /** `hooks` covers hooks outside the build tree: preload (Preparing) and preclean (Cleaning). */
@@ -155,7 +155,7 @@ export class ConsoleReporter implements Reporter {
 
       case "hook.start": {
         const rows = this.hooks.get(event.target) ?? [];
-        rows.push({ hook: event.hook, command: event.command, state: "running", duration: 0 });
+        rows.push({ hook: event.hook, command: event.command, state: "running" });
         this.hooks.set(event.target, rows);
         this.runningHook = { target: event.target, hook: event.hook };
         if (this.phase?.kind !== "build") this.startPhase("hooks", HOOK_PHASE_TITLE[event.hook] ?? "Running hooks");
@@ -164,11 +164,8 @@ export class ConsoleReporter implements Reporter {
       }
 
       case "hook": {
-        const row = this.hooks.get(event.target)?.find(r => r.hook === event.hook && r.state === "running");
-        if (row) {
-          row.state = "done";
-          row.duration = event.duration;
-        }
+        const rows = this.hooks.get(event.target) ?? [];
+        this.hooks.set(event.target, rows.filter(r => !(r.hook === event.hook && r.state === "running")));
         this.runningHook = null;
         this.area.refresh();
         if (!this.live && !this.verbose) {
@@ -380,7 +377,9 @@ export class ConsoleReporter implements Reporter {
       return renderTree("Resolving", `${done}/${nodes.length}  ${elapsed}`, root, maxLines);
     }
 
-    if (phase.kind === "hooks") return renderTree(phase.title, elapsed, this.hookTree(spin), maxLines);
+    if (phase.kind === "hooks") {
+      return this.runningHook ? renderTree(phase.title, elapsed, this.hookTree(spin), maxLines) : [];
+    }
 
     if (!this.tree) return [];
     const finished = [...this.modules.values()].filter(m => m.state === "done" || m.state === "cached").length;
@@ -438,17 +437,15 @@ export class ConsoleReporter implements Reporter {
     };
   }
 
-  /** Hook runs of one module as tree rows: "▸ prebuild  sh gen.sh  ⠋ hook is running…". */
+  /** Running hooks of one module as tree rows: "▸ prebuild  ⠋ hook is running…  sh gen.sh". */
   private hookRows(target: string, spin: string, include: (hook: string) => boolean = () => true): TreeNode[] {
     return (this.hooks.get(target) ?? []).filter(row => include(row.hook)).map((row): TreeNode => {
       const command = row.command.length > COMMAND_WIDTH ? row.command.slice(0, COMMAND_WIDTH - 1) + "…" : row.command;
-      const state = {
-        running: `${spin} ${chalk.cyan("hook is running…")}`,
-        done: `${chalk.green("✔")}  ${chalk.dim(duration(row.duration))}`,
-        failed: `${chalk.red("✘")} ${chalk.red("hook failed")}`,
-      }[row.state];
+      const state = row.state === "running"
+        ? `${spin} ${chalk.cyan("hook is running…")}`
+        : `${chalk.red("✘")} ${chalk.red("hook failed")}`;
       // The command rides in the status so it does not widen the status column for every module.
-      return { name: chalk.dim("▸ ") + row.hook, columns: [], status: `${state}  ${chalk.dim(command)}`, done: row.state === "done", children: [] };
+      return { name: chalk.dim("▸ ") + row.hook, columns: [], status: `${state}  ${chalk.dim(command)}`, done: false, children: [] };
     });
   }
 

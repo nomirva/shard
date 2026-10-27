@@ -133,14 +133,13 @@ exports[`console reporter build hooks are rows under their module 1`] = `
 {
   "done": 
 " ⚠ m: static linking unavailable on macOS, linking dynamically
- Building          1/5  700ms
- app               ○
- ├─ mid-a          ────────── 0/1
- │  ├─ ▸ prebuild  ✔  30ms  python3 tools/generate_sources.py --out…
- │  └─ leaf        ✔  210ms
- ├─ gitlib         ○
- └─ mid-b          ○
-    └─ leaf        ·
+ Building    1/5  700ms
+ app         ○
+ ├─ mid-a    ────────── 0/1
+ │  └─ leaf  ✔  210ms
+ ├─ gitlib   ○
+ └─ mid-b    ○
+    └─ leaf  ·
 "
 ,
   "running": 

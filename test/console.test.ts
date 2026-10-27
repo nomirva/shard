@@ -206,7 +206,10 @@ describe("console reporter", () => {
       { type: "hook.start", target: "mid-a", hook: "prebuild", command: "python3 tools/generate_sources.py --out build/generated" }]);
     const running = c.out();
     play(c, [{ type: "hook", target: "mid-a", hook: "prebuild", command: "sh gen.sh", duration: 30, output: "" }]);
-    expect({ running, done: c.out() }).toMatchSnapshot();
+    const done = c.out();
+    expect(running).toContain("▸ prebuild");
+    expect(done).not.toContain("prebuild");
+    expect({ running, done }).toMatchSnapshot();
   });
 
   test("failing hook names module and hook", () => {
