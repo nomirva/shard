@@ -11,7 +11,6 @@ export interface ExportEntry {
   dest: string;
 }
 
-/** The manifest fields that decide what a module contains. */
 export type ContentFields = Pick<Manifest, "sources" | "imports" | "exports">;
 
 export interface ModuleContent {
@@ -20,7 +19,6 @@ export interface ModuleContent {
   artifacts: Unit[];
 }
 
-/** `artifactsDir` is the directory (relative to the module) scanned for prebuilt libraries. */
 export function scanContent(modulePath: string, manifest: ContentFields, artifactsDir: string): ModuleContent {
   return {
     sources: collectSources(modulePath, manifest),

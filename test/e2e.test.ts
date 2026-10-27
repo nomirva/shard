@@ -16,7 +16,6 @@ function build(sb: Sandbox, rel: string, ...flags: string[]): RunSnapshot {
   return sb.run(["build", sb.path(rel), ...flags]);
 }
 
-/** Task records with hashes masked: a linked .dylib carries a random UUID, so hashes over it vary. */
 function cache(sb: Sandbox, rel: string): string | null {
   return sb.read(`${rel}/.shard/cache.json`)?.replace(/[0-9a-f]{64}/g, "<sha256>") ?? null;
 }

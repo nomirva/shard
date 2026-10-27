@@ -4,7 +4,6 @@ import { ShardError } from "../../utils/errors";
 import { createConsole } from "../console/session";
 import { openBuild, runTasks } from "../engine";
 
-/** `shard run <script>`: runs one script of the root module with its output on the terminal. */
 export async function runCommand(script: string, path: string): Promise<void> {
   const ui = createConsole();
   const open = await openBuild(path, { reporter: ui, dependencies: false });

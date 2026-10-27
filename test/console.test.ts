@@ -3,7 +3,6 @@ import { ConsoleReporter } from "../src/cli/console/reporter";
 import { ShardError } from "../src/utils/errors";
 import type { DepInfo, ReportEvent, TargetSummary, TreeShape } from "../src/report/events";
 
-/** Replays what a terminal would show: handles "cursor up N" and "clear to end of screen". */
 function screen(raw: string): string {
   const text = raw.replace(/\x1b\[[0-9;]*m/g, "");
   const lines: string[] = [""];

@@ -9,25 +9,17 @@ import { ShardError } from "../../utils/errors";
 import { relativeTo } from "../../utils/fs";
 import { countDiagnostics } from "../../utils/text";
 
-/** Toolchain and runner are build services: set at configuration, not fingerprinted beyond `toolchainId`. */
 abstract class ToolTask extends Task {
   toolchain!: Toolchain;
   runner!: Runner;
-  /** Name and version: a different compiler invalidates the outputs. */
   readonly toolchainId = this.input<string>("toolchain");
-  /** Module name for messages. */
   label = "";
 }
 
-/** The object file of `source` under `objectDir`, mirroring its path in the module. */
 export function objectPath(moduleDir: string, objectDir: string, source: string): string {
   return join(objectDir, relativeTo(moduleDir, source).replace(/\.c$/, ".o"));
 }
 
-/**
- * Compiles every source of a module. Incremental inside: a file whose source,
- * options and headers did not change since its last compile is skipped.
- */
 export class CCompile extends ToolTask {
   readonly sources = this.inputFiles("sources");
   readonly options = this.input<Omit<CompileOptions, "includePaths">>("options");
@@ -36,7 +28,6 @@ export class CCompile extends ToolTask {
   readonly incremental = this.input<boolean>("incremental").convention(true);
   readonly objects = this.outputFiles("objects");
 
-  /** One entry per source: what the report shows for it. */
   units(): { file: string; object: string; command: string; unit: { source: string; object: string; options: CompileOptions } }[] {
     const options = { includePaths: this.includeDirs.get(), ...this.options.get() };
     return this.sources.get().map(source => {
@@ -92,11 +83,9 @@ export class CArchive extends ToolTask {
 
 export interface RuntimeLib {
   readonly path: string;
-  /** Copied only if it exists (a library the build may not have produced). */
   readonly ifExists: boolean;
 }
 
-/** Links an executable or a shared library; an executable also gets the shared libraries it needs next to it. */
 export class CLink extends ToolTask {
   readonly kind = this.input<"executable" | "shared">("kind");
   readonly objects = this.inputFiles("objects");
@@ -104,7 +93,6 @@ export class CLink extends ToolTask {
   readonly libFlags = this.inputList<string>("libFlags");
   readonly extra = this.input<{ subsystem?: string; extra?: string[] }>("extra").convention({});
   readonly runtime = this.inputList<RuntimeLib>("runtime");
-  /** Set when the platform cannot produce this output. */
   readonly unsupported = this.input<string>("unsupported");
   readonly file = this.outputFile("file");
 
@@ -135,7 +123,6 @@ export class CLink extends ToolTask {
   }
 }
 
-/** Copies exported headers into the module's include directory. */
 export class CopyHeaders extends Task {
   readonly entries = this.input<{ source: string; dest: string }[]>("entries");
   readonly sources = this.inputFiles("sources");

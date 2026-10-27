@@ -1,18 +1,9 @@
-/*
- * Everything the pipeline has to say to the user, as data. Stages emit
- * events; renderers in cli/console decide how they look (live TTY, plain CI).
- * Paths are absolute; renderers shorten them.
- */
-
 export type CompileStatus = "cached" | "compiled" | "failed";
 
-/** How a dependency edge was satisfied. */
 export type DepAction = "local" | "linked" | "installed" | "upgraded" | "reused" | "duplicate";
 
 export interface DepInfo {
-  /** Unique per edge within one run. */
   readonly id: number;
-  /** Edge that led to the declaring module; null for the root's own dependencies. */
   readonly parentId: number | null;
   readonly name: string;
   readonly source: string;
@@ -28,7 +19,6 @@ export interface TargetSummary {
   readonly files: number;
 }
 
-/** Dependency tree of the build, root first; a module reached again is a `repeat` leaf. */
 export interface TreeShape {
   readonly name: string;
   readonly repeat: boolean;
@@ -48,11 +38,8 @@ export type ReportEvent =
       dep: DepInfo;
       action: DepAction;
       duration: number;
-      /** Pin replaced by an upgrade. */
       previous?: string;
-      /** Where the module lives on disk. */
       path?: string;
-      /** Link flags produced for system dependencies. */
       flags?: string[];
       warnings: string[];
     }
@@ -69,7 +56,6 @@ export type ReportEvent =
       status: CompileStatus;
       duration: number;
       command: string;
-      /** Compiler warnings and errors for this file. */
       diagnostics: string;
     }
   | { type: "link"; target: string; kind: LinkKind; output: string; duration: number; command: string }

@@ -12,13 +12,11 @@ interface DepTreeNode {
   source: string;
   spec: string;
   link: string | null;
-  /** missing: not on disk / not installed yet; repeat: shown earlier in the tree. */
   status: "ok" | "missing" | "repeat" | "error";
   error?: string;
   children: DepTreeNode[];
 }
 
-/** Module card on stdout; `--tree` expands the whole dependency tree found on disk. Nothing is fetched. */
 export async function infoCommand(path: string, flags: { tree?: boolean } = {}): Promise<void> {
   const roots: DepTreeNode[] = [];
   const nodes = new Map<number, DepTreeNode>();
@@ -27,7 +25,6 @@ export async function infoCommand(path: string, flags: { tree?: boolean } = {}):
       for (const edge of edges) {
         const system = edge.info.source === "system" || edge.info.source === "framework";
         const node: DepTreeNode = {
-          // System libraries are named by what they link ("m"), like in build output.
           name: system ? edge.info.spec : edge.info.name,
           source: edge.info.source,
           spec: system ? "" : edge.info.spec,

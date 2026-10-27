@@ -5,8 +5,6 @@ import { PackageShape } from "./content/shape";
 import type { ModuleContent } from "./content/content";
 import type { Layout } from "./layout";
 
-/** The single place that names build outputs. */
-
 export function staticLibPath(name: string, layout: Layout, naming: ArtifactNaming): string {
   return join(layout.outDir, `${name}${naming.staticLibExt}`);
 }
@@ -20,13 +18,10 @@ export function executablePath(name: string, layout: Layout, naming: ArtifactNam
 }
 
 export interface LibraryArtifacts {
-  /** What dependents link against. */
   lib: string | null;
-  /** Shared library to ship next to executables. */
   shared: string | null;
 }
 
-/** Artifacts a library-like module offers to dependents (built or found on disk). */
 export function libraryArtifacts(
   name: string,
   shape: PackageShape,

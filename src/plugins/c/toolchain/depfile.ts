@@ -1,7 +1,6 @@
 import { readFileSync } from "fs";
 import type { DependencyTracker } from "./toolchain";
 
-/** Make-style `.d` files written next to the object (`-MMD -MF`), shared by clang and gcc. */
 export const depfileTracker: DependencyTracker = {
   compileFlags(object: string): string[] {
     return ["-MMD", "-MF", depFilePath(object)];

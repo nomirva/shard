@@ -8,12 +8,6 @@ export const JSON_FILE = "shard.json";
 
 type Helper = (value: string, options?: { linkage?: "static" | "shared" }) => DependencyNotation;
 
-/**
- * `shard.json`: the same config as `shard.ts`, written as data. Conditional
- * keys (`?platform:darwin`, `?define:X`, `?compiler:clang`, `?arch:arm64`)
- * are resolved first; `depend` strings ("local:../lib+shared") become
- * dependency notations; `options` become the c block.
- */
 export const jsonReader: ConfigReader = {
   file: JSON_FILE,
 
@@ -59,7 +53,6 @@ function toConfig(manifest: Manifest, ctx: ConfigContext, file: string): ModuleC
   return config;
 }
 
-/** `depend` prefixes and the helper each one maps to, with an example for error hints. */
 const PREFIXES: Record<string, { helper: string; example: string }> = {
   git: { helper: "git", example: "git:user/repo[@ref]" },
   local: { helper: "local", example: "local:../path" },
@@ -67,7 +60,6 @@ const PREFIXES: Record<string, { helper: string; example: string }> = {
   framework: { helper: "framework", example: "framework:Cocoa" },
 };
 
-/** "<prefix>:<value>[+static|+shared|+dynamic]", split up; throws the shard.json error messages. */
 export function parseDepend(spec: string): { prefix: string; value: string; linkage?: "static" | "shared" } {
   const link = /\+(static|shared|dynamic)$/.exec(spec);
   const linkage = link ? (link[1] === "static" ? "static" : "shared") : undefined;
@@ -84,7 +76,6 @@ export function parseDepend(spec: string): { prefix: string; value: string; link
   return { prefix, value: rest.slice(colon + 1), ...(linkage ? { linkage } : {}) };
 }
 
-/** "git:host/user/repo@v1+shared" → git("host/user/repo@v1", { linkage: "shared" }). */
 function notation(spec: string, ctx: ConfigContext, file: string): DependencyNotation {
   let parsed;
   try {

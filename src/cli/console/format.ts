@@ -13,7 +13,6 @@ export function pad(s: string, width: number): string {
   return s + " ".repeat(Math.max(0, width - visibleLength(s)));
 }
 
-/** Cuts a line to the terminal width so live redraws never wrap. */
 export function fit(s: string, columns: number): string {
   const max = Math.max(10, columns - 1);
   return visibleLength(s) <= max ? s : stripAnsi(s).slice(0, max - 1) + "…";
@@ -38,7 +37,6 @@ export function plural(n: number, word: string): string {
   return `${n} ${word}${n === 1 ? "" : "s"}`;
 }
 
-/** Path relative to the current directory; far-away paths stay absolute (with ~ for home). */
 export function rel(path: string): string {
   const r = relative(process.cwd(), path) || ".";
   if (!r.startsWith(`..${sep}..${sep}..`)) return r;
@@ -46,13 +44,11 @@ export function rel(path: string): string {
   return path.startsWith(home + sep) ? "~" + path.slice(home.length) : path;
 }
 
-/** Shortens absolute paths under the current directory inside free text (not inside URLs). */
 export function shortenPaths(text: string): string {
   const prefix = (process.cwd() + sep).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
   return text.replace(new RegExp(`(^|[\\s'"(=]|\\x1b\\[[0-9;]*m)${prefix}`, "gm"), "$1");
 }
 
-/** "Apple clang version 21.0.0 (clang-…)" → "21.0.0". */
 export function shortVersion(full: string): string {
   return full.match(/\d+\.\d+(\.\d+)?/)?.[0] ?? full;
 }

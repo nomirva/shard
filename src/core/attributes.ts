@@ -1,9 +1,7 @@
 import { ShardError } from "../utils/errors";
 
-/** A typed axis of a variant, e.g. `attribute<string>("shard.linkage")`. */
 export interface Attribute<T> {
   readonly name: string;
-  /** Type marker only. */
   readonly _type?: T;
 }
 
@@ -11,7 +9,6 @@ export function attribute<T>(name: string): Attribute<T> {
   return { name };
 }
 
-/** Attribute values of one variant or of one request. Immutable: `with` returns a copy. */
 export class AttributeContainer {
   private constructor(private readonly values: ReadonlyMap<string, unknown>) {}
 
@@ -27,7 +24,6 @@ export class AttributeContainer {
     return new AttributeContainer(new Map([...this.values, [attr.name, value]]));
   }
 
-  /** `other` wins where both have a value. */
   merge(other: AttributeContainer): AttributeContainer {
     return new AttributeContainer(new Map([...this.values, ...other.values]));
   }
@@ -52,27 +48,15 @@ export class AttributeContainer {
     return this.values.size === 0;
   }
 
-  /** "linkage=static, profile=release" for error messages and `--print-graph`. */
   describe(): string {
     return [...this.values].map(([k, v]) => `${k}=${String(v)}`).join(", ") || "(no attributes)";
   }
 }
 
-/** May a producer offering `produced` serve a consumer asking for `requested`? Default: equality. */
 export type CompatibilityRule<T> = (requested: T, produced: T) => boolean;
 
-/**
- * Several producer variants are compatible: keep the best ones. Gets the
- * requested value (undefined when the consumer did not ask) and the values
- * the remaining candidates offer.
- */
 export type DisambiguationRule<T> = (requested: T | undefined, candidates: readonly T[]) => readonly T[];
 
-/**
- * Makes every edge to one module ask for the same value: given the values all
- * edges in the build request explicitly, returns the one they all get
- * (e.g. shared when anyone asks for shared).
- */
 export type UnificationRule<T> = (requested: readonly T[]) => T;
 
 interface AttributeRules {
@@ -81,10 +65,6 @@ interface AttributeRules {
   unify?: UnificationRule<unknown>;
 }
 
-/**
- * How attributes are matched, shared by the whole build. Plugins register
- * rules for the attributes they define; unknown attributes match by equality.
- */
 export class AttributeSchema {
   private readonly rules = new Map<string, AttributeRules>();
 
@@ -100,10 +80,6 @@ export class AttributeSchema {
     });
   }
 
-  /**
-   * The request for one edge after unification: for each attribute with a
-   * unify rule, the value every edge to this module in the build gets.
-   */
   unifyRequest(requested: AttributeContainer, buildWide: readonly AttributeContainer[]): AttributeContainer {
     let out = requested;
     for (const [name, rules] of this.rules) {
@@ -118,7 +94,6 @@ export class AttributeSchema {
     return this.rules.has(attr.name);
   }
 
-  /** Every requested attribute the producer also has must be compatible; missing ones do not matter. */
   matches(requested: AttributeContainer, produced: AttributeContainer): boolean {
     return requested.names().every(name => {
       if (!produced.has(name)) return true;
@@ -127,11 +102,6 @@ export class AttributeSchema {
     });
   }
 
-  /**
-   * Narrows compatible candidates attribute by attribute with the registered
-   * rules, then prefers candidates that carry no attributes beyond the
-   * request. Returns what is left (one entry when the choice is clear).
-   */
   disambiguate<C>(requested: AttributeContainer, candidates: readonly C[], attributesOf: (c: C) => AttributeContainer): C[] {
     let remaining = [...candidates];
     const names = [...new Set(remaining.flatMap(c => attributesOf(c).names()))].sort();

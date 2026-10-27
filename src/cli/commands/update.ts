@@ -6,7 +6,6 @@ import { DIRS } from "../../utils/dirs";
 import { createConsole } from "../console/session";
 import { openBuild, toolchainFacts } from "../engine";
 
-/** `shard update`: installs what the module tree declares and removes modules it no longer reaches. */
 export async function updateCommand(path: string, flags: { gitProtocol?: string; verbose?: boolean } = {}): Promise<void> {
   const ui = createConsole(flags.verbose);
   const toolchain = selectToolchain();

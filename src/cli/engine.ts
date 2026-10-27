@@ -18,15 +18,11 @@ import { DIRS } from "../utils/dirs";
 
 export interface OpenOptions {
   readonly reporter: Reporter;
-  /** Detected by the command up front (build, update); otherwise only if something needs it. */
   readonly toolchain?: Toolchain;
   readonly params?: Partial<CParameters>;
   readonly gitProtocol?: string;
-  /** Load only the root module (run, clean). */
   readonly dependencies?: boolean;
-  /** Resolve without fetching (info); failing edges go to `listener.failed`. */
   readonly dryRun?: boolean;
-  /** Instead of reporting the resolve phase. */
   readonly listener?: InitListener;
 }
 
@@ -37,7 +33,6 @@ export interface OpenBuild {
   readonly params: CParameters;
 }
 
-/** One command's build: services from flags, then initialization with the resolve phase reported. */
 export async function openBuild(path: string, options: OpenOptions): Promise<OpenBuild> {
   const rootDir = resolve(path);
   if (!existsSync(rootDir)) throw new ShardError("usage", `Module directory not found: ${rootDir}`);
@@ -48,7 +43,6 @@ export async function openBuild(path: string, options: OpenOptions): Promise<Ope
   build.services.register(GIT_PARAMETERS, {
     protocol: options.gitProtocol ?? process.env.SHARD_GIT_PROTOCOL ?? "https",
   });
-  // Known before configs are read, so `?compiler:` conditionals and `compiler` in shard.ts see it.
   const toolchain = options.toolchain ? build.services.register(C_TOOLCHAIN, options.toolchain) : null;
 
   const { reporter } = options;
@@ -70,7 +64,6 @@ export async function openBuild(path: string, options: OpenOptions): Promise<Ope
   return { build, root, toolchain, params };
 }
 
-/** The resolve phase as the console shows it: each module's dependencies, then each edge's outcome. */
 export function resolveEvents(reporter: Reporter): InitListener {
   const depInfo = (edge: DeclaredEdge): DepInfo => ({
     id: edge.id,
@@ -106,13 +99,10 @@ export function resolveEvents(reporter: Reporter): InitListener {
 export interface RunTasksOptions {
   readonly reporter: Reporter;
   readonly jobs?: number;
-  /** Report the build phase (modules, files, links); off for `run` and `clean`. */
   readonly buildEvents?: boolean;
-  /** End configuration first (runs `preload`); off for `run` and `clean`, which do not build. */
   readonly configure?: boolean;
 }
 
-/** How many tasks run at once: `--jobs`, then SHARD_JOBS, then one per CPU. */
 export function jobCount(flag?: string): number {
   const raw = flag ?? process.env.SHARD_JOBS;
   if (raw === undefined) return availableParallelism();
@@ -123,7 +113,6 @@ export function jobCount(flag?: string): number {
   return n;
 }
 
-/** Ends configuration, builds the graph for `requested` and runs it; throws the first failure. */
 export async function runTasks(open: OpenBuild, requested: readonly string[], options: RunTasksOptions): Promise<TaskGraph> {
   const { build } = open;
   if (options.configure !== false) build.configure();
@@ -140,10 +129,6 @@ export async function runTasks(open: OpenBuild, requested: readonly string[], op
   return graph;
 }
 
-/**
- * The build phase as the console shows it, from task events: a module starts
- * with its first task and ends when all its tasks in the graph succeeded.
- */
 function buildEvents(open: OpenBuild, graph: TaskGraph, reporter: Reporter): ExecutionListener {
   const { build, params } = open;
   const modules = build.services.find(C_MODULES);
@@ -173,7 +158,6 @@ function buildEvents(open: OpenBuild, graph: TaskGraph, reporter: Reporter): Exe
     reporter.emit({ type: "target.end", target: module.name, duration: performance.now() - started.get(module.path)!, outputs });
   };
 
-  // Modules without tasks (prebuilt libraries) are done as soon as the build starts.
   for (const module of ordered) {
     if (!pending.has(module.path)) {
       start(module);
@@ -206,7 +190,6 @@ export function cModules(open: OpenBuild): CModules | undefined {
   return open.build.services.find(C_MODULES);
 }
 
-/** "clang 21.0.0", "arm64-darwin" — the header facts of a run. */
 export function toolchainFacts(tc: Toolchain): string[] {
   const { arch, platform, abi } = tc.target;
   return [`${tc.name} ${shortVersion(tc.version)}`, `${arch}-${platform}${abi === "none" ? "" : `-${abi}`}`];

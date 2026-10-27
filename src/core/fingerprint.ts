@@ -3,11 +3,6 @@ import { readdirSync, readFileSync, statSync } from "fs";
 import { join } from "path";
 import type { Task } from "./task";
 
-/**
- * Hash of everything a task's result depends on: its type, every declared
- * input value, the contents of input files (directories walked in sorted
- * order) and of files the previous run discovered.
- */
 export function fingerprintTask(task: Task, discovered: readonly string[]): string {
   const hash = createHash("sha256");
   hash.update(`${task.constructor.name}\0${task.path}\0`);
@@ -22,7 +17,6 @@ export function fingerprintTask(task: Task, discovered: readonly string[]): stri
   return hash.digest("hex");
 }
 
-/** Output files and directories of a task, flattened. */
 export function outputPaths(task: Task): string[] {
   return task.declaredOutputs().flatMap(output => {
     if (!output.files.isPresent()) return [];

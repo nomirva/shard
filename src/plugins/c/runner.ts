@@ -2,9 +2,7 @@ import { ShardError } from "../../utils/errors";
 import { runAsync, runSync } from "../../utils/process";
 import type { Invocation } from "./toolchain/toolchain";
 
-/** Executes invocations described by the toolchain; the seam for parallel or dry-run execution. */
 export interface Runner {
-  /** Resolves with the tool's diagnostics; rejects with a ShardError carrying them as `output`. */
   run(invocation: Invocation): Promise<string>;
 }
 

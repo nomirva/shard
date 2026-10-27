@@ -9,7 +9,6 @@ export function relativeTo(fromDir: string, file: string): string {
   return rel;
 }
 
-/** Total size in bytes of a file or directory tree (symlinks are not followed). */
 export function diskUsage(path: string): number {
   const stat = lstatSync(path);
   if (!stat.isDirectory()) return stat.size;

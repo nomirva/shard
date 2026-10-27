@@ -8,17 +8,10 @@ import { ServiceRegistry } from "./services";
 import type { Task } from "./task";
 import type { TaskProvider } from "./tasks";
 
-/**
- * One invocation of shard: every module taking part and every task they
- * registered. Initialization creates modules and applies plugins,
- * configuration builds the graph for the request, execution runs it.
- */
 export class Build {
-  /** Attribute matching rules; plugins define the attributes they introduce. */
   readonly schema = new AttributeSchema();
   readonly services = new ServiceRegistry();
   private readonly modules = new Map<string, Module>();
-  /** Dependencies before dependents, as initialization finished them. */
   private readonly order: Module[] = [];
   private readonly warningListeners: ((module: Module, message: string) => void)[] = [];
   private readonly reportListeners: ((module: Module, event: unknown) => void)[] = [];
@@ -71,12 +64,10 @@ export class Build {
     this.reportListeners.push(listener);
   }
 
-  /** Initialization reports each module once its dependencies are done. */
   markInitialized(module: Module): void {
     if (!this.order.includes(module)) this.order.push(module);
   }
 
-  /** Ends configuration: runs `onConfigured` actions, dependencies first. Idempotent. */
   configure(): void {
     if (this.configured) return;
     this.configured = true;
@@ -84,7 +75,6 @@ export class Build {
     for (const module of [...this.order, ...rest]) module.runConfigured();
   }
 
-  /** "assemble" names a task of the root module, ":lib:assemble" a task anywhere. */
   graph(requested: readonly string[]): TaskGraph {
     const providers = requested.map(request =>
       request.startsWith(":") ? this.lookup(request) : this.root.tasks.named(request));

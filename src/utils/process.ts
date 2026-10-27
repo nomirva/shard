@@ -17,7 +17,6 @@ export function runSync(cmd: string, args: string[], cwd?: string): RunResult {
   };
 }
 
-/** Runs a tool asynchronously, capturing its diagnostics (stderr) instead of streaming them. */
 export function runAsync(
   cmd: string,
   args: string[],

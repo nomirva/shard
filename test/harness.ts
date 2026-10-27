@@ -21,7 +21,6 @@ function installShims(): void {
       [
         "#!/bin/sh",
         `if [ "$1" != "--version" ]; then`,
-        // One write per line: parallel tool calls must not interleave in the log.
         `  line="${tool}$(printf '\\t%s' "$PWD" "$@")"`,
         `  printf '%s\\n' "$line" >> "$SHIM_LOG"`,
         "fi",
@@ -60,7 +59,6 @@ export class Sandbox {
     const env: Record<string, string> = { ...(process.env as Record<string, string>) };
     delete env.FORCE_COLOR;
     delete env.SHARD_GIT_PROTOCOL;
-    // One task at a time: output order is part of the snapshots.
     Object.assign(env, { PATH: `${SHIM_DIR}:${env.PATH}`, SHIM_LOG, NO_COLOR: "1", SHARD_JOBS: "1" }, extraEnv);
 
     const r = spawnSync("bun", [join(REPO, "index.ts"), ...args], { cwd, env, stdio: "pipe" });
@@ -108,7 +106,6 @@ export interface RunSnapshot {
   invocations: string[][];
 }
 
-/** Timings, sizes and the compiler version differ between runs and machines. */
 function normalizeOutput(s: string): string {
   return s
     .replace(/\b\d+(\.\d+)?(ms|s)\b/g, "<t>")

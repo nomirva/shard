@@ -1,19 +1,12 @@
 import { ShardError } from "../utils/errors";
 
-/** Something that can be a dependency in the task graph; implemented by `Task`. */
 export interface Producer {
   readonly path: string;
 }
 
-/**
- * A lazy value. Nothing is computed until `get()`, and every provider knows
- * which tasks produce it: wiring an output provider into an input is what
- * creates the edge in the task graph, without an explicit `dependsOn`.
- */
 export abstract class Provider<T> {
   abstract get(): T;
   abstract isPresent(): boolean;
-  /** Tasks whose outputs this value is derived from. */
   abstract producers(): readonly Producer[];
 
   getOrElse(fallback: T): T {
@@ -24,7 +17,6 @@ export abstract class Provider<T> {
     return new Derived(() => fn(this.get()), () => this.isPresent(), () => this.producers());
   }
 
-  /** `fn` may return a provider that brings its own producers (e.g. a task's output). */
   flatMap<U>(fn: (value: T) => Provider<U>): Provider<U> {
     return new Derived(
       () => fn(this.get()).get(),
@@ -64,12 +56,10 @@ class Derived<T> extends Provider<T> {
   }
 }
 
-/** A fixed value with no producers. */
 export function provider<T>(value: T): Provider<T> {
   return new Derived(() => value, () => true, () => []);
 }
 
-/** A value computed on first use; `fn` must not read task outputs (it has no producers). */
 export function lazy<T>(fn: () => T): Provider<T> {
   let cached: { value: T } | null = null;
   return new Derived(() => (cached ??= { value: fn() }).value, () => true, () => []);
@@ -79,11 +69,6 @@ export type ValueOrProvider<T> = T | Provider<T>;
 
 const asProvider = <T>(v: ValueOrProvider<T>): Provider<T> => (v instanceof Provider ? v : provider(v));
 
-/**
- * A configurable lazy value. Plugins set a `convention` (the default), build
- * scripts `set` the value; both may be providers. Once the task graph is built
- * every property is finalized and further writes are configuration errors.
- */
 export class Property<T> extends Provider<T> {
   private source: Provider<T> | null = null;
   private fallback: Provider<T> | null = null;
@@ -91,10 +76,6 @@ export class Property<T> extends Provider<T> {
   private frozen = false;
   private upstream: readonly Producer[] = [];
 
-  /**
-   * `owner` names the property in error messages, e.g. ":app:compile.standard";
-   * `producer` is the task that writes the value to disk, for output properties.
-   */
   constructor(protected readonly owner: string, private readonly producer?: Producer) {
     super();
   }
@@ -127,7 +108,6 @@ export class Property<T> extends Provider<T> {
     return this.producer ? union([this.producer], upstream) : upstream;
   }
 
-  /** Reads the value once and freezes it; called when the task graph is built. */
   finalizeValue(): void {
     if (this.final) return;
     this.upstream = this.current()?.producers() ?? [];
@@ -146,7 +126,6 @@ export class Property<T> extends Provider<T> {
   }
 }
 
-/** A list built from values and providers; `add` appends instead of replacing. */
 export class ListProperty<T> extends Provider<T[]> {
   private items: Provider<readonly T[]>[] = [];
   private fallback: Provider<readonly T[]> | null = null;

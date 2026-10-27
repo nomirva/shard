@@ -2,11 +2,6 @@ import { describe, expect, test } from "bun:test";
 import { rmSync } from "fs";
 import { Sandbox } from "./harness";
 
-/*
- * shard.ts and shard.json describe the same module: with either one alone the
- * build issues the same tool calls, produces the same files and exits alike.
- */
-
 const TIMEOUT = 120_000;
 
 type Format = "shard.ts" | "shard.json";

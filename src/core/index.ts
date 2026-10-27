@@ -1,8 +1,3 @@
-/*
- * The plugin-facing API of the core. The core knows modules, tasks, lazy
- * values and plugins; everything about C, toolchains and dependency sources
- * lives in plugins built on these.
- */
 export {
   attribute, AttributeContainer, AttributeSchema,
   type Attribute, type CompatibilityRule, type DisambiguationRule, type UnificationRule,

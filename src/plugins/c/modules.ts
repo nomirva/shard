@@ -14,17 +14,6 @@ interface Entry {
   readonly model: Provider<CModel>;
 }
 
-/**
- * Every C module of the build and the graph between them, as resolved.
- *
- * C standards are worked out on that graph:
- * - a module without its own `standard.version` compiles with the newest
- *   standard among the modules that use it (C is backwards compatible, so
- *   code that builds as c99 builds as c11; a gnu dialect wins a tie);
- * - every consumer must be able to include the headers its dependencies
- *   export, judged by what those declare (`standard.version`, `support`),
- *   not by what they inherited.
- */
 export class CModules {
   private readonly entries = new Map<string, Entry>();
   private effectiveMemo: Map<string, CStandard | undefined> | null = null;
@@ -34,7 +23,6 @@ export class CModules {
     this.entries.set(entry.module.path, entry);
   }
 
-  /** Throws on the first incompatibility; runs once per build. */
   effective(module: Module): CStandard | undefined {
     if (!this.checked) {
       this.checked = true;
@@ -43,14 +31,12 @@ export class CModules {
     return this.effectiveAll().get(module.path);
   }
 
-  /** Direct C module dependencies, in declaration order. */
   deps(path: string): string[] {
     const entry = this.entries.get(path)!;
     const owners = entry.classpath.incoming.roots().map(n => n.owner).filter(p => this.entries.has(p));
     return [...new Set(owners)];
   }
 
-  /** Dependencies before dependents, depth-first from the root in declaration order. */
   topoOrder(): Module[] {
     const out: string[] = [];
     const seen = new Set<string>();
@@ -65,7 +51,6 @@ export class CModules {
     return out.map(p => this.entries.get(p)!.module);
   }
 
-  /** The dependency tree from the root; a module reached again is a `repeat` leaf. */
   tree(): TreeShape {
     const seen = new Set<string>();
     const walk = (path: string): TreeShape => {

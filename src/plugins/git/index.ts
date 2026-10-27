@@ -7,34 +7,25 @@ import { ShardError } from "../../utils/errors";
 import { DIRS } from "../../utils/dirs";
 
 export interface GitParameters {
-  /** https (default), ssh, http or file. */
   readonly protocol: string;
 }
 
 export const GIT_PARAMETERS = service<GitParameters>("git.parameters");
 
 export interface GitOptions {
-  /** A SemVer tag ("v1.2.0"), a branch or any ref. */
   readonly ref?: string;
   readonly version?: string;
   readonly branch?: string;
-  /** A sub-package of a monorepo; its tags are "<subdir>/<version>". */
   readonly subdir?: string;
   readonly linkage?: "static" | "shared";
 }
 
 interface GitNotation extends DependencyNotation {
   readonly source: "git";
-  /** The `depend` form: "host/user/repo[//subdir][@ref]". */
   readonly spec: string;
   readonly linkage?: "static" | "shared";
 }
 
-/**
- * `git("github.com/user/lib", { version: "v1.2.0" })` or the short form
- * `git("github.com/user/lib@v1.2.0")`. Checked out into the root's
- * `modules/` during initialization; one installed version per name.
- */
 export const gitNotation: NotationHandler = {
   source: "git",
 

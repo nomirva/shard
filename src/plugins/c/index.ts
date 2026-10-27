@@ -22,12 +22,6 @@ export { CArchive, CCompile, CLink, CopyHeaders } from "./tasks";
 
 const LINKAGES = ["static", "shared"] as const;
 
-/**
- * Builds C modules. Registers the `c` block, the `implementation` scope and
- * the tasks compile → archive / linkShared / link, plus `assemble`. A library
- * publishes a static and a shared variant; consumers pick one by `linkage`,
- * and only the tasks behind the chosen variants run.
- */
 export function cPlugin(): Plugin {
   return { id: "c", apply };
 }
@@ -36,7 +30,6 @@ function apply(module: Module): void {
   if (!module.schema.isDefined(LINKAGE)) {
     module.schema.define(LINKAGE, {
       disambiguate: (requested, offered) => (requested ? [requested] : offered.filter(v => v === "static")),
-      // One module links one way in a build: shared as soon as any edge asks for it.
       unify: requested => (requested.includes("shared") ? "shared" : "static"),
     });
   }
@@ -51,7 +44,6 @@ function apply(module: Module): void {
   const classpath = module.configurations.resolvable("compileClasspath").extendsFrom(implementation);
   const modules = module.services.getOrRegister(C_MODULES, () => new CModules());
   modules.add({ module, ext, classpath, model });
-  /** Values of one artifact type from dependencies, depth-first in declaration order, each once. */
   const inherited = (type: string) =>
     classpath.incoming.artifacts(type, "declaration").map(list => [...new Set(list.map(a => a.value))]);
 
@@ -66,7 +58,6 @@ function apply(module: Module): void {
   const compile = module.tasks.register("compile", CCompile, t => {
     tool(t);
     t.sources.addAll(model.map(m => m.content.sources.map(u => u.path)));
-    // Generated files come from other tasks: compile after them.
     t.dependsOn(ext.generated);
     t.includeDirs.addAll(inherited(ARTIFACT.INCLUDE_DIR).zip(model, (dirs, m) =>
       [...dirs, ...new Set([...privateIncludes(module.dir, { imports: optional(ext.imports) }, m.content), ...m.generatedIncludes])]));
@@ -74,7 +65,6 @@ function apply(module: Module): void {
     t.objectDir.set(model.map(m => m.layout.objectDir));
     const useCache = cacheEnabled(params().cacheMode, isRoot);
     t.incremental.set(useCache);
-    // --ignore-cache recompiles every file, even when the task as a whole looks up to date.
     t.alwaysRun = !useCache;
     t.objects.addAll(model.map(m => m.content.sources.map(u => objectPath(module.dir, m.layout.objectDir, u.path))));
   });
@@ -130,14 +120,12 @@ function apply(module: Module): void {
       const wanted: Provider<unknown>[] = [];
       if (m.content.exports.length > 0) wanted.push(copyHeaders);
       if (m.shape === PackageShape.Executable) wanted.push(link);
-      // A root library is always produced in both flavours.
       if (m.shape === PackageShape.Library) wanted.push(archive, ...(isRoot ? [linkShared] : []));
       return all(wanted);
     }));
   });
 }
 
-/** Effective compile settings: command line over the c block over defaults. */
 function compileSettings(ext: CExtension, params: CParameters, effective: CStandard | undefined): Omit<CompileOptions, "includePaths"> {
   const own = optional(ext.standard);
   const version = effective ?? own?.version;
@@ -153,7 +141,6 @@ function compileSettings(ext: CExtension, params: CParameters, effective: CStand
   };
 }
 
-/** What one variant of a module offers consumers: headers, the file to link, the runtime library. */
 function published(
   m: CModel,
   linkage: (typeof LINKAGES)[number],
@@ -168,7 +155,6 @@ function published(
   if (m.shape === PackageShape.Library) {
     const file = (linkage === "static" ? tasks.archive : tasks.linkShared).flatMap(t => t.file);
     parts.push(file.map(value => [{ type: ARTIFACT.LINK_FILE, value }]));
-    // Built shared libraries ship only if they exist; the static variant must not build one for that.
     const shared = linkage === "shared" ? tasks.linkShared.flatMap(t => t.file) : provider(join(m.layout.outDir, `${name}${sharedExt}`));
     if (sharedExt) parts.push(shared.map(value => [{ type: ARTIFACT.RUNTIME_IF_BUILT, value }]));
   }
@@ -192,7 +178,6 @@ function runtimeLibs(artifacts: Artifact[]): RuntimeLib[] {
   return out;
 }
 
-/** One provider of all values; depends on every producer behind them. */
 function all<T>(providers: readonly Provider<T>[]): Provider<T[]> {
   return providers.reduce<Provider<T[]>>((acc, p) => acc.zip(p, (list, v) => [...list, v]), provider<T[]>([]));
 }

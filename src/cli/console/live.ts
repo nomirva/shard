@@ -2,11 +2,6 @@ import { fit } from "./format";
 
 const FRAME_MS = 80;
 
-/**
- * Finished lines scroll up; the live block (the progress tree) is redrawn in
- * place below them while started. Disabled outside a TTY: lines are only
- * ever appended and the live block is never drawn.
- */
 export class LiveArea {
   private drawn = 0;
   private frame = 0;
@@ -19,7 +14,6 @@ export class LiveArea {
     private readonly render: (frame: number) => string[],
   ) {}
 
-  /** Starts periodic redraws (spinners, timers). */
   start(): void {
     if (!this.enabled || this.timer) return;
     this.timer = setInterval(() => {

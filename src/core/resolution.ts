@@ -3,33 +3,20 @@ import type { AttributeContainer, AttributeSchema } from "./attributes";
 import type { Artifact, Dependency, OutgoingVariant } from "./configurations";
 import { Provider, type Producer } from "./provider";
 
-/** What resolution needs from the build: matching rules and the variants each module publishes. */
 export interface ResolutionServices {
   readonly schema: AttributeSchema;
-  /** Undefined when no such module takes part in the build. */
   variantsOf(modulePath: string): readonly OutgoingVariant[] | undefined;
-  /** Edge attributes of every dependency on this module declared anywhere in the build. */
   edgeRequests(modulePath: string): readonly AttributeContainer[];
 }
 
-/**
- * - `link`: every variant before the variants it depends on (static linking);
- * - `declaration`: depth-first in declaration order, each variant once.
- */
 export type ResolutionOrder = "link" | "declaration";
 
-/** One chosen variant in the resolved graph. */
 export interface ResolvedNode {
-  /** Module path, or the dependency's name for plugin-published variants. */
   readonly owner: string;
   readonly variant: OutgoingVariant;
   readonly dependencies: readonly ResolvedNode[];
 }
 
-/**
- * The resolved dependency graph of one resolvable configuration. Computed on
- * first use, so dependencies declared at any point during configuration count.
- */
 export class ResolutionResult {
   private resolved: { roots: ResolvedNode[]; order: Record<ResolutionOrder, ResolvedNode[]> } | null = null;
 
@@ -44,17 +31,14 @@ export class ResolutionResult {
     return this.resolved !== null;
   }
 
-  /** Direct dependencies as chosen variants, each with its own dependencies. */
   roots(): readonly ResolvedNode[] {
     return this.resolve().roots;
   }
 
-  /** Every chosen variant once; by default each before the variants it depends on. */
   nodes(order: ResolutionOrder = "link"): readonly ResolvedNode[] {
     return this.resolve().order[order];
   }
 
-  /** Artifacts of all chosen variants in `nodes(order)` order, optionally of one type; tracks their producers. */
   artifacts(type?: string, order: ResolutionOrder = "link"): Provider<Artifact[]> {
     return new ArtifactsProvider(() => this.nodes(order), type);
   }
@@ -115,7 +99,6 @@ export class ResolutionResult {
   }
 }
 
-/** Reverse post-order: a node always comes before everything it depends on. */
 function consumerFirst(roots: readonly ResolvedNode[]): ResolvedNode[] {
   const post: ResolvedNode[] = [];
   const seen = new Set<ResolvedNode>();

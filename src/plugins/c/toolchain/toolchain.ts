@@ -1,11 +1,6 @@
 import type { LinkType, Profile, StandardOptions, Subsystem, WarningSet } from "../lang/types";
 import type { TargetPlatform } from "./target";
 
-/**
- * A toolchain is assembled from independent parts rather than inherited:
- * a new compiler reuses whichever parts match (naming, depfile tracking, ...)
- * and provides only what differs.
- */
 export interface Toolchain {
   readonly name: string;
   readonly version: string;
@@ -17,20 +12,16 @@ export interface Toolchain {
   readonly deps: DependencyTracker;
 }
 
-/** Detects one kind of toolchain on the host. */
 export interface ToolchainProvider {
   readonly name: string;
-  /** How to install it, shown by `shard doctor`. */
   readonly installHint?: string;
   detect(): Toolchain | null;
 }
 
-/** A process call described as data; build/runner.ts executes it. */
 export interface Invocation {
   readonly tool: string;
   readonly args: readonly string[];
   readonly cwd?: string;
-  /** stream: async, diagnostics go straight to stderr; capture: sync, output becomes the error hint. */
   readonly io: "stream" | "capture";
 }
 
@@ -79,7 +70,6 @@ export interface LinkerDriver {
   archive(task: ArchiveTask): Invocation;
 }
 
-/** A toolchain-neutral request to link against something provided by the system. */
 export interface LinkInput {
   kind: "library" | "framework";
   name: string;
@@ -95,7 +85,6 @@ export interface LinkInputTranslator {
   translate(input: LinkInput): LinkFlags;
 }
 
-/** Knows how a compiler reports the headers a translation unit depends on. */
 export interface DependencyTracker {
   compileFlags(object: string): string[];
   dependencies(object: string): string[];

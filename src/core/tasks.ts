@@ -2,11 +2,6 @@ import { ShardError } from "../utils/errors";
 import { Provider, type Producer } from "./provider";
 import type { Task, TaskClass, TaskScope, TaskType } from "./task";
 
-/**
- * A registered task that is not created until something needs it: the graph
- * when the task is requested or depended on, or `get()`. Configuration
- * actions run at creation, so registering costs nothing.
- */
 export class TaskProvider<T extends Task> extends Provider<T> implements Producer {
   private task: T | null = null;
   private readonly actions: ((task: T) => void)[] = [];
@@ -20,7 +15,6 @@ export class TaskProvider<T extends Task> extends Provider<T> implements Produce
     super();
   }
 
-  /** Adds configuration; runs immediately if the task already exists. */
   configure(action: (task: T) => void): this {
     if (this.task) action(this.task);
     else this.actions.push(action);
@@ -53,7 +47,6 @@ interface TypeAction {
   readonly action: (task: Task) => void;
 }
 
-/** Tasks of one module. Only lazy registration: there is no eager `create`. */
 export class TaskContainer {
   private readonly tasks = new Map<string, TaskProvider<Task>>();
   private readonly typeActions: TypeAction[] = [];
@@ -102,7 +95,6 @@ export class TaskContainer {
     return [...this.tasks.keys()];
   }
 
-  /** Configures every task of `type`, registered now or later, when it is created. */
   configureEach<T extends Task>(type: TaskClass<T>, action: (task: T) => void): void {
     this.typeActions.push({ type, action: action as (task: Task) => void });
     for (const provider of this.tasks.values()) {

@@ -20,26 +20,21 @@ export interface ResolveEnv {
   readonly rootPath: string;
   readonly store: ModuleStore;
   readonly gitProtocol: string;
-  /** Module names from the root to the module declaring this dependency. */
   readonly requestedBy: readonly string[];
   readonly onProgress?: (percent: number) => void;
 }
 
-/** Where a git dependency lives and how it gets there. Deciding only reads the store; `install` fetches. */
 export interface Decision {
   readonly path: string;
   readonly name: string;
   readonly action: "reused" | "installed" | "upgraded";
-  /** Pin being replaced when upgrading. */
   readonly previous?: string;
   readonly install?: () => Promise<void>;
 }
 
 export const gitSource = {
-  /** Short human form of what is requested, e.g. "v1.2.0" or "libs/sub@v1.0.0". */
   spec: (dep: GitDependency): string => (dep.subdir ? `${dep.subdir}@` : "") + describePin(dep.pin),
 
-  /** Reuse, install, reinstall or conflict — throws on conflict. */
   decide(dep: GitDependency, env: ResolveEnv): Decision {
     const cleanRepo = dep.repo.replace(/\.git$/, "");
     const repoUrl = env.gitProtocol === "ssh"

@@ -19,7 +19,6 @@ export interface BuildFlags {
   jobs?: string;
 }
 
-/** `shard build`: resolves the module tree, then runs `assemble` of the root module. */
 export async function buildCommand(path: string, flags: BuildFlags = {}): Promise<void> {
   const ui = createConsole(flags.verbose);
   const cacheMode = parseCacheMode(flags.ignoreCache);

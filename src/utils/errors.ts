@@ -8,12 +8,10 @@ export type ErrorCode =
   | "script"
   | "unknown";
 
-/** Labelled facts shown under the error message, e.g. ["requested", "v2.0.0 by app → mid-a"]. */
 export type ErrorDetail = [label: string, value: string];
 
 export interface ErrorExtra {
   details?: ErrorDetail[];
-  /** Tool or script output shown verbatim below the details. */
   output?: string;
 }
 

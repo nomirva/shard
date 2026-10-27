@@ -7,7 +7,6 @@ export interface CacheStore {
   flush(): void;
 }
 
-/** `<root>/.shard/cache.json`: a flat key → fingerprint dictionary. */
 export class JsonCacheStore implements CacheStore {
   private entries: Record<string, string> = {};
   private dirty = false;

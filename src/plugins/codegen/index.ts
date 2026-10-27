@@ -7,17 +7,12 @@ import { isPlainObject } from "../../utils/object";
 import { shellSync } from "../../utils/process";
 import { C } from "../c";
 
-/** The `codegen: { ... }` block. */
 export interface CodegenBlock {
-  /** Shell command run in the module directory; `$SHARD_GEN_DIR` is where it writes. */
   command: string;
-  /** Files the command reads (relative to the module): a change regenerates. */
   inputs?: string[];
-  /** Files the command writes, relative to `$SHARD_GEN_DIR`. */
   outputs: string[];
 }
 
-/** Runs a generator whose declared outputs are the task's outputs: up to date while its inputs are. */
 export class Generate extends Task {
   readonly command = this.input<string>("command");
   readonly inputs = this.inputFiles("inputs");
@@ -67,7 +62,6 @@ class CodegenExtension implements Configurable {
       t.files.addAll(block.outputs.map(f => join(outDir, f)));
       t.description = block.command;
     });
-    // Nothing here knows about C: once the c plugin is there, its generated sources are this task's outputs.
     module.plugins.withId("c", () => {
       module.extensions.get(C).generated.addAll(task.flatMap(t => t.files));
     });
@@ -76,7 +70,6 @@ class CodegenExtension implements Configurable {
 
 export const CODEGEN = extension<CodegenExtension>("codegen");
 
-/** Generates sources with a command: the outputs feed other plugins as task outputs, never as scanned files. */
 export function codegenPlugin(): Plugin {
   return {
     id: "codegen",

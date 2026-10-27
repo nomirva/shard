@@ -8,7 +8,6 @@ import { scriptsPlugin } from "./scripts";
 export { jsonReader } from "./shard-json";
 import { frameworkNotation, sysNotation } from "./system";
 
-/** Plugins and dependency sources shipped with shard. */
 export function builtinPlugins(): PluginRegistry {
   return new PluginRegistry()
     .plugin("c", cPlugin)
@@ -21,5 +20,4 @@ export function builtinPlugins(): PluginRegistry {
     .notation(gitNotation);
 }
 
-/** Applied to a module whose config does not list `plugins`. */
 export const DEFAULT_PLUGINS = ["c", "clang", "scripts"] as const;

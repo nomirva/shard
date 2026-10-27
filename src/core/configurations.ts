@@ -3,26 +3,18 @@ import { AttributeContainer, type Attribute } from "./attributes";
 import { ListProperty, type Provider } from "./provider";
 import { ResolutionResult, type ResolutionServices } from "./resolution";
 
-/** One published thing: a file (headers dir, `.a`, `.so`) or a value such as a link flag. */
 export interface Artifact {
-  /** What the consumer does with it, e.g. "include-dir", "static-lib", "link-flag". */
   readonly type: string;
   readonly value: string;
 }
 
-/**
- * A request for something another party publishes. `attributes` refine the
- * consumer's request for this edge only, e.g. linkage=shared for "lib+shared".
- */
 export type Dependency =
   | {
       readonly kind: "module";
-      /** Module path in this build, e.g. ":lib". */
       readonly path: string;
       readonly attributes: AttributeContainer;
     }
   | {
-      /** Published by a plugin without a module behind it: a system library, a prebuilt file. */
       readonly kind: "variants";
       readonly name: string;
       readonly variants: readonly OutgoingVariant[];
@@ -33,24 +25,16 @@ export function moduleDependency(path: string, attributes = AttributeContainer.e
   return { kind: "module", path, attributes };
 }
 
-/** A variant a dependency can be satisfied with. */
 export interface OutgoingVariant {
   readonly name: string;
   readonly attributes: AttributeContainer;
   readonly artifacts: Provider<Artifact[]>;
-  /** Dependencies consumers inherit (`api`-like scopes). */
   readonly dependencies: readonly Dependency[];
 }
 
-/**
- * - `scope`: dependencies are declared here (`implementation`, `api`);
- * - `resolvable`: a consumer's view (`compileClasspath`), resolved against producers;
- * - `consumable`: a variant this module publishes (`linkElements`).
- */
 export type ConfigurationRole = "scope" | "resolvable" | "consumable";
 
 export class Configuration {
-  /** ":app:linkClasspath", or ":linkClasspath" in the root module. */
   readonly path: string;
   readonly artifacts: ListProperty<Artifact>;
   private attrs = AttributeContainer.empty();
@@ -84,19 +68,16 @@ export class Configuration {
     return this;
   }
 
-  /** Inherits every dependency of `scopes`, e.g. compileClasspath extends implementation and api. */
   extendsFrom(...scopes: Configuration[]): this {
     this.checkOpen();
     this.parents.push(...scopes);
     return this;
   }
 
-  /** Dependencies declared on this configuration itself. */
   declaredDependencies(): readonly Dependency[] {
     return this.declared;
   }
 
-  /** Own and inherited dependencies, in declaration order. */
   allDependencies(): Dependency[] {
     const out: Dependency[] = [];
     const seen = new Set<Configuration>();
@@ -110,13 +91,11 @@ export class Configuration {
     return out;
   }
 
-  /** The variant this configuration publishes; only for consumable ones. */
   asVariant(): OutgoingVariant {
     if (this.role !== "consumable") throw new ShardError("config", `${this.path} is not consumable`);
     return { name: this.name, attributes: this.attrs, artifacts: this.artifacts, dependencies: this.allDependencies() };
   }
 
-  /** Resolved on first use, after configuration is over; only for resolvable ones. */
   get incoming(): ResolutionResult {
     if (this.role !== "resolvable") throw new ShardError("config", `${this.path} is not resolvable`);
     this.result ??= new ResolutionResult(`${this.path}`, this.attrs, this.allDependencies(), this.services);
@@ -161,7 +140,6 @@ export class ConfigurationContainer {
     return [...this.configurations.values()];
   }
 
-  /** Variants other modules can resolve against. */
   consumableVariants(): OutgoingVariant[] {
     return [...this.configurations.values()].filter(c => c.role === "consumable").map(c => c.asVariant());
   }

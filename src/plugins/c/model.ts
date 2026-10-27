@@ -10,11 +10,8 @@ import { moduleId, type Layout } from "./layout";
 import { DIRS } from "../../utils/dirs";
 import type { CExtension } from "./extension";
 
-/** What a module is, worked out once configuration is over. */
 export interface CModel {
-  /** Scanned files plus generated `.c` files (which may not exist yet). */
   readonly content: ModuleContent;
-  /** Directories of generated headers. */
   readonly generatedIncludes: readonly string[];
   readonly shape: PackageShape;
   readonly layout: Layout;
@@ -24,10 +21,6 @@ export function optional<T>(p: Provider<T>): T | undefined {
   return p.isPresent() ? p.get() : undefined;
 }
 
-/**
- * Scans the module's files on first use. Objects of every module live under
- * the root's `.shard/<id>`; outputs of dependencies under `.shard/<name>`.
- */
 export function cModel(module: Module, ext: CExtension, toolchain: () => Toolchain): Provider<CModel> {
   return lazy(() => {
     const scanned = scanContent(module.dir, {
@@ -47,7 +40,6 @@ export function cModel(module: Module, ext: CExtension, toolchain: () => Toolcha
       : kind === "library" ? PackageShape.Library
       : deriveShape(content, module.name);
 
-    // The layout needs the toolchain's target; `shard info` reads content and shape without one.
     let layout: Layout | null = null;
     return {
       content,

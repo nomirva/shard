@@ -1,9 +1,7 @@
 import { ShardError } from "../utils/errors";
 
-/** A typed handle for a build-wide service: `const TOOLCHAIN = service<Toolchain>("toolchain")`. */
 export interface ServiceKey<T> {
   readonly name: string;
-  /** Type marker only. */
   readonly _type?: T;
 }
 
@@ -11,10 +9,6 @@ export function service<T>(name: string): ServiceKey<T> {
   return { name };
 }
 
-/**
- * Shared by every module of one build: the toolchain, run parameters from the
- * command line. Registered by plugins or the CLI, read by tasks' configuration.
- */
 export class ServiceRegistry {
   private readonly values = new Map<string, unknown>();
   private readonly pending = new Map<string, () => unknown>();
@@ -25,16 +19,11 @@ export class ServiceRegistry {
     return value;
   }
 
-  /** Registers on first call; later calls return what is there. */
   getOrRegister<T>(key: ServiceKey<T>, create: () => T): T {
     if (!this.has(key)) this.values.set(key.name, create());
     return this.get(key);
   }
 
-  /**
-   * Offers a service created on first use, unless one is already there: a
-   * toolchain is detected only by commands that compile or resolve.
-   */
   provideLazily<T>(key: ServiceKey<T>, create: () => T): void {
     if (!this.has(key)) this.pending.set(key.name, create);
   }

@@ -3,7 +3,6 @@ import type { DependencyNotation, NotationHandler } from "../../core";
 import { ShardError } from "../../utils/errors";
 
 export interface LocalOptions {
-  /** "static" (default) or "shared". */
   readonly linkage?: "static" | "shared";
 }
 
@@ -12,7 +11,6 @@ export interface LocalNotation extends DependencyNotation {
   readonly path: string;
 }
 
-/** `local("../lib", { linkage: "shared" })`: a module in another directory, relative to the declaring module. */
 export const localNotation: NotationHandler = {
   source: "local",
 

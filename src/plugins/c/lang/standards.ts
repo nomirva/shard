@@ -53,4 +53,3 @@ export function dominates(consumer: CStandard, baseline: CStandard): boolean {
   if (RANK[consumer] < RANK[baseline]) return false;
   return isPureC(baseline) || !isPureC(consumer);
 }
-

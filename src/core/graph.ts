@@ -5,28 +5,16 @@ import type { TaskProvider } from "./tasks";
 
 export interface GraphNode {
   readonly task: Task;
-  /** Tasks that must succeed first. */
   readonly dependencies: readonly string[];
-  /** Tasks this one finalizes: it runs after them once they ran, even if they failed. */
   readonly finalizes: readonly string[];
 }
 
-/**
- * The tasks needed for a request, in execution order. Building it creates
- * only the reachable tasks, then freezes their properties: from here on the
- * graph is plain data that does not change while it runs.
- */
 export class TaskGraph {
   private constructor(
     private readonly nodes: ReadonlyMap<string, GraphNode>,
     private readonly order: readonly string[],
   ) {}
 
-  /**
-   * `rank` orders independent tasks: lower first. The build ranks a task by
-   * its module's place in dependency order, so with one job modules build
-   * one after another, dependencies first.
-   */
   static build(
     requested: readonly Producer[],
     lookup: (path: string) => TaskProvider<Task> | undefined,
@@ -38,7 +26,6 @@ export class TaskGraph {
       return provider.get();
     };
 
-    // Depth-first in declaration order, dependencies first: the order independent tasks keep.
     const nodes = new Map<string, { task: Task; dependencies: string[]; finalizes: string[] }>();
     const visiting = new Set<string>();
     const visit = (task: Task): void => {
@@ -61,7 +48,6 @@ export class TaskGraph {
     return new TaskGraph(nodes, order);
   }
 
-  /** Dependencies before dependents; finalizers after what they finalize. */
   tasks(): Task[] {
     return this.order.map(path => this.nodes.get(path)!.task);
   }
@@ -74,7 +60,6 @@ export class TaskGraph {
     return this.nodes.has(path);
   }
 
-  /** `--print-graph`: one line per task with what it waits for. */
   describe(): string[] {
     return this.order.map(path => {
       const { dependencies, finalizes } = this.nodes.get(path)!;
@@ -90,7 +75,6 @@ interface Edges {
   readonly finalizes: string[];
 }
 
-/** Kahn's algorithm: of the tasks whose predecessors are placed, the lowest rank goes next, then discovery order. */
 function prioritized(nodes: ReadonlyMap<string, Edges>, rank: (task: Task) => number): string[] {
   const paths = [...nodes.keys()];
   const index = new Map(paths.map((p, i) => [p, i]));

@@ -8,7 +8,6 @@ import { createConsole } from "../console/session";
 import { size } from "../console/format";
 import { openBuild, runTasks } from "../engine";
 
-/** `shard clean`: runs `preclean`, then removes build state, installed modules and outputs of the root. */
 export async function cleanCommand(path: string): Promise<void> {
   const ui = createConsole();
   const open = await openBuild(path, { reporter: ui, dependencies: false });

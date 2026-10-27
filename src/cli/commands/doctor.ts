@@ -49,7 +49,6 @@ export function doctorCommand(): void {
     }
   }
 
-  // Ready when at least one toolchain and git are available.
   const ready = toolchains.some(r => r.version) && gitCheck.version !== null;
   lines.push("", ready ? ` ${chalk.green("✔")} ${chalk.bold("Ready to use")}` : ` ${chalk.red("✘")} ${chalk.bold("Not ready to use")}`, "");
   console.log(lines.join("\n"));

@@ -3,11 +3,9 @@ import { pad, visibleLength } from "./format";
 
 export interface TreeNode {
   name: string;
-  /** Aligned columns between the name and the status. */
   columns: string[];
   status: string;
   dim?: boolean;
-  /** Finished nodes may be folded away when the tree does not fit. */
   done: boolean;
   children: TreeNode[];
 }
@@ -18,16 +16,6 @@ interface Row {
   status: string;
 }
 
-/**
- * Renders a header and a tree with aligned columns:
- *
- *   Building                3/5  0.4s
- *   app                     ○
- *   ├─ mid-a                ✔  0.08s
- *   └─ mid-b                ━━━━──── 1/2
- *
- * Finished subtrees fold into one line when the tree is taller than `maxLines`.
- */
 export function renderTree(title: string, progress: string, root: TreeNode, maxLines: number): string[] {
   let rows = flatten(root);
   if (rows.length + 1 > maxLines) rows = flatten(foldFinished(root));

@@ -5,14 +5,10 @@ import type { CStandard, Profile, StandardOptions, Subsystem, WarningSet } from 
 import { ShardError } from "../../utils/errors";
 import { isPlainObject } from "../../utils/object";
 
-/** The `c: { ... }` block of a module config. */
 export interface CBlock {
-  /** Detected from the sources when omitted: a `main.c` makes an executable. */
   kind?: "executable" | "library";
   sources?: PathPatterns;
-  /** Private include directories. */
   imports?: PathPatterns;
-  /** Public headers, copied to the module's include directory. */
   exports?: PathPatterns;
   standard?: CStandard | { version?: CStandard; support?: CStandard; pedantic?: boolean | "error" };
   profile?: Profile;
@@ -21,7 +17,6 @@ export interface CBlock {
   compileExtra?: string[];
   linkExtra?: string[];
   subsystem?: Subsystem;
-  /** Output subdirectory, so variants of one module do not overwrite each other. */
   variant?: string;
 }
 
@@ -43,11 +38,6 @@ export class CExtension implements Configurable {
   readonly linkExtra: Property<string[]>;
   readonly subsystem: Property<Subsystem>;
   readonly variant: Property<string>;
-  /**
-   * Files other tasks produce: `.c` files are compiled with the module's own
-   * sources, directories of `.h` files are added to its includes. Wire task
-   * outputs here (not paths) so compiling waits for them.
-   */
   readonly generated: ListProperty<string>;
 
   constructor(owner: string) {
@@ -75,7 +65,6 @@ export class CExtension implements Configurable {
         undefined, { details: [["fields", BLOCK_KEYS.join(", ")]] });
     }
     const block = raw as CBlock;
-    // Same validation as shard.json options.
     const options = parseOptions({
       profile: block.profile, standard: block.standard, warnings: block.warnings, defines: block.defines,
       compileExtra: block.compileExtra, linkExtra: block.linkExtra, subsystem: block.subsystem,

@@ -9,15 +9,12 @@ import { bar, renderTree, type TreeNode } from "./tree";
 import { duration, indentBlock, pad, plural, rel, shortenPaths, stripAnsi } from "./format";
 
 export interface ConsoleOptions {
-  /** Draw the live progress tree (TTY); otherwise append plain, deterministic lines. */
   live: boolean;
-  /** Also print every dependency, file, command line and hook output. */
   verbose: boolean;
   write?: (s: string) => void;
   columns?: () => number;
   rows?: () => number;
   now?: () => number;
-  /** A phase shorter than this never shows its tree (no flicker on cached builds). */
   graceMs?: number;
 }
 
@@ -42,24 +39,17 @@ interface ModuleState {
   duration: number;
 }
 
-/** A hook is on screen only while it runs (or as the failed one). */
 interface HookRow {
   hook: string;
   command: string;
   state: "running" | "failed";
 }
 
-/** `hooks` covers hooks outside the build tree: preload (Preparing) and preclean (Cleaning). */
 type Phase = { kind: "resolve" | "hooks" | "build"; title: string; startedAt: number };
 
 const HOOK_PHASE_TITLE: Record<string, string> = { preload: "Preparing", preclean: "Cleaning" };
 const COMMAND_WIDTH = 40;
 
-/**
- * Console view of a run: lines that must survive (warnings, diagnostics) are
- * printed as they happen; a live progress tree shows the current phase and
- * disappears when it ends; a short summary closes the run.
- */
 export class ConsoleReporter implements Reporter {
   private readonly area: LiveArea;
   private readonly live: boolean;
@@ -80,7 +70,6 @@ export class ConsoleReporter implements Reporter {
   private readonly modules = new Map<string, ModuleState>();
   private currentModule: string | null = null;
 
-  /** Hooks per module name, in the order they ran. */
   private readonly hooks = new Map<string, HookRow[]>();
   private runningHook: { target: string; hook: string } | null = null;
 
@@ -103,7 +92,6 @@ export class ConsoleReporter implements Reporter {
     this.area = new LiveArea(options.live, write, options.columns ?? (() => 80), frame => this.liveLines(frame));
   }
 
-  /** A line that stays on screen above the live tree. */
   print(line = ""): void {
     this.area.print(line);
   }
@@ -253,7 +241,6 @@ export class ConsoleReporter implements Reporter {
     }
   }
 
-  /** Renders a failure: the tree folds into the path to the failing node, then one statement. */
   error(e: unknown): void {
     const { code, message, hint, details, output } = viewError(e);
     const crumb = this.breadcrumb(code);
@@ -339,7 +326,6 @@ export class ConsoleReporter implements Reporter {
     }
   }
 
-  /** Ends the live view for commands that finish without a run summary (clean). */
   finish(): void {
     this.endPhase();
     this.area.stop();
@@ -437,19 +423,16 @@ export class ConsoleReporter implements Reporter {
     };
   }
 
-  /** Running hooks of one module as tree rows: "▸ prebuild  ⠋ hook is running…  sh gen.sh". */
   private hookRows(target: string, spin: string, include: (hook: string) => boolean = () => true): TreeNode[] {
     return (this.hooks.get(target) ?? []).filter(row => include(row.hook)).map((row): TreeNode => {
       const command = row.command.length > COMMAND_WIDTH ? row.command.slice(0, COMMAND_WIDTH - 1) + "…" : row.command;
       const state = row.state === "running"
         ? `${spin} ${chalk.cyan("hook is running…")}`
         : `${chalk.red("✘")} ${chalk.red("hook failed")}`;
-      // The command rides in the status so it does not widen the status column for every module.
       return { name: chalk.dim("▸ ") + row.hook, columns: [], status: `${state}  ${chalk.dim(command)}`, done: false, children: [] };
     });
   }
 
-  /** Dependency topology reduced to the modules whose hooks ran outside the build. */
   private hookTree(spin: string): TreeNode {
     const branch = (id: number): TreeNode | null => {
       const node = this.deps.get(id)!;
@@ -471,7 +454,6 @@ export class ConsoleReporter implements Reporter {
     };
   }
 
-  /** Path to the node that was being processed, e.g. "app › mid-b › gitlib". */
   private breadcrumb(code: string): string | null {
     if (this.runningHook) {
       const { target, hook } = this.runningHook;
@@ -487,14 +469,12 @@ export class ConsoleReporter implements Reporter {
       }
       return [this.rootName, ...names].join(" › ");
     }
-    // Compile and link errors already name the module.
     if (this.phase?.kind === "build" && this.currentModule && this.tree && code !== "build") {
       return findPath(this.tree, this.currentModule)?.join(" › ") ?? this.currentModule;
     }
     return null;
   }
 
-  /** Module path through the resolved dependency tree, e.g. ["app", "mid-a"]. */
   private depPath(name: string): string[] | null {
     if (!this.rootName) return null;
     if (name === this.rootName) return [name];
@@ -557,13 +537,11 @@ function depMark(action: DepAction): string {
   }
 }
 
-/** Version for git dependencies, the source family otherwise. */
 function depColumn(info: DepInfo, action?: DepAction, previous?: string): string {
   if (info.source !== "git") return info.source;
   return action === "upgraded" && previous ? `${previous} → ${info.spec}` : info.spec;
 }
 
-/** System libraries are named by what they link ("m"), modules by their name. */
 function displayName(info: DepInfo): string {
   return info.source === "system" || info.source === "framework" ? info.spec : info.name;
 }
@@ -577,12 +555,10 @@ function findPath(shape: TreeShape, name: string): string[] | null {
   return null;
 }
 
-/** Drops clang's "N errors generated." tally; the summary line reports it. */
 function withoutTally(text: string): string {
   return text.split("\n").filter(line => !/^\d+ (error|warning)s? (and \d+ (error|warning)s? )?generated\.$/.test(stripAnsi(line).trim())).join("\n");
 }
 
-/** Compiler output is always colored; drop the colors when the console has none. */
 function colorless(text: string): string {
   return chalk.level === 0 ? stripAnsi(text) : text;
 }

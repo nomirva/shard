@@ -6,19 +6,14 @@ import { shellSync } from "../../utils/process";
 
 const OUTPUT_TAIL_LINES = 20;
 
-/** Script names the plugin binds to the module's own tasks. */
 export const HOOKS = ["preload", "prebuild", "postbuild", "preclean"] as const;
 export type HookName = (typeof HOOKS)[number];
 
-/** A shell command run in the module directory. */
 export class Script extends Task {
   readonly command = this.input<string>("command");
-  /** The script's name in the `scripts` block. */
   script = "";
-  /** Output goes to the terminal (`shard run`) instead of being captured for the report. */
   inheritOutput = false;
   label = "";
-  /** Captured output of the last run. */
   output = "";
 
   constructor(...args: ConstructorParameters<typeof Task>) {
@@ -36,7 +31,6 @@ export class Script extends Task {
   }
 }
 
-/** `scripts: { name: "command" }`. Every script is a task `script.<name>`; hooks are also bound by name. */
 export class ScriptsExtension implements Configurable {
   private readonly tasks = new Map<string, TaskProvider<Script>>();
 
@@ -73,14 +67,6 @@ export class ScriptsExtension implements Configurable {
 
 export const SCRIPTS = extension<ScriptsExtension>("scripts");
 
-/**
- * Binds hooks to the module's tasks without knowing what they are:
- * - preload runs once configuration is over, before any task graph exists
- *   (it may generate sources that the module's scan must see);
- * - prebuild runs before every other task of the module;
- * - postbuild runs after the module's tasks in the build, if all succeeded;
- * - preclean is run by `shard clean`.
- */
 function bindHook(module: Module, hook: HookName, task: TaskProvider<Script>, command: string): void {
   const isOwnWork = (t: Task) => !(t instanceof Script) && !(t instanceof LifecycleTask);
   if (hook === "preload") {
@@ -102,7 +88,6 @@ export function scriptsPlugin(): Plugin {
   };
 }
 
-/** Runs a hook with captured output, between hook.start and hook events. */
 function reportedRun(report: (event: ReportEvent) => void, cwd: string, module: string, hook: string, command: string): string {
   report({ type: "hook.start", target: module, hook, command });
   const startedAt = performance.now();

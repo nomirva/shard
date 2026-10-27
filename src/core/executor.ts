@@ -8,20 +8,16 @@ export type TaskOutcome =
   | { kind: "executed" }
   | { kind: "up-to-date" }
   | { kind: "failed"; error: unknown }
-  /** A dependency failed, so the task never started. */
   | { kind: "skipped" };
 
-/** What the executor reports; the CLI turns these into progress rows. */
 export interface ExecutionListener {
   taskStart?(task: Task): void;
   taskProgress?(task: Task, done: number, total: number, current?: string): void;
-  /** What a running task passed to `ctx.report`. */
   taskReport?(task: Task, event: unknown): void;
   taskEnd?(task: Task, outcome: TaskOutcome, duration: number): void;
 }
 
 export interface ExecuteOptions {
-  /** How many tasks may run at once. */
   readonly jobs: number;
   readonly cache: CacheStore;
   readonly listener?: ExecutionListener;
@@ -30,7 +26,6 @@ export interface ExecuteOptions {
 
 export interface ExecutionResult {
   readonly outcomes: ReadonlyMap<string, TaskOutcome>;
-  /** Errors of failed tasks in the order they failed. */
   readonly failures: readonly unknown[];
 }
 
@@ -39,12 +34,6 @@ interface CacheRecord {
   readonly discovered: string[];
 }
 
-/**
- * Runs the graph: a task starts once all its dependencies succeeded, up to
- * `jobs` at a time. After a failure no new tasks start, except finalizers of
- * tasks that ran. A task is up to date when its fingerprint matches the last
- * successful run and all its outputs exist.
- */
 export async function execute(graph: TaskGraph, options: ExecuteOptions): Promise<ExecutionResult> {
   const now = options.now ?? (() => performance.now());
   const tasks = graph.tasks();
@@ -61,7 +50,6 @@ export async function execute(graph: TaskGraph, options: ExecuteOptions): Promis
     return kind === "executed" || kind === "failed";
   };
 
-  /** "run" when ready, "wait" while something it needs is unfinished, "skip" when it can never run. */
   const readiness = (task: Task): "run" | "wait" | "skip" => {
     const node = graph.node(task.path);
     for (const dep of node.dependencies) {
@@ -141,7 +129,6 @@ async function runTask(task: Task, options: ExecuteOptions): Promise<"executed" 
   try {
     await task.run(ctx);
   } catch (error) {
-    // Outputs of a failed run may be partial: never trust them as up to date.
     if (tracked) options.cache.set(key, "");
     throw error;
   }

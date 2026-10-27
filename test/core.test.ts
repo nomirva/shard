@@ -18,14 +18,12 @@ class MemoryCache implements CacheStore {
   flush() {}
 }
 
-/** Writes `text` to `file`. */
 class WriteText extends Task {
   readonly text = this.input<string>("text");
   readonly file = this.outputFile("file");
   run() { writeFileSync(this.file.get(), this.text.get()); }
 }
 
-/** Concatenates `sources` into `file`; optionally reports an extra file as a discovered input. */
 class Concat extends Task {
   readonly sources = this.inputFiles("sources");
   readonly header = this.input<string>("header").convention("");
@@ -50,7 +48,6 @@ class Note extends Task {
   run() { Note.log.push(this.path); }
 }
 
-/** Sleeps and records how many tasks of this type ran at once. */
 class Slow extends Task {
   static active = 0;
   static peak = 0;
@@ -260,13 +257,11 @@ describe("variant resolution", () => {
   const standard = attribute<string>("shard.c.standard");
   const RANK = ["c89", "c99", "c11", "c17", "c23"];
 
-  /** Builds a .a for one module; its output is what the variant publishes. */
   class Archive extends Task {
     readonly file = this.outputFile("file");
     run() { writeFileSync(this.file.get(), this.path); }
   }
 
-  /** Consumes resolved artifacts; records their values. */
   class LinkInputs extends Task {
     readonly libs = this.inputList<string>("libs");
     readonly out = this.outputFile("out");
@@ -276,7 +271,6 @@ describe("variant resolution", () => {
   function cBuild() {
     const env = setup();
     const { build, dir } = env;
-    // Consumers that do not ask for a linkage get static; standards are backwards compatible.
     build.schema.define(linkage, { disambiguate: (requested, offered) => requested ? [requested] : offered.filter(v => v === "static") });
     build.schema.define(standard, { compatible: (requested, produced) => RANK.indexOf(produced) <= RANK.indexOf(requested) });
 

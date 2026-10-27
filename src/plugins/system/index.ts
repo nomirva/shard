@@ -14,10 +14,6 @@ interface SystemNotation extends DependencyNotation {
   readonly linkage?: "static" | "shared";
 }
 
-/**
- * Libraries the system provides: nothing to build or fetch. The toolchain
- * turns them into link flags, published as a variant without a module.
- */
 function systemNotation(source: "sys" | "framework", kind: LinkInput["kind"]): NotationHandler {
   return {
     source,
@@ -52,8 +48,6 @@ function systemNotation(source: "sys" | "framework", kind: LinkInput["kind"]): N
   };
 }
 
-/** `sys("m")`: -lm. */
 export const sysNotation = systemNotation("sys", "library");
 
-/** `framework("Cocoa")`: a macOS framework. */
 export const frameworkNotation = systemNotation("framework", "framework");

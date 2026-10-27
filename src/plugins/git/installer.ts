@@ -13,7 +13,6 @@ export interface GitInstall {
   onProgress?: (percent: number) => void;
 }
 
-/** Shallow clone (sparse for monorepo sub-packages), then strip `.git`. */
 export async function installGit(job: GitInstall): Promise<void> {
   const { repoUrl, targetDir, pin, subdir, onProgress } = job;
   let ref = cloneRef(pin, subdir);
